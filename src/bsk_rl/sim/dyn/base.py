@@ -540,15 +540,17 @@ class BasicDynamicsModel(DynamicsModel):
         self.rwStateEffector, self.rwFactory, _ = aP.balancedHR16Triad(
             useRandom=False,
             wheelSpeeds=wheelSpeeds,
+            u_max=u_max,  # 传递到 rwFactory.create() 以启用力矩限制
         )
-        for RW in self.rwFactory.rwList.values():
-            RW.u_max = u_max
+        # u_max 和 useMaxTorque 已在 balancedHR16Triad 中设置
         self.rwFactory.addToSpacecraft(
             "ReactionWheels", self.rwStateEffector, self.scObject
         )
         self.simulator.AddModelToTask(
             self.task_name, self.rwStateEffector, ModelPriority=priority
         )
+
+
 
     @aliveness_checker
     def rw_speeds_valid(self) -> bool:

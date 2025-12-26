@@ -9,6 +9,7 @@ def balancedHR16Triad(
     useRandom: bool = False,
     randomBounds: tuple[float, float] = (-400, 400),
     wheelSpeeds: list[float] = [500, 500, 500],
+    u_max: float = 0.5,  # [N·m] 最大力矩限制，HR16 典型值 0.4-1.0 N·m
 ) -> tuple[
     reactionWheelStateEffector.ReactionWheelStateEffector,
     simIncludeRW.rwFactory,
@@ -20,6 +21,7 @@ def balancedHR16Triad(
         useRandom: Use random values for wheel speeds.
         randomBounds: Bounds for random wheel speeds.
         wheelSpeeds: Fixed wheel speeds.
+        u_max: Maximum torque limit [N·m]. Default 0.5 N·m.
 
     Returns:
         tuple:
@@ -31,19 +33,26 @@ def balancedHR16Triad(
     if useRandom:
         wheelSpeeds = np.random.uniform(randomBounds[0], randomBounds[1], 3)
 
+    # 启用力矩限制以防止数值发散
     rwFactory.create(
-        "Honeywell_HR16", [1, 0, 0], maxMomentum=50.0, Omega=wheelSpeeds[0]  # RPM
+        "Honeywell_HR16", [1, 0, 0], maxMomentum=50.0, Omega=wheelSpeeds[0],
+        u_max=u_max, useMaxTorque=True
     )
     rwFactory.create(
-        "Honeywell_HR16", [0, 1, 0], maxMomentum=50.0, Omega=wheelSpeeds[1]  # RPM
+        "Honeywell_HR16", [0, 1, 0], maxMomentum=50.0, Omega=wheelSpeeds[1],
+        u_max=u_max, useMaxTorque=True
     )
     rwFactory.create(
-        "Honeywell_HR16", [0, 0, 1], maxMomentum=50.0, Omega=wheelSpeeds[2]  # RPM
+        "Honeywell_HR16", [0, 0, 1], maxMomentum=50.0, Omega=wheelSpeeds[2],
+        u_max=u_max, useMaxTorque=True
     )
 
     rwStateEffector = reactionWheelStateEffector.ReactionWheelStateEffector()
 
     return rwStateEffector, rwFactory, wheelSpeeds
+
+
+
 
 
 def idealMonarc1Octet() -> tuple:

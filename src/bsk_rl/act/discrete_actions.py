@@ -9,6 +9,8 @@ from gymnasium import spaces
 
 from bsk_rl.act.actions import Action, ActionBuilder
 
+# NOTE: Keep imports here light to avoid circular deps; satellites are only used for type hints.
+
 if TYPE_CHECKING:  # pragma: no cover
     from bsk_rl.sats import Satellite
     from bsk_rl.scene.targets import Target

@@ -1,0 +1,95 @@
+# LoSComEnv 默认任务配置 (Iridium-like 66 satellites STIN system)
+defaults:
+  - mylossatenv_task_1_config
+  - _self_
+
+
+task: task_1
+
+# --- 星座配置 ---
+n_satellites: 6          # 卫星数量 (Iridium: 66)
+n_planes: 2               # 轨道面数量
+altitude: 781.0           # [km] 轨道高度
+inclination: 86.4         # [deg] 轨道倾角 (近极地)
+cluster_spacing: 2        # Walker delta F 参数
+
+# 宽松	30	600	当前配置，几乎所有任务可完成
+# 折中	30	300	推荐，有一定挑战性
+# 紧凑	20	180	较难，需要高效调度
+# --- 任务场景配置 ---
+n_tasks: 1500           # 任务池大小（从候选池中生成） 3000  
+n_select_from: 3000      # 候选池大小（必须 >= n_tasks） 6000
+data_size_min: 40000000.0       # [bits] 最小数据量 (40 Mbits)
+data_size_max: 160000000.0 # [bits] 最大数据量 (160 Mbits)
+data_size_mean: 100000000.0  # [bits] 可选：截断正态分布均值 (100 Mbits)
+data_size_std: 30000000.0    # [bits] 可选：截断正态分布标准差 (30 Mbits)
+workload_min: 500.0       # [cycles/bit] 最小计算负载
+workload_max: 2500.0      # [cycles/bit] 最大计算负载
+max_delay_min: 35.0       # [s] 最小时延约束 (快速任务)
+max_delay_max: 350.0       # [s] 最大时延约束
+task_arrival_rate: 0.6    # [tasks/s] 降低任务到达率
+priority_min: 0.1         # 任务优先级最小值 (影响奖励权重和调度顺序)
+priority_max: 1.0         # 任务优先级最大值
+# workload_min: 200.0       # 从 500 降低
+# workload_max: 800.0       # 从 1500 降低
+# max_delay_min: 60.0       # 从 20 放宽
+# max_delay_max: 300.0      # 从 120 放宽
+# task_arrival_rate: 0.42    # 从 0.42 降低
+
+# --- 奖励配置 ---
+# - base_reward: 基础完成奖励（默认 1.0）
+# - timeout_penalty: 超时惩罚系数（默认 2.0）
+# - delay_weight: 时延权重 [0, 1]（默认 0.5）
+# - latency_penalty: 时延二次惩罚系数（默认 0.1）
+# - energy_weight: 能耗权重（默认 0.01）
+# - battery_penalty: 电池安全惩罚系数（默认 5.0）
+# - battery_safety_threshold: 电池安全阈值 SOC（默认 0.2，即 20%）
+# - balance_weight: 负载均衡权重（默认 0.0）
+# - collaboration_weight: 协作奖励权重（默认 0.5）    
+base_reward: 5.0
+timeout_penalty: 1.0
+delay_weight: 0.8 
+energy_weight: 2.0
+balance_weight: 0.3
+collaboration_weight: 0.5    # 协作奖励：卸载方获得任务完成奖励的 50%
+# 👇 新增：禁用/降低隐藏惩罚
+latency_penalty: 0.0      # 禁用二次时延惩罚（或设为 0.01）
+battery_penalty: 0.2     # 禁用电池安全惩罚（或设为 0.5）
+battery_safety_threshold: 0.2   # 降低阈值到 20%
+
+# --- 卫星硬件配置 ---
+cpu_max_frequency: 4.8e9   # [Hz] 4.8 GHz
+cpu_min_frequency: 1.0e9    # [Hz] 1 GHz
+cpu_workload: 1000.0              # [cycles/bit]
+cpu_power_draw: -40.0             # [W] (负值表示消耗)
+transmitter_baud_rate: -100000000.0  # [baud] -100 Mbps
+transmitter_power_draw: -20.0     # [W] 发射功率
+base_power_draw: -20.0            # [W] 基础功耗
+battery_capacity: 2700000.0       # [J] 750 Wh = 750 * 3600 J
+initial_charge: 1890000.0         # [J] 初始 75% 电量
+panel_area: 2.0                   # [m^2] 太阳能板面积
+task_min_elevation: 0.2617993878  # [rad] 15 度仰角 (15 * π/180)
+data_storage_capacity: 8000000000000.0  # [bits] 1 TB
+
+# --- 航天器姿态控制参数 ---
+sat_mass: 680.0                   # [kg] 卫星质量 (Iridium 类)
+sat_width: 1.8                    # [m] 卫星宽度
+sat_depth: 1.2                    # [m] 卫星深度
+sat_height: 1.2                   # [m] 卫星高度
+rw_u_max: 1.0                     # [N*m] 反作用轮最大扭矩
+max_wheel_speed: 9000.0           # [RPM] 反作用轮最大转速
+
+# --- MRP Steering 姿态控制参数 ---
+# 使用 SteeringImagerFSWModel，参数与 mysatenv 一致
+K1: 0.25                          # MRP Steering 增益
+K3: 3.0                           # MRP Steering 增益
+omega_max: 0.035                  # [rad/s] 最大角速率 (~5 deg/s)
+servo_Ki: 5.0                     # Servo 积分增益
+servo_P: 5.0                     # Servo 比例增益
+
+
+# --- 仿真配置 ---  
+max_step_duration: 10    # 小步长，增加稳定性 Python-C++交互频率
+time_limit: 6000.0          # 1轨的轨道周期  
+max_steps: 600            # 600步就结束
+log_level: "ERROR"

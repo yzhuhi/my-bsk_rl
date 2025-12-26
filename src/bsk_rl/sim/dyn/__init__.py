@@ -50,7 +50,7 @@ from bsk_rl.sim.dyn.relative_motion import (
     MaxRangeDynModel,
 )
 from bsk_rl.sim.dyn.rso_inspection import RSODynModel, RSOInspectorDynModel
-
+from bsk_rl.sim.dyn.computation_dynamics import ComputationDynModel, LoSComputationDynaModel
 
 class FullFeaturedDynModel(GroundStationDynModel, LOSCommDynModel):
     """Convenience class for a satellite with ground station and line-of-sight comms."""
@@ -76,4 +76,6 @@ __all__ = [
     "FullFeaturedDynModel",
     "RSODynModel",
     "RSOInspectorDynModel",
+    "ComputationDynModel",
+    "LoSComputationDynaModel",
 ]

@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, Optional, Union
 
 import numpy as np
 from Basilisk.utilities import macros
+from Basilisk.simulation import simpleStorageUnit, simpleBattery
+
 from scipy.optimize import minimize_scalar, root_scalar
 
 from bsk_rl.sats.satellite import Satellite
@@ -23,9 +25,13 @@ logger = logging.getLogger(__name__)
 SatObs = Any
 SatAct = Any
 
-
+'''
+具体卫星类被设计为不感知决策接口的物理实体，其 action_space 与 observation_space 的定义被刻意外置到 Builder 层，以实现动力学建模与决策接口构造的解耦。这种设计符合控制系统与强化学习中的分层建模原则，并显著提升了系统的可扩展性与复用性。
+'''
 class AccessSatellite(Satellite):
-    """Satellite that detects access opportunities for ground locations."""
+    """Satellite that detects access opportunities for ground locations.
+    探测地面站的接入机会，几何可见性与时间窗口的“信息生成器（information generator）”，而不是“决策执行体（decision executor）”。
+    """
 
     def __init__(
         self,
@@ -36,7 +42,7 @@ class AccessSatellite(Satellite):
         **kwargs,
     ) -> None:
         """Satellite that detects access opportunities for ground locations.
-
+        它不执行动作，只负责 计算时间窗口。它维护一份“日程表”，告诉 Agent 在什么时间段内，卫星与地面点（目标或地面站）是几何可见的。
         This satellite can be used to computes access opportunities for ground locations
         such as imaging targets or ground stations. The satellite will calculate upcoming
         opportunities for each location and order the opportunities by close time.
@@ -83,8 +89,10 @@ class AccessSatellite(Satellite):
         .. warning::
             The added location will only be considered in future calls to
             :class:`~AccessSatellite.calculate_additional_windows`; opportunities are not
-            computed retroactively.
-
+            computed retroactively.“新添加的地面点（Location）不会自动补算‘过去’的可见窗口，它只会在‘未来’的计算周期中生效。”
+            该方法只是把地面点的信息存储起来，等待后续的计算周期进行可见窗口的计算。
+            如何避免这个问题？
+            如果你必须在仿真中途动态添加目标，并且希望能立即看到它的窗口，你需要手动触发一次计算，或者在添加目标时重置计算时间（但这可能会导致重复计算，比较复杂）
         Args:
             object: Object for with to compute opportunities.
             r_LP_P: [m] Objects planet-fixed location.
@@ -534,7 +542,9 @@ class AccessSatellite(Satellite):
                 return True
 
         return access_filter
-
+'''
+    这些具体的卫星都没有对父类的动作和状态空间进行重写，因为他们本身并不参与决策，都是被动的“信息生成器”。真正定义“可观测量”和“可执行动作”的，是 Builder 层构建的 Observation / Action 对象。所以直接使用父类的即可，因为我们将修改逻辑放到了开头的类属性中，也就是 dyn_type 和 fsw_type 以及 action_builder_type 和 observation_builder_type。
+'''
 
 class ImagingSatellite(AccessSatellite):
     """Satellite with agile imaging capabilities."""
@@ -726,3 +736,150 @@ class ImagingSatellite(AccessSatellite):
         if hasattr(self, "target_line"):
             self.target_line.toBodyName = self.name
             vizSupport.updateTargetLineList(vizInstance)
+
+# class ComputationSatellite(AccessSatellite):
+    # """
+    # STIN 计算节点卫星。
+    # 继承自 AccessSatellite，自动拥有由 sat_args 配置的电池、存储、发射机和姿态控制。
+    # 仅扩展 CPU 计算逻辑。
+    # """
+    # dyn_type = dyn.ComputationDynModel
+    # fsw_type = fsw.ImagingFSWModel
+    # # 1. 定义论文与物理环境对应的参数配置 (SMEC Config)
+    # smec_config = {
+    #     # --- 通信 (对应论文 B_v, p_u) ---
+    #     "transmitterBaudRate": -20.0 * 1e6,  # -20 Mbps (负数=发送)
+    #     "transmitterPowerDraw": -15.0,       # 15W 输入 -> ~5W 射频输出
+    #     "transmitterNumBuffers": 50,         # 允许并行的传输缓冲区数量
+        
+    #     # --- 存储 (对应论文 d_t 及 buffer) ---
+    #     "dataStorageCapacity": 1.0 * 1e9,    # 1 Gbit
+        
+    #     # --- 能源 ---
+    #     "batteryStorageCapacity": 500000.0,  # 500 kJ (~140 Wh)
+    #     "basePowerDraw": -10.0,              # 基础平台功耗 (修正 0.0W 的不合理设定)
+    #     "instrumentPowerDraw": 0.0,          # 禁用默认的相机功耗，我们只用 CPU
+        
+    #     # --- [新增] 计算模块参数 (论文 F, c_t) ---
+    #     # 这些参数基类不识别，但会保留在 sat_args 中供我们使用
+    #     "cpuFrequency": 1.0 * 1e9,           # 1 GHz
+    #     "cpuWorkload": 1000.0,               # 1000 cycles/bit
+    #     "cpuPowerDraw": -20.0,               # CPU 满载功耗 20W
+    # }
+
+    # @classmethod
+    # def default_sat_args(cls, **kwargs) -> dict[str, Any]:
+    #     """Add SMEC defaults while keeping parent validation."""
+    #     defaults = super().default_sat_args()
+    #     defaults.update(cls.smec_config)
+
+    #     for k, v in kwargs.items():
+    #         if k not in defaults:
+    #             raise KeyError(f"{k} not a valid key for sat_args")
+    #         defaults[k] = v
+
+    #     return defaults
+
+    # def __init__(self, name, sat_args, *args, **kwargs):
+    #     super().__init__(name, sat_args, *args, **kwargs)
+
+    #     self.cpu_process_rate: float | None = None
+    #     self.processed_data_total = 0.0
+    #     self.offloaded_data_total = 0.0
+
+    # def generate_sat_args(self, **kwargs) -> None:
+    #     """Generate sat_args then cache计算速率 F/c_t."""
+    #     super().generate_sat_args(**kwargs)
+    #     self.cpu_process_rate = (
+    #         self.sat_args["cpuFrequency"] / self.sat_args["cpuWorkload"]
+    #     )
+
+    # def reset_overwrite_previous(self) -> None:
+    #     super().reset_overwrite_previous()
+    #     self.processed_data_total = 0.0
+    #     self.offloaded_data_total = 0.0
+        
+
+    # def execute_compute(self, duration: float) -> None:
+    #     """
+    #     [Action Backend] 执行本地计算。
+    #     由 act.ComputeData 调用。
+    #     """
+    #     # 1. 物理层：开启 CPU 耗电 (通过 dynamics 访问我们自定义的 cpuPowerSink)
+    #     # 注意：Action 调度器会在 duration 结束后自动让 step 停止，我们需要在停止时结算
+    #     self.dynamics.cpuPowerSink.nodePowerOut = self.sat_args["cpuPowerDraw"]
+        
+    #     # 2. 逻辑层：计算预期处理量
+    #     bits_to_process = self.cpu_process_rate * duration
+        
+    #     # 3. 定义回调：时间到后结算数据
+    #     def _compute_finished(sim):
+    #         # 获取当前存储量
+    #         current_data = self.dynamics.storageUnit.storageLevel
+    #         actual_processed = min(current_data, bits_to_process)
+            
+    #         # 扣除数据 (模拟被计算消耗)
+    #         self.dynamics.storageUnit.storageLevel -= actual_processed
+    #         self.processed_data_total += actual_processed
+            
+    #         # 关闭 CPU 耗电
+    #         self.dynamics.cpuPowerSink.nodePowerOut = 0.0
+            
+    #         # 标记需要新决策
+    #         self.requires_retasking = True
+    #         self.logger.info(f"Computed {actual_processed/1e6:.2f} Mb")
+
+    #     # 4. 注册终端事件
+    #     self.update_timed_terminal_event(
+    #         self.simulator.sim_time + duration,
+    #         info="computing_task",
+    #         extra_actions=_compute_finished
+    #     )
+
+    # def execute_offload(self, target_sat: "Satellite", duration: float) -> None:
+    #     """
+    #     [Action Backend] 执行任务卸载。
+    #     由 act.OffloadData 调用。
+    #     """
+    #     # 1. 物理层：开启发射机耗电
+    #     # 获取 transmitter 的功耗节点 (通常在 powerMonitor 中)
+    #     # 假设基类逻辑：我们手动开启一个临时的 commLoad，或者直接假设 transmitter 开启
+    #     # 这里为了简单，我们假设 AccessSatellite 的 transmitter 默认是开启待机的，
+    #     # 我们这里不额外操作 PowerNode，只专注于数据流转。
+    #     # (如果需要精确功耗，可以像 cpuPowerSink 那样再加一个 commPowerSink)
+        
+    #     # 2. 姿态控制：指向目标卫星 (复用 FSW 的 action_image)
+    #     # 我们需要知道目标卫星的位置。AccessSatellite 会计算相对位置。
+    #     # 这是一个高级功能：将目标卫星视为一个 Pointing Target
+    #     # r_Target_P = target_sat.dynamics.r_BN_P
+    #     # self.fsw.action_image(r_Target_P, "data_buffer") 
+        
+    #     # 3. 逻辑层：计算传输量
+    #     tx_rate = abs(self.sat_args["transmitterBaudRate"])
+    #     bits_to_send = tx_rate * duration
+        
+    #     def _offload_finished(sim):
+    #         # 本地扣除
+    #         current_data = self.dynamics.storageUnit.storageLevel
+    #         actual_sent = min(current_data, bits_to_send)
+            
+    #         # 目标接收 (直接操作目标对象)
+    #         # 注意：BSK-RL 允许多个卫星对象互访
+    #         if hasattr(target_sat.dynamics, 'storageUnit'):
+    #             space_left = target_sat.dynamics.storageUnit.storageCapacity - target_sat.dynamics.storageUnit.storageLevel
+    #             actual_received = min(actual_sent, space_left)
+                
+    #             self.dynamics.storageUnit.storageLevel -= actual_received
+    #             target_sat.dynamics.storageUnit.storageLevel += actual_received
+                
+    #             self.offloaded_data_total += actual_received
+    #             self.logger.info(f"Offloaded {actual_received/1e6:.2f} Mb to {target_sat.name}")
+            
+    #         self.requires_retasking = True
+
+    #     # 4. 注册终端事件
+    #     self.update_timed_terminal_event(
+    #         self.simulator.sim_time + duration,
+    #         info=f"offload_to_{target_sat.name}",
+    #         extra_actions=_offload_finished
+    #     )

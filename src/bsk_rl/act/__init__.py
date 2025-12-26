@@ -74,6 +74,7 @@ from bsk_rl.act.discrete_actions import (
     Image,
     Scan,
 )
+from bsk_rl.act.stin_continuous_actions import STINContinuousAction
 
 __doc_title__ = "Actions"
 __all__ = [
@@ -90,4 +91,5 @@ __all__ = [
     "ContinuousAction",
     "ImpulsiveThrust",
     "ImpulsiveThrustHill",
+    "STINContinuousAction",
 ]

@@ -12,7 +12,21 @@ if TYPE_CHECKING:  # pragma: no cover
     from bsk_rl.sats import Satellite
     from bsk_rl.sim import Simulator
 
+'''
+逻辑链条如下：卫星的 action_spec 并不直接对应 gym 的动作空间，而是通过 ActionBuilder 进行中间转换。
 
+    每个卫星（Satellite）包含一个 action_spec，用于描述该卫星支持的动作规格列表（Action 对象，处于定义态）。
+
+    Action 是一个抽象基类，用于刻画具体动作的语义及其执行接口。
+
+    ActionBuilder 是一个抽象构建器，负责管理 action_spec，并将其映射为 gym 兼容的动作空间，同时负责解析和分派智能体输出的动作。
+
+    select_action_builder 根据 action_spec 中声明的 builder_type，选择并实例化合适的 ActionBuilder 子类。
+
+    ActionBuilder 基于其持有的 action_spec 构建并暴露 gym 的 action_space，从而供智能体进行动作采样与输出。
+
+    该设计实现了卫星动作语义与强化学习接口之间的解耦，提高了系统的可扩展性与可维护性。
+'''
 def select_action_builder(satellite: "Satellite") -> "ActionBuilder":
     """Identify the proper action builder based on a satellite's action spec.
 

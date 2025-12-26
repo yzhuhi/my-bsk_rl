@@ -12,12 +12,22 @@ For RSO Inspection tasks, the following scenario has been implemented:
 
 * :class:`SphericalRSO`: A RSO with spherical points and radial normals.
 
+For STIN (Satellite-Terrestrial Integrated Network) tasks:
+
+* :class:`STINTaskScenario`: Computation tasks with random geographic distribution.
+* :class:`CityTaskScenario`: Computation tasks distributed near population centers.
+
 These RSO scenarios can be used with :class:`RSOInspectionReward`.
 """
 
 from bsk_rl.scene.rso_points import RSOPoints, SphericalRSO
 from bsk_rl.scene.scenario import Scenario, UniformNadirScanning
 from bsk_rl.scene.targets import CityTargets, UniformTargets
+from bsk_rl.scene.stin_scenario import (
+    ComputationTask,
+    STINTaskScenario,
+    CityTaskScenario,
+)
 
 __doc_title__ = "Scenario"
 __all__ = [
@@ -27,4 +37,7 @@ __all__ = [
     "UniformNadirScanning",
     "RSOPoints",
     "SphericalRSO",
+    "ComputationTask",
+    "STINTaskScenario",
+    "CityTaskScenario",
 ]

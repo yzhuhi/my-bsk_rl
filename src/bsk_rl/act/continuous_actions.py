@@ -24,7 +24,7 @@ class ContinuousActionBuilder(ActionBuilder):
         """
         self.action_spec: list[ContinuousAction]
         super().__init__(satellite)
-        assert len(self.action_spec) == 1, "Only one continuous action is supported."
+        assert len(self.action_spec) == 1, "Only one continuous action is supported.一个卫星只能有一个 ContinuousAction 实例，并没有限制动作维度"
 
     @property
     def _action(self) -> "ContinuousAction":
@@ -32,7 +32,7 @@ class ContinuousActionBuilder(ActionBuilder):
 
     @property
     def action_space(self) -> spaces.Box:
-        """Continuous action space."""
+        """Continuous action space.ActionBuilder.action_space 面向的是 RL 框架 / Agent。"""
         return self._action.space
 
     @property
@@ -59,7 +59,7 @@ class ContinuousAction(Action):
     @property
     @abstractmethod
     def space(self) -> spaces.Box:
-        """Return the action space."""
+        """Return the action space. Action.space 是“局部、原子、语义级”的动作空间定义"""
         pass
 
     @property
@@ -76,7 +76,7 @@ class ContinuousAction(Action):
 
 class ImpulsiveThrust(ContinuousAction):
     def __init__(
-        self,
+        self, 
         name: str = "thrust_act",
         max_dv: float = float("inf"),
         max_drift_duration: float = float("inf"),

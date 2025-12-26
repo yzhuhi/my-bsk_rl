@@ -36,17 +36,19 @@ SatAct = Any
 
 
 class Satellite(ABC, Resetable):
-    """Abstract base class for satellites."""
+    """Abstract base class for satellites. 抽象基类,下面是类属性,必须在子类中实现,包括动力学和FSW模块类型,以及观测和动作规格."""
 
     dyn_type: type["dyn.DynamicsModel"] = AbstractClassProperty()
     fsw_type: type["fsw.FSWModel"] = AbstractClassProperty()
     observation_spec: list["Observation"] = AbstractClassProperty()
     action_spec: list["Action"] = AbstractClassProperty()
 
+    # 类方法，实例对象和类对象都可以调用
     @classmethod
     def default_sat_args(cls, **kwargs) -> dict[str, Any]:
         """Compile default arguments for :class:`~bsk_rl.sim.dyn.DynamicsModel` and :class:`~bsk_rl.sim.fsw.FSWModel`, replacing those specified.
-
+            自动收集和管理卫星模型所需的默认参数，并允许用户覆盖特定参数。
+            动力学 dyn、FSW 以及 FSW 下属的 Task 类的默认参数都会被收集。
         Args:
             **kwargs: Arguments to override in the default arguments.
 
@@ -110,15 +112,18 @@ class Satellite(ABC, Resetable):
         )
         self.action_builder = select_action_builder(self)
 
+    # 属性装饰器，可以直接通过对象.属性 或 类.属性 访问
+    # 弃用警告，建议使用 satellite.name 代替
     @property
     @deprecated(reason="Use satellite.name instead")
     def id(self) -> str:
         """Unique human-readable identifier."""
         return self.name
 
+    # 对于一些随机项的参数，进行实例化获得一个具体的值
     def generate_sat_args(self, **kwargs) -> None:
         """Instantiate sat_args from any randomizers in provided sat_args.
-
+            从提供的 sat_args 中实例化任何随机生成器。
         Args:
             **kwargs: Arguments to override in the default arguments.
         """
@@ -136,6 +141,7 @@ class Satellite(ABC, Resetable):
 
         self.logger.debug(f"Satellite initialized with {self.sat_args}")
 
+    # 清理上个 episode 的残留状态
     def reset_overwrite_previous(self) -> None:
         """Overwrite attributes from previous episode."""
         self.requires_retasking = True
@@ -145,6 +151,7 @@ class Satellite(ABC, Resetable):
         self.observation_builder.reset_overwrite_previous()
         self.action_builder.reset_overwrite_previous()
 
+    # 可视化相关
     @vizard.visualize
     def create_vizard_data(self, color, vizSupport=None) -> None:
         """Create a location to store data to be passed to enableUnityVisualization."""
@@ -153,6 +160,7 @@ class Satellite(ABC, Resetable):
             spriteList=vizSupport.setSprite("SQUARE", color=color),
         )
 
+    # 构建轨道 / 准备参数
     def reset_pre_sim_init(self) -> None:
         """Called during environment reset, before Basilisk simulation initialization."""
         self.trajectory = TrajectorySimulator(
@@ -165,9 +173,10 @@ class Satellite(ABC, Resetable):
         self.observation_builder.reset_pre_sim_init()
         self.action_builder.reset_pre_sim_init()
 
+    # 装配 Basilisk 包括动力学和 FSW 模块
     def set_simulator(self, simulator: "Simulator"):
         """Set the simulator for models.
-
+            功能: 将卫星对象与主仿真器（Simulator）实例关联起来。
         Called during simulator initialization.
 
         Args:
@@ -185,7 +194,7 @@ class Satellite(ABC, Resetable):
 
         Returns:
             Satellite's dynamics model
-
+            创建好的动力学实例
         :meta private:
         """
         dynamics = self.dyn_type(self, dyn_rate, **self.sat_args)
@@ -200,19 +209,29 @@ class Satellite(ABC, Resetable):
 
         Returns:
             Satellite's FSW model
-
+            返回创建好的FSW模型实例
         :meta private:
         """
         fsw = self.fsw_type(self, fsw_rate, **self.sat_args)
         self.fsw = proxy(fsw)
         return fsw
+    
+    '''
+        这三个函数共同完成了卫星的“组装”过程：
+        set_simulator: 让卫星知道它生活在哪个“世界”里。
+        set_dynamics: 给卫星安装“身体”（物理属性、推进器、传感器等）。
+        set_fsw: 给卫星安装“大脑”（控制算法、导航逻辑等）。
+        它们都使用了 proxy 来防止内存泄漏，并且都依赖于之前生成的 self.sat_args 来配置具体的参数。
+    '''
 
+    # Builder 与模型绑定
     def reset_during_sim_init(self) -> None:
         """Called during environment reset, during Basilisk simulation initialization."""
         self.observation_builder.reset_during_sim_init()
         self.action_builder.reset_during_sim_init()
         return super().reset_during_sim_init()
 
+    # obs和act真正可以访问的时候
     def reset_post_sim_init(self) -> None:
         """Called during environment reset, after Basilisk simulation initialization."""
         self.observation_builder.reset_post_sim_init()
