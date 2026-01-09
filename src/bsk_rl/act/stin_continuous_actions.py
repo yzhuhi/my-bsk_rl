@@ -1,19 +1,22 @@
 """
 STINContinuousAction: 定义星地融合网络的全连续动作空间。
 继承自 ContinuousAction 以遵循 BSK-RL 框架。
+
+**安全屏蔽 (Action Shielding)**：
+    硬约束通过 STINActionShield 实现，在动作执行前自动修正违规动作：
+    - 电池 < 20%：限制 CPU/TX 功率
+    - 队列满：提高本地处理比例
 """
 import logging
 from typing import TYPE_CHECKING, Any, Optional, List
 import numpy as np
 from gymnasium import spaces
 
-# 假设从正确路径导入 ContinuousAction。
-# 根据您的目录结构，它应位于 bsk_rl/src/bsk_rl/act/continuous_actions.py
 from bsk_rl.act.continuous_actions import ContinuousAction 
 
 if TYPE_CHECKING:  # pragma: no cover
     from bsk_rl.sats.satellite import Satellite
-    # 假设 TaskSlice 结构已在 ComputationSatellite 或辅助文件中定义
+    from bsk_rl.utils.shields import STINActionShield
     class TaskSlice:
         def __init__(self, task_id: int, data_size: float, workload: float, max_delay: float, origin_position: np.ndarray, uplink_distance: float, uplink_rate: float):
             pass
@@ -25,18 +28,74 @@ class STINContinuousAction(ContinuousAction):
     """
     STIN 多智能体连续动作，总维度 N=10。
     实现了 ContinuousAction 的抽象方法。
+    
+    **安全屏蔽**：
+        启用 `enable_shield=True` 后，动作会在执行前经过 STINActionShield 检查：
+        - 电池 < 20%：限制 CPU/TX 功率到安全范围
+        - 队列满：强制提高本地处理比例
     """
     # 动作维度定义为类属性
     REQUIRED_ACTION_DIMS = 10 
 
-    def __init__(self, name: str = "stin_continuous_act") -> None:
+    def __init__(
+        self, 
+        name: str = "stin_continuous_act",
+        enable_shield: bool = True,
+        battery_threshold: float = 0.15,
+        max_neighbors: int = 4,  # 最大邻居数量（用于协作卸载和观测）
+    ) -> None:
         """
-        初始化动作类。ContinuousAction 基类会使用此处的实例来构建动作空间。
+        初始化动作类。
+        
+        Args:
+            name: 动作名称。
+            enable_shield: 是否启用安全屏蔽（硬约束）。
+            battery_threshold: 触发电池保护的 SOC 阈值。
+            max_neighbors: 最大邻居数量，用于协作卸载决策。默认 4。
         """
-        # 只需要传递名称给基类
         super().__init__(name=name) 
-        # 明确类型为 List[Satellite]
         self.neighbor_satellites: List['Satellite'] = []
+        self.max_neighbors = max_neighbors  # 供 gym.py 读取
+        
+        # 安全屏蔽配置（默认值，会在 link_satellite 时从 sat_args 覆盖）
+        self.enable_shield = enable_shield
+        self.battery_threshold = battery_threshold
+        self._shield = None  # 延迟初始化，避免循环导入
+        self._shield_config = {}  # Shield 详细配置
+        
+        # 屏蔽统计
+        self.shield_interventions = 0
+
+    def link_satellite(self, satellite: "Satellite") -> None:
+        """
+        Link the action to a satellite and load Shield configuration.
+        
+        Shield 配置从 satellite.shield_config 读取，支持以下参数：
+            - enable_shield: 是否启用安全屏蔽（默认 True）
+            - battery_threshold: 触发电池保护的 SOC 阈值（默认 0.15）
+            - low_battery_cpu_cap: 低电量时 CPU 功率上限（默认 0.3）
+            - low_battery_tx_cap: 低电量时发射功率上限（默认 0.2）
+            - max_queue_size: 触发队列保护的阈值（默认 50）
+        
+        Args:
+            satellite: Satellite to link to
+        """
+        self.satellite = satellite
+        
+        # 从 satellite.shield_config 读取 Shield 配置
+        shield_config = getattr(satellite, 'shield_config', {})
+        self.enable_shield = shield_config.get('enable_shield', self.enable_shield)
+        self.battery_threshold = shield_config.get('battery_threshold', self.battery_threshold)
+        
+        # 如果需要创建 Shield，也传递额外参数
+        self._shield_config = {
+            'battery_threshold': shield_config.get('battery_threshold', self.battery_threshold),
+            'low_battery_cpu_cap': shield_config.get('low_battery_cpu_cap', 0.3),
+            'low_battery_tx_cap': shield_config.get('low_battery_tx_cap', 0.2),
+            'max_queue_size': shield_config.get('max_queue_size', 50),
+        }
+        
+        logger.debug(f"[{satellite.name}] Shield config: enable={self.enable_shield}, threshold={self.battery_threshold}")
         
 
     @property
@@ -79,6 +138,11 @@ class STINContinuousAction(ContinuousAction):
         """
         实现 ContinuousAction 的抽象方法: 解析连续动作并触发卫星逻辑。
         
+        **安全屏蔽流程**：
+            1. 如果启用 shield，先对原始动作进行安全检查和修正
+            2. 解析修正后的动作分量
+            3. 执行资源分配和协作调度
+        
         **动作向量解析**:
             action[0:3]: 资源分配参数
             action[3:5]: 一级切分参数 (层次化)
@@ -92,16 +156,20 @@ class STINContinuousAction(ContinuousAction):
                 f"Action vector dimension mismatch. Expected {self.REQUIRED_ACTION_DIMS}, got {len(action)}"
             )
 
+        # ====== 安全屏蔽（硬约束）======
+        safe_action = action
+        if self.enable_shield:
+            safe_action = self._apply_shield(action)
+        
         # 解析动作分量（顺序必须与 action_description 一致）
-        cpu_ratio = action[0]              # [0] CPU 频率比例
-        tx_power_ratio = action[1]         # [1] 发射功率比例
-        platform_power_ratio = action[2]   # [2] 平台功耗比例
-        alpha_local = action[3]            # [3] UD 本地保留比例
-        alpha_cloud = action[4]            # [4] 云端偏好因子
-        split_ratios = action[5:]          # [5:10] 卫星间切分比例
+        cpu_ratio = safe_action[0]              # [0] CPU 频率比例
+        tx_power_ratio = safe_action[1]         # [1] 发射功率比例
+        platform_power_ratio = safe_action[2]   # [2] 平台功耗比例
+        alpha_local = safe_action[3]            # [3] UD 本地保留比例
+        alpha_cloud = safe_action[4]            # [4] 云端偏好因子
+        split_ratios = safe_action[5:]          # [5:10] 卫星间切分比例
         
         # 1. 资源分配（本地控制）
-        # self.satellite 是由 ActionBuilder 自动注入的 ComputationSatellite 实例
         self.satellite.set_resource_allocation(cpu_ratio, tx_power_ratio, platform_power_ratio)
 
         # 2. 层次化协作切分（一级 + 二级）
@@ -111,24 +179,45 @@ class STINContinuousAction(ContinuousAction):
             split_ratios=split_ratios,
             neighbor_satellites=self.neighbor_satellites
         )
+    
+    def _apply_shield(self, action: np.ndarray) -> np.ndarray:
+        """应用安全屏蔽，返回修正后的动作。
         
-        # 3. FSW 姿态控制 - 暂时禁用以避免 RW 警告
-        # 任务处理流程不依赖姿态机动，可见性检查已在其他地方处理
-        # if hasattr(self.satellite, 'fsw') and hasattr(self.satellite.fsw, 'action_nadir_scan'):
-        #     try:
-        #         self.satellite.fsw.action_nadir_scan()
-        #     except Exception as e:
-        #         if hasattr(self.satellite.fsw, 'action_charge'):
-        #             self.satellite.fsw.action_charge()
+        硬约束检查：
+            1. 电池 < threshold：限制 CPU/TX/Cloud 动作
+            2. 队列满：提高本地处理比例
+        """
+        # 延迟初始化 shield（避免循环导入）
+        if self._shield is None:
+            try:
+                from bsk_rl.utils.shields import STINActionShield
+                self._shield = STINActionShield(
+                    battery_threshold=self.battery_threshold,
+                    log_interventions=False,  # 训练时关闭日志
+                )
+            except ImportError:
+                logger.warning("Cannot import STINActionShield, disabling shield")
+                self.enable_shield = False
+                return action
+        
+        # 应用屏蔽
+        safe_action = self._shield.apply(self.satellite, action)
+        
+        # 统计干预次数
+        if not np.array_equal(action, safe_action):
+            self.shield_interventions += 1
+        
+        return safe_action
 
 
         
     def reset_overwrite_previous(self) -> None:
-        """重置动作状态，清除邻居缓存。"""
-        super().reset_overwrite_previous() # <--- 新增: 调用父类方法
-        # 注意: ContinuousAction 基类没有这个属性，但 Action 类有，这里保持 List.clear() 兼容性
-        # 更好的写法是重新初始化，或者您当前使用 .clear() 也可以接受。
+        """重置动作状态，清除邻居缓存和屏蔽统计。"""
+        super().reset_overwrite_previous()
         self.neighbor_satellites.clear()
+        self.shield_interventions = 0
+        if self._shield is not None:
+            self._shield.reset_stats()
         
         
     def add_neighbor(self, neighbor: 'Satellite') -> None:

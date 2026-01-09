@@ -245,18 +245,22 @@ class STINTaskScenario(Scenario):
         """
         vizSupport.addLocation(
             vizInstance,
-            stationName=task.name,
-            parentBodyName="earth",
-            r_GP_P=list(task.r_LP_P),
-            fieldOfView=np.arctan(500 / 800),
-            color=vizSupport.toRGBA255("cyan"),
-            range=1000.0 * 1000,
-            markerScale=np.sqrt(task.priority),
+            stationName=task.name,           # 任务名称（显示在 Vizard 中）
+            parentBodyName="earth",          # 附着在地球上
+            r_GP_P=list(task.r_LP_P),        # 任务在地球固连系中的位置 [m]
+            fieldOfView=np.arctan(500/800),  # 视场角（约 32°）
+            color=vizSupport.toRGBA255("cyan"),  # 青色标记
+            range=1000.0 * 1000,             # 可见范围 1000 km
+            markerScale=np.sqrt(task.priority),  # 标记大小 = √优先级
         )
         if vizInstance.settings.showLocationCones == 0:
-            vizInstance.settings.showLocationCones = -1
+            vizInstance.settings.showLocationCones = -1   # 禁用锥形范围显示
+
+        if vizInstance.settings.showLocationCommLines == 0:
+            vizInstance.settings.showLocationCommLines = 1  # 启用蓝线
+
         if vizInstance.settings.showLocationLabels == 0:
-            vizInstance.settings.showLocationLabels = -1
+            vizInstance.settings.showLocationLabels = -1  # 禁用标签显示
 
     def _regenerate_tasks(self) -> None:
         """生成均匀分布的计算任务。
@@ -334,7 +338,10 @@ class STINTaskScenario(Scenario):
         
         根据task_arrival_rate和step_duration，使用泊松分布采样本步到达的任务数，
         并将任务从task_pool移到arrived_tasks，同时注册到卫星的access checking。
-        
+        目前实现：
+        1.任务到达优先级 高优先级任务更可能先从 task_pool 进入 arrived_tasks
+        2.任务分配优先级 高优先级任务更可能先从 arrived_tasks 分配给卫星（已经设置了一个计算分数的函数）
+        3.未实现：卫星处理任务的优先级队列，在任务上传的阶段设置了优先级
         Args:
             step_duration: 当前步的时长(秒)
         
@@ -385,11 +392,17 @@ class STINTaskScenario(Scenario):
                             type="task",
                         )
             
-            logger.debug(
-                f"Poisson arrival: {actual_arrivals} tasks arrived "
-                f"(pool: {len(self.task_pool)} remaining, "
-                f"arrived: {len(self.arrived_tasks)} total)"
-            )
+            # 🔍 调试信息：每500个任务或任务池<500时输出
+            if actual_arrivals > 0 and (len(self.task_pool) % 500 == 0 or len(self.task_pool) < 500):
+                # 计算实际到达率
+                actual_rate = len(self.arrived_tasks) / max(1, self.satellites[0].simulator.sim_time) if self.satellites else 0
+                logger.debug(
+                    f"📦 [Poisson] +{actual_arrivals} tasks | "
+                    f"Pool: {len(self.task_pool)} | "
+                    f"Arrived: {len(self.arrived_tasks)} | "
+                    f"Config rate: {self.task_arrival_rate:.2f}/s | "
+                    f"Actual rate: {actual_rate:.2f}/s"
+                )
         
         return actual_arrivals
     
@@ -453,7 +466,7 @@ class STINTaskScenario(Scenario):
                 assigned_count += 1
         
         if assigned_count > 0:
-            logger.warning(
+            logger.debug(
                 f"[DIAG] ✓ Assigned {assigned_count} tasks (priority-driven) at t={current_time:.2f}s"
             )
 

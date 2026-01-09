@@ -51,6 +51,11 @@ from bsk_rl.sim.dyn.relative_motion import (
 )
 from bsk_rl.sim.dyn.rso_inspection import RSODynModel, RSOInspectorDynModel
 from bsk_rl.sim.dyn.computation_dynamics import ComputationDynModel, LoSComputationDynaModel
+from bsk_rl.sim.dyn.lite_computation_dynamics import (
+    LiteBasicDynamicsModel,
+    LiteLOSCommDynModel,
+    LiteComputationDynModel,
+)
 
 class FullFeaturedDynModel(GroundStationDynModel, LOSCommDynModel):
     """Convenience class for a satellite with ground station and line-of-sight comms."""
@@ -78,4 +83,7 @@ __all__ = [
     "RSOInspectorDynModel",
     "ComputationDynModel",
     "LoSComputationDynaModel",
+    "LiteBasicDynamicsModel",
+    "LiteLOSCommDynModel",
+    "LiteComputationDynModel",
 ]

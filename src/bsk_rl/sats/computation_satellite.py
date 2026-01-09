@@ -26,6 +26,15 @@ from bsk_rl.utils.constants import (
     calculate_isl_rate,
     calculate_sgl_rate,
 )
+from bsk_rl.utils import vizard
+import time
+
+try:
+    from Basilisk.architecture import messaging
+    from Basilisk.ExternalModules import taskVizController
+    TASK_VIZ_AVAILABLE = True
+except ImportError:
+    TASK_VIZ_AVAILABLE = False
 
 if TYPE_CHECKING:  # pragma: no cover
     from bsk_rl.act.actions import Action
@@ -179,6 +188,7 @@ class TaskSlice:
         
         # 协作奖励追踪
         self.origin_satellite: str = ""  # 发起卸载决策的卫星名称（用于协作奖励）
+        self.offload_chain: list = []    # 卸载链路：记录所有参与卸载的卫星（用于延迟奖励分配）
     
     @property
     def t_uplink_total(self) -> float:
@@ -494,7 +504,7 @@ class ComputationSatellite(sats.AccessSatellite):
             dict(prop="current_task_workload", fn=lambda sat: sat.task_queue[0].workload / 1e3 if sat.task_queue else 0.0),     # [kcycles/bit]
             dict(prop="current_task_max_delay", fn=lambda sat: sat.task_queue[0].max_delay if sat.task_queue else 0.0),        # [s]
             dict(prop="current_task_remaining_time", fn=lambda sat: sat.task_queue[0].get_remaining_time(sat.simulator.sim_time) if sat.task_queue else 0.0),  # [s]
-            dict(prop="current_task_uplink_delay", fn=lambda sat: sat.task_queue[0].t_uplink_total * 1000 if sat.task_queue else 0.0),  # [ms]
+            # dict(prop="current_task_uplink_delay", fn=lambda sat: sat.task_queue[0].t_uplink_total * 1000 if sat.task_queue else 0.0),  # [ms]
             dict(prop="current_task_priority", fn=lambda sat: getattr(sat.task_queue[0], 'priority', 0.5) if sat.task_queue else 0.0),  # [0, 1] 任务优先级
             name="task_request"
         ),
@@ -517,7 +527,21 @@ class ComputationSatellite(sats.AccessSatellite):
         
         sat_args 中的参数会自动通过 collect_default_args 从 dyn_type 和 
         fsw_type 中收集。用户可通过 sat_args 覆盖默认值。
+        
+        Args (via kwargs):
+            training_mode: 训练模式（默认 False）。启用后禁用日志和可视化以提升性能。
+            shield_config: Action Shield 配置字典（可选）。
+            ud_config: UD 处理能力配置字典（可选）。
         """
+        # 提取 training_mode 参数（在调用 super 前，避免传递给父类）
+        self.training_mode = kwargs.pop('training_mode', True)
+        
+        # 提取 shield_config 参数（用于 Action 层读取）
+        self.shield_config = kwargs.pop('shield_config', {})
+        
+        # 提取 ud_config 参数（用于协作调度）
+        self.ud_config = kwargs.pop('ud_config', {})
+        
         super().__init__(*args, **kwargs)
         
         # MARL 核心追踪变量 - 任务处理
@@ -534,14 +558,49 @@ class ComputationSatellite(sats.AccessSatellite):
         self.current_base_power_draw = 0.0         # [W] 当前平台基础功耗
         
         # 统计量
-        self.processed_data_total = 0.0            # [bits] 累计处理数据量
-        self.offloaded_data_total = 0.0            # [bits] 累计卸载数据量
-        self.completed_tasks_count = 0             # 成功完成的任务数
-        self.expired_tasks_count = 0               # 超时失败的任务数
+        self.processed_data_total = 0.0            # [bits] 累计处理数据量（卫星本地执行）
+        self.offloaded_data_total = 0.0            # [bits] 累计卸载数据量（卫星发给别人，包含所有跳）
+        self.first_hop_offloaded = 0.0             # [bits] 首次卸载（从原始接收卫星卸载出去）
+        self.relay_offloaded = 0.0                 # [bits] 中继卸载（已接收的切片再次卸载）
+        self.raw_data_received = 0.0               # [bits] 从 UD 接收的原始任务数据总量
+        self.completed_tasks_count = 0             # 成功完成的任务数（slice级别，可能重复）
+        self.expired_tasks_count = 0               # 超时失败的任务数（slice级别，可能重复）
+        # ✅ 任务级别统计（使用集合追踪唯一任务ID，避免slice重复计数）
+        self.completed_task_ids: set = set()      # 已完成的原始任务ID集合
+        self.expired_task_ids: set = set()        # 已过期的原始任务ID集合
+        self.offloaded_task_ids: set = set()      # 已卸载的任务ID集合（首跳卸载）
+        self.relay_task_ids: set = set()          # 被中继的任务ID集合（二跳及以上）
         
         # 时隙控制状态 (论文 Step 3)
         self.current_control_message: dict = {}   # 当前时隙的控制消息
         self.network_info: dict = {}               # 收集的网络信息 (Step 1)
+        
+        # Vizard 可视化事件发送器（训练模式下禁用）
+        if TASK_VIZ_AVAILABLE and not self.training_mode:
+            self.task_event_msg = messaging.TaskEventMsgPayload()
+            self.task_event_writer = messaging.TaskEventMsg_C()
+            self.task_event_enabled = True
+        else:
+            self.task_event_enabled = False
+
+    
+    def __getstate__(self):
+        """Exclude unpicklable SWIG objects from serialization."""
+        state = self.__dict__.copy()
+        # Remove unpicklable entries
+        if 'task_event_msg' in state:
+            del state['task_event_msg']
+        if 'task_event_writer' in state:
+            del state['task_event_writer']
+        return state
+    
+    def __setstate__(self, state):
+        """Restore state and reinitialize SWIG objects."""
+        self.__dict__.update(state)
+        # Reinitialize SWIG objects if enabled
+        if TASK_VIZ_AVAILABLE and getattr(self, 'task_event_enabled', False):
+            self.task_event_msg = messaging.TaskEventMsgPayload()
+            self.task_event_writer = messaging.TaskEventMsg_C()
 
     def reset_overwrite_previous(self) -> None:
         super().reset_overwrite_previous()
@@ -558,11 +617,39 @@ class ComputationSatellite(sats.AccessSatellite):
         # 重置统计量
         self.processed_data_total = 0.0
         self.offloaded_data_total = 0.0
+        self.first_hop_offloaded = 0.0
+        self.relay_offloaded = 0.0
+        self.raw_data_received = 0.0
         self.completed_tasks_count = 0
         self.expired_tasks_count = 0
+        # ✅ 重置任务ID集合
+        self.completed_task_ids = set()
+        self.expired_task_ids = set()
+        self.offloaded_task_ids = set()
+        self.relay_task_ids = set()
         # 重置时隙控制状态
         self.current_control_message = {}
         self.network_info = {}
+
+    # --- 存储容量属性（用于观测空间）---
+    
+    @property
+    def storage_level(self) -> float:
+        """当前队列数据量 [bits]。"""
+        return sum(t.data_size for t in self.task_queue)
+    
+    @property
+    def storage_capacity(self) -> float:
+        """存储容量 [bits]，从动力学模型获取。"""
+        return getattr(self.dynamics, 'data_storage_capacity', float('inf'))
+    
+    @property
+    def storage_fraction(self) -> float:
+        """存储使用率 [0, 1]，用于观测归一化。"""
+        capacity = self.storage_capacity
+        if capacity <= 0 or capacity == float('inf'):
+            return 0.0
+        return min(self.storage_level / capacity, 1.0)
 
     # --- 修复父类的 numpy 数组比较问题 ---
     
@@ -628,6 +715,10 @@ class ComputationSatellite(sats.AccessSatellite):
             cpu_ratio: 分配的 CPU 频率比例 ∈ [0, 1]，映射到 [f_min, f_max]。
             tx_power_ratio: 分配的发射功率比例 ∈ [0, 1]。
         """
+        # 注意：电池安全硬约束已通过 STINActionShield 在动作空间层实现
+        # 无需在此处再次裁剪，避免双重保护导致的策略学习困难
+        
+        # === 正常资源分配流程 ===
         # 从 dynamics 层获取参数 (由 @default_args 定义)
         min_f = self.dynamics.cpu_min_frequency
         max_f = self.dynamics.cpu_max_frequency
@@ -706,6 +797,76 @@ class ComputationSatellite(sats.AccessSatellite):
         )
         
         return True
+    
+    # def _get_battery_soc(self) -> float:
+    #     """获取电池 SOC（State of Charge）。
+        
+    #     Returns:
+    #         电池 SOC ∈ [0, 1]，如果无法获取返回 1.0（满电）。
+    #     """
+    #     try:
+    #         if hasattr(self.dynamics, 'powerMonitor'):
+    #             battery_msg = self.dynamics.powerMonitor.batPowerOutMsg.read()
+    #             battery_capacity = self.dynamics.powerMonitor.storageCapacity
+    #             if battery_capacity > 0:
+    #                 return battery_msg.storageLevel / battery_capacity
+    #     except Exception as e:
+    #         self.logger.debug(f"Cannot read battery SOC: {e}")
+        
+    #     return 1.0  # 默认满电
+    
+    # def _apply_battery_hard_constraint(
+    #     self, 
+    #     cpu_ratio: float, 
+    #     tx_power_ratio: float
+    # ) -> tuple:
+    #     """[DEPRECATED] 硬约束：线性插值电池安全裁剪。
+        
+    #     .. deprecated::
+    #         硬约束已通过 STINActionShield 在动作空间层实现。
+    #         此方法保留仅为向后兼容，不再被 set_resource_allocation 调用。
+        
+    #     设计理念：
+    #     - 10% 以下强制关机（limit=0）
+    #     - 10%-30% 线性插值降速
+    #     - 30% 以上全速运行（limit=1）
+        
+    #     比阶跃函数更平滑，避免动作空间突变。
+        
+    #     Args:
+    #         cpu_ratio: 原始 CPU 分配比例
+    #         tx_power_ratio: 原始传输功率比例
+            
+    #     Returns:
+    #         裁剪后的 (cpu_ratio, tx_power_ratio)
+    #     """
+    #     battery_soc = self._get_battery_soc()
+        
+    #     # 定义缓降区间
+    #     safe_min = 0.10  # 10% 电量以下强制关机
+    #     safe_max = 0.30  # 30% 电量以上全速运行
+        
+    #     # 线性插值计算物理上限
+    #     clip_limit = np.clip(
+    #         (battery_soc - safe_min) / (safe_max - safe_min), 
+    #         0.0, 1.0
+    #     )
+        
+    #     # 记录原始动作
+    #     original_cpu = cpu_ratio
+        
+    #     # 应用裁剪
+    #     final_cpu = min(cpu_ratio, clip_limit)
+    #     final_tx = min(tx_power_ratio, clip_limit)
+        
+    #     # 仅在大幅度限制时打印日志，避免刷屏
+    #     if original_cpu - final_cpu > 0.1:
+    #         self.logger.debug(
+    #             f"🔋 Low Battery ({battery_soc:.1%}): "
+    #             f"Throttling {original_cpu:.2f} → {final_cpu:.2f}"
+    #         )
+            
+    #     return final_cpu, final_tx
 
     # --- 协作调度执行接口 (分层协作: UD/云端/卫星间) ---
 
@@ -809,10 +970,48 @@ class ComputationSatellite(sats.AccessSatellite):
         # 3.1 远端/本地切分 (宏观协作)
         
         # UD 本地处理 (Alpha_Local)
+        # 简化模型：UD 计算能力有限，可通过 ud_cpu_ratio 配置
+        # 如果分配给 UD 的任务在 max_delay 内完不成，视为超时
         if alpha_local_final > 1e-6:
             data_local = raw_data_size * alpha_local_final
-            # TODO: 实际的 UD 任务生成/发送指令，这里只是逻辑记录
-            self.logger.info(f"Task {current_raw_task.task_id}: Routed {data_local/1e6:.2f} Mb to UD Local.")
+            
+            # UD 处理能力估算（从配置读取 ud_cpu_ratio）
+            ud_cpu_ratio = self.ud_config.get('ud_cpu_ratio', 0.5)
+            ud_cpu_freq = self.dynamics.cpu_min_frequency * ud_cpu_ratio  # 默认 ~1 GHz
+            ud_process_time = (data_local * task_workload) / ud_cpu_freq
+            remaining_time = current_raw_task.get_remaining_time(self.simulator.sim_time)
+            
+            if ud_process_time <= remaining_time:
+                # UD 能完成 → 算作成功（但奖励归 UD，卫星不拿）
+                # 简化处理：直接标记这部分任务完成
+                self.logger.debug(
+                    f"Task {current_raw_task.task_id}: UD Local can complete "
+                    f"{data_local/1e6:.2f} Mb in {ud_process_time:.1f}s (remaining: {remaining_time:.1f}s)"
+                )
+                # 注意：UD 完成的任务不算卫星的 completed_tasks，也不给卫星奖励
+                # 这鼓励卫星协作处理而不是推给 UD
+            else:
+                # UD 完不成 → 超时，惩罚落在接入卫星头上
+                self.logger.warning(
+                    f"Task {current_raw_task.task_id}: UD Local TIMEOUT! "
+                    f"Need {ud_process_time:.1f}s but only {remaining_time:.1f}s remaining"
+                )
+                # 创建一个虚拟的超时切片，让奖励函数能检测到
+                expired_ud_slice = TaskSlice(
+                    task_id=current_raw_task.task_id,
+                    data_size=data_local,
+                    workload=task_workload,
+                    max_delay=current_raw_task.max_delay,
+                    origin_position=current_raw_task.origin_position,
+                    uplink_distance=current_raw_task.uplink_distance,
+                    uplink_rate=current_raw_task.uplink_rate,
+                )
+                expired_ud_slice.status = TaskStatus.EXPIRED
+                expired_ud_slice.priority = getattr(current_raw_task, 'priority', 1.0)
+                expired_ud_slice.origin_satellite = self.name  # 接入卫星负责
+                self.expired_tasks_count += 1
+                self.expired_task_ids.add(expired_ud_slice.task_id)  # ✅ 追踪唯一任务ID
+                self.expired_tasks_buffer.append(expired_ud_slice)
         
         # 云端处理 (Alpha_Cloud)
         if alpha_cloud_final > 1e-6:
@@ -888,13 +1087,45 @@ class ComputationSatellite(sats.AccessSatellite):
                     # 记录发起卸载的卫星（用于协作奖励）
                     new_slice.origin_satellite = self.name
                     
-                    target_node.process_incoming_slice(new_slice)
+                    # 记录卸载链路（用于延迟奖励分配）
+                    if not new_slice.offload_chain:
+                        new_slice.offload_chain = [self.name]  # 首次卸载，发起者是链路第一个
+                    # 目标节点会在接收时追加自己
+                    
+                    # ✅ 修复：处理返回值，如果目标拒绝则不记录卸载统计
+                    accepted = target_node.process_incoming_slice(new_slice)
+                    if not accepted:
+                        self.logger.warning(
+                            f"[OFFLOAD REJECTED] Target {target_node.name} rejected slice {new_slice.task_id}, "
+                            f"keeping locally"
+                        )
+                        # 目标拒绝，切片回到本地队列
+                        self.task_queue.append(new_slice)
+                        continue
+                    
                     if target_node != self:
                         self.offloaded_data_total += slice_data
+                        
+                        # 区分首次卸载和中继卸载
+                        # 如果当前任务的 origin_satellite 为空或等于自己，说明是首次卸载
+                        # 否则是中继卸载（转发别人发来的切片）
+                        task_origin = getattr(current_raw_task, 'origin_satellite', '')
+                        is_first_hop = (task_origin == '' or task_origin == self.name)
+                        if is_first_hop:
+                            self.first_hop_offloaded += slice_data
+                            # 追踪卸载的任务ID（按任务数统计）
+                            self.offloaded_task_ids.add(current_raw_task.task_id)
+                        else:
+                            self.relay_offloaded += slice_data
+                            # 追踪中继的任务ID（二跳及以上）
+                            self.relay_task_ids.add(current_raw_task.task_id)
+                        
                         self.logger.info(
-                            f"[Collab] Offloaded {slice_data/1e6:.2f} Mb to {target_node.name}. "
+                            f"[Collab] {'First-hop' if is_first_hop else 'Relay'} offloaded {slice_data/1e6:.2f} Mb to {target_node.name}. "
                             f"ISL delay: tx={isl_tx_delay*1000:.2f}ms + prop={isl_prop_delay*1000:.2f}ms"
                         )
+                        # TODO: Proper ISL visualization needs Vizard transceiver beams
+
                     else:
                         self.logger.info(f"Self-allocated {slice_data/1e6:.2f} Mb for local execution.")
                         
@@ -927,6 +1158,9 @@ class ComputationSatellite(sats.AccessSatellite):
             priority=getattr(computation_task, 'priority', 0.5),  # 继承任务优先级
         )
         
+        # ✅ 存储对原始任务的引用，用于后续删除BSK事件
+        initial_slice.origin_task = computation_task
+        
         # 设置云端和 UD 参数（从 ComputationTask 继承）
         if hasattr(computation_task, 'fiber_distance'):
             initial_slice.fiber_distance = computation_task.fiber_distance
@@ -943,6 +1177,9 @@ class ComputationSatellite(sats.AccessSatellite):
         # 加入任务队列
         self.task_queue.append(initial_slice)
         
+        # 记录从 UD 接收的原始任务数据量
+        self.raw_data_received += initial_slice.data_size
+        
         self.logger.info(
             f"Received NEW task {initial_slice.task_id}: "
             f"{initial_slice.data_size/1e6:.2f} Mb, "
@@ -952,28 +1189,52 @@ class ComputationSatellite(sats.AccessSatellite):
             f"Queue size: {len(self.task_queue)}"
         )
         
+        # Emit uplink visualization event
+        self._emit_viz_event(4, "UD", initial_slice.origin_position)
+        
         self.requires_retasking = True
     
-    def process_incoming_slice(self, task_slice: TaskSlice) -> None:
+    def process_incoming_slice(self, task_slice: TaskSlice) -> bool:
         """接收并处理来自其他卫星的任务切片。
         
         Args:
             task_slice: 接收到的任务切片对象。
+            
+        Returns:
+            True 如果成功接收，False 如果因存储容量不足被拒绝。
         """
+        # ✅ 存储容量检查：基于数据量而非任务数量
+        current_queue_data = sum(t.data_size for t in self.task_queue)
+        storage_capacity = getattr(self.dynamics, 'data_storage_capacity', float('inf'))
+        
+        if current_queue_data + task_slice.data_size > storage_capacity:
+            self.logger.warning(
+                f"[STORAGE FULL] Rejecting slice {task_slice.task_id}: "
+                f"queue {current_queue_data/1e9:.2f} Gb + new {task_slice.data_size/1e6:.2f} Mb > "
+                f"capacity {storage_capacity/1e9:.2f} Gb"
+            )
+            return False  # 拒绝接收
+        
         # 记录切片到达时间
         task_slice.arrival_time = self.simulator.sim_time
         task_slice.current_holder = self.name
+        
+        # 追加到卸载链路（用于延迟奖励分配）
+        if hasattr(task_slice, 'offload_chain'):
+            task_slice.offload_chain.append(self.name)
         
         # 加入本地任务队列
         self.task_queue.append(task_slice)
         
         self.logger.info(
             f"Received slice {task_slice.task_id}: {task_slice.data_size/1e6:.2f} Mb, "
-            f"workload={task_slice.workload}, max_delay={task_slice.max_delay}s. Queue size: {len(self.task_queue)}"
+            f"workload={task_slice.workload}, max_delay={task_slice.max_delay}s. "
+            f"Queue: {len(self.task_queue)} tasks, {(current_queue_data + task_slice.data_size)/1e9:.2f} Gb"
         )
         
         # 标记需要重新调度
         self.requires_retasking = True
+        return True
     
     def execute_local_compute(self, duration: float) -> None:
         """执行本地计算任务切片（在每个 step 中调用）。
@@ -984,14 +1245,22 @@ class ComputationSatellite(sats.AccessSatellite):
         Args:
             duration: [s] 本次计算的持续时间（通常为 step_duration）。
         """
-        # [DIAG] 诊断入口日志
-        self.logger.warning(
-            f"[DIAG] execute_local_compute called: queue_size={len(self.task_queue)}, "
-            f"cpu_freq={self.current_cpu_freq:.2e}, duration={duration:.2f}s"
-        )
+        # [DIAG] 诊断入口日志（训练模式下跳过）
+        if not self.training_mode:
+            self.logger.debug(
+                f"[DIAG] execute_local_compute called: queue_size={len(self.task_queue)}, "
+                f"cpu_freq={self.current_cpu_freq:.2e}, duration={duration:.2f}s"
+            )
+        
+        # Emit viz event based on state
+        if len(self.task_queue) > 0:
+            self._emit_viz_event(1)  # COMPUTING
+        else:
+            self._emit_viz_event(0)  # IDLE
         
         if not self.task_queue:
-            self.logger.warning("[DIAG] RETURN: task_queue is empty!")
+            if not self.training_mode:
+                self.logger.debug("[DIAG] RETURN: task_queue is empty!")
             return
             
         current_slice = self.task_queue[0]
@@ -1009,21 +1278,31 @@ class ComputationSatellite(sats.AccessSatellite):
             expired_slice = self.task_queue.pop(0)
             expired_slice.status = TaskStatus.EXPIRED
             self.expired_tasks_count += 1
+            self.expired_task_ids.add(expired_slice.task_id)  # ✅ 追踪唯一任务ID
             self.expired_tasks_buffer.append(expired_slice)  # 添加到超时缓冲区
-            self.logger.warning(
-                f"Task slice {expired_slice.task_id} EXPIRED during compute. "
-                f"Elapsed: {expired_slice.get_elapsed_time(self.simulator.sim_time):.2f}s > "
-                f"max_delay: {expired_slice.max_delay:.2f}s"
-            )
+            
+            # ✅ 关键修复:删除超时任务的BSK事件,防止event map膨胀
+            if hasattr(expired_slice, 'origin_task'):
+                try:
+                    self.remove_location_for_access_checking(expired_slice.origin_task)
+                except Exception as e:
+                    self.logger.debug(f"Failed to remove access event for expired task {expired_slice.task_id}: {e}")
+            if not self.training_mode:
+                self.logger.warning(
+                    f"Task slice {expired_slice.task_id} EXPIRED during compute. "
+                    f"Elapsed: {expired_slice.get_elapsed_time(self.simulator.sim_time):.2f}s > "
+                    f"max_delay: {expired_slice.max_delay:.2f}s"
+                )
             self.requires_retasking = True
             return
         
         # 检查 CPU 是否有效分配 (使用 dynamics 层参数)
         if self.current_cpu_freq < self.dynamics.cpu_min_frequency:
-            self.logger.warning(
-                f"[DIAG] RETURN: CPU freq too low! current={self.current_cpu_freq:.2e}, "
-                f"min={self.dynamics.cpu_min_frequency:.2e}"
-            )
+            if not self.training_mode:
+                self.logger.warning(
+                    f"[DIAG] RETURN: CPU freq too low! current={self.current_cpu_freq:.2e}, "
+                    f"min={self.dynamics.cpu_min_frequency:.2e}"
+                )
             return
         
         # 计算处理速率 (bits/s) = f / c_t
@@ -1097,8 +1376,16 @@ class ComputationSatellite(sats.AccessSatellite):
                         completed_slice.status = TaskStatus.COMPLETED
                         completed_slice.compute_end_time = self.simulator.sim_time  # 记录完成时间
                         self.completed_tasks_count += 1
+                        self.completed_task_ids.add(completed_slice.task_id)  # ✅ 追踪唯一任务ID
                         self.completed_tasks_buffer.append(completed_slice)  # 添加到历史缓冲区
                         
+                        self.logger.info(
+                            f"[OK] Task {completed_slice.task_id} COMPLETED and results downlinked directly to UD. "
+                            f"Total delay: {total_delay:.2f}s"
+                        )
+                        
+                        # Emit downlink visualization event
+                        self._emit_viz_event(3, "UD", completed_slice.origin_position)
                         self.logger.info(
                             f"Task slice {completed_slice.task_id} COMPLETED (direct). "
                             f"T_total={total_delay:.4f}s = max("
@@ -1107,10 +1394,13 @@ class ComputationSatellite(sats.AccessSatellite):
                             f"T_CLOUD={completed_slice.t_cloud_path:.4f}). "
                             f"Energy: {energy_consumed/1000:.2f}kJ"
                         )
+                        # TODO: Proper downlink visualization needs Vizard transceiver beams
+
                     else:
                         # 超时失败
                         completed_slice.status = TaskStatus.EXPIRED
                         self.expired_tasks_count += 1
+                        self.expired_task_ids.add(completed_slice.task_id)  # ✅ 追踪唯一任务ID
                         self.expired_tasks_buffer.append(completed_slice)  # 添加到超时缓冲区
                         self.logger.warning(
                             f"Task slice {completed_slice.task_id} EXPIRED: "
@@ -1152,6 +1442,7 @@ class ComputationSatellite(sats.AccessSatellite):
                         # 无法找到接力卫星 - 任务失败
                         completed_slice.status = TaskStatus.EXPIRED
                         self.expired_tasks_count += 1
+                        self.expired_task_ids.add(completed_slice.task_id)  # ✅ 追踪唯一任务ID
                         self.expired_tasks_buffer.append(completed_slice)  # 添加到超时缓冲区
                         self.logger.warning(
                             f"Task slice {completed_slice.task_id} FAILED: "
@@ -1213,7 +1504,16 @@ class ComputationSatellite(sats.AccessSatellite):
             if total_delay <= task_slice.max_delay:
                 task_slice.status = TaskStatus.COMPLETED
                 self.completed_tasks_count += 1
+                self.completed_task_ids.add(task_slice.task_id)  # ✅ 追踪唯一任务ID
                 self.completed_tasks_buffer.append(task_slice)
+                
+                # ✅ 删除已完成任务的BSK事件
+                if hasattr(task_slice, 'origin_task'):
+                    try:
+                        self.remove_location_for_access_checking(task_slice.origin_task)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to remove access event for completed task {task_slice.task_id}: {e}")
+                
                 self.logger.info(
                     f"Task {task_slice.task_id} COMPLETED (direct transmission). "
                     f"T_total={total_delay:.4f}s"
@@ -1221,7 +1521,16 @@ class ComputationSatellite(sats.AccessSatellite):
             else:
                 task_slice.status = TaskStatus.EXPIRED
                 self.expired_tasks_count += 1
+                self.expired_task_ids.add(task_slice.task_id)  # ✅ 追踪唯一任务ID
                 self.expired_tasks_buffer.append(task_slice)
+                
+                # ✅ 删除已超时任务的BSK事件
+                if hasattr(task_slice, 'origin_task'):
+                    try:
+                        self.remove_location_for_access_checking(task_slice.origin_task)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to remove access event for expired task {task_slice.task_id}: {e}")
+                
                 self.logger.warning(
                     f"Task {task_slice.task_id} EXPIRED: T_total={total_delay:.4f}s"
                 )
@@ -1255,6 +1564,7 @@ class ComputationSatellite(sats.AccessSatellite):
             expired_result = self.result_queue.pop(0)
             expired_result.status = TaskStatus.EXPIRED
             self.expired_tasks_count += 1
+            self.expired_task_ids.add(expired_result.task_id)  # ✅ 追踪唯一任务ID
             self.logger.warning(
                 f"Result slice {expired_result.task_id} EXPIRED during relay. "
                 f"Elapsed: {expired_result.get_elapsed_time(self.simulator.sim_time):.2f}s"
@@ -1288,6 +1598,7 @@ class ComputationSatellite(sats.AccessSatellite):
             if total_delay <= completed_result.max_delay:
                 completed_result.status = TaskStatus.COMPLETED
                 self.completed_tasks_count += 1
+                self.completed_task_ids.add(completed_result.task_id)  # ✅ 追踪唯一任务ID
                 self.logger.info(
                     f"Result {completed_result.task_id} COMPLETED (relayed via {completed_result.hop_count} hops). "
                     f"T_total={total_delay:.4f}s"
@@ -1295,6 +1606,7 @@ class ComputationSatellite(sats.AccessSatellite):
             else:
                 completed_result.status = TaskStatus.EXPIRED
                 self.expired_tasks_count += 1
+                self.expired_task_ids.add(completed_result.task_id)  # ✅ 追踪唯一任务ID
                 self.logger.warning(
                     f"Result {completed_result.task_id} EXPIRED: T_total={total_delay:.4f}s"
                 )
@@ -1326,6 +1638,7 @@ class ComputationSatellite(sats.AccessSatellite):
                 failed_result = self.result_queue.pop(0)
                 failed_result.status = TaskStatus.EXPIRED
                 self.expired_tasks_count += 1
+                self.expired_task_ids.add(failed_result.task_id)  # ✅ 追踪唯一任务ID
                 self.logger.warning(
                     f"Result {failed_result.task_id} FAILED: No relay satellite available."
                 )
@@ -1550,3 +1863,82 @@ class ComputationSatellite(sats.AccessSatellite):
                     break
         
         return neighbors
+
+    @vizard.visualize
+    def update_sprite_color(self, color_name: str, vizSupport=None, vizInstance=None):
+        """Update satellite sprite color in Vizard to indicate status.
+        
+        Args:
+            color_name: Color to set ('blue', 'red', 'yellow', 'green', etc.)
+            vizSupport: Vizard support module (injected by decorator)
+            vizInstance: Vizard instance (injected by decorator)
+        """
+        if vizInstance is None or vizSupport is None:
+            return
+        
+        # Create new sprite with the desired color
+        new_sprite = vizSupport.setSprite("SQUARE", color=color_name)
+        
+        # Update the spacecraft's sprite
+        # Note: This requires finding the spacecraft in the vizInterface's spacecraft list
+        # For simplicity, we set an attribute that could be read on next reset
+        # In practice, dynamic sprite updates are limited in Vizard
+        
+        # Store for potential later use
+        self.vizard_current_color = color_name
+        self.vizard_color_change_time = time.time()
+    
+    def _emit_viz_event(self, event_type: int, target_name: str = "", target_pos=None):
+        """
+        目的：这是核心可视化通信函数。它负责把 Python 端的决策（如"我要卸载给 sat-2"）打包成 C++ 消息发给 
+        TaskVizController
+        流程：
+        检查 task_event_enabled（如果 training_mode=True 这里会直接返回）。
+        打印调试日志（前5次）。
+        填充 TaskEventMsgPayload C++ 结构体：
+        eventType: 0=空闲, 1=计算, 2=ISL, 3=下传
+        targetName: 目标卫星名
+        调用 self.task_event_writer.write() 将消息发送到底层 C++ 模块。
+        Emit task event for Vizard visualization.
+        
+        Args:
+            event_type: 0=IDLE, 1=COMPUTING, 2=ISL_OFFLOAD, 3=DOWNLINK
+            target_name: Target satellite/task name
+            target_pos: Target position [m] (numpy array)
+        """
+        if not self.task_event_enabled:
+            return
+        
+        # Debug: Print first few events
+        if not hasattr(self, '_viz_event_count'):
+            self._viz_event_count = 0
+        self._viz_event_count += 1
+        if self._viz_event_count <= 5:  # Only print first 5 events per satellite
+            event_names = ["IDLE", "COMPUTING", "ISL_OFFLOAD", "DOWNLINK", "UPLINK"]
+            event_name = event_names[event_type] if event_type < len(event_names) else f"UNKNOWN({event_type})"
+            print(f"[VIZ_EVENT] {self.name}: {event_name} -> {target_name if target_name else 'N/A'}")
+        
+        
+        # NOTE: ISL visualization is now handled by C++ TaskVizController
+        # via vizLiveSettings.targetLineList. The C++ module adds/removes
+        # PointLines dynamically based on event type (yellow=ISL, green=Downlink)
+
+        
+        # Fill message
+        self.task_event_msg.satelliteName = self.name
+        self.task_event_msg.eventType = event_type
+        self.task_event_msg.eventTime = self.simulator.sim_time
+        
+        if target_name:
+            self.task_event_msg.targetName = target_name
+        else:
+            self.task_event_msg.targetName = ""
+        
+        if target_pos is not None:
+            self.task_event_msg.targetPosition_N = [float(target_pos[0]), float(target_pos[1]), float(target_pos[2])]
+        else:
+            self.task_event_msg.targetPosition_N = [0.0, 0.0, 0.0]
+        
+        # Write message
+        self.task_event_writer.write(self.task_event_msg, self.simulator.sim_time_ns)
+

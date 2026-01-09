@@ -248,19 +248,27 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
         raise ValueError(f"Satellite with name '{name}' not found.")
 
     def _configure_logging(self, log_level, log_dir=None):
+        """Configure bsk_rl logger with console and optional file output.
+        
+        Args:
+            log_level: Logging level (DEBUG/INFO/WARNING/ERROR)
+            log_dir: Optional file path for file logging
+        """
         if isinstance(log_level, str):
             log_level = log_level.upper()
         logger = logging.getLogger("bsk_rl")
         logger.setLevel(log_level)
+        logger.propagate = True
 
         # Ensure each process has its own logger to avoid conflicts when printing
         # sim timestamps. Running multiple environments in the same process in
         # parallel will cause logging times to be incorrectly reported.
         warn_new_env = False
         for handler in logger.handlers:
-            if handler.filters[0].proc_id == os.getpid():
-                logger.handlers.remove(handler)
-                warn_new_env = True
+            if hasattr(handler, 'filters') and handler.filters and hasattr(handler.filters[0], 'proc_id'):
+                if handler.filters[0].proc_id == os.getpid():
+                    logger.handlers.remove(handler)
+                    warn_new_env = True
 
         ch = logging.StreamHandler()
         ch.setFormatter(logging_config.SimFormatter(color_output=True))
@@ -376,6 +384,14 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
             satellite.reset_post_sim_init()
             satellite.data_store.update_from_logs()
 
+        # === 初始化 Episode 级别的累积变量 ===
+        # 这些变量会在整个回合中累积，用于计算 episode-level 指标
+        self._episode_completed_tasks = 0
+        self._episode_expired_tasks = 0
+        self._episode_processed_data = 0.0
+        self._episode_offloaded_data = 0.0
+        self._episode_energy_consumed = 0.0
+
         observation = self._get_obs()
         info = self._get_info()
         logger.info("Environment reset")
@@ -423,17 +439,28 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
         }
         
         # 添加物理性能指标（供 BenchMARL 的 log_info 提取）
-        # 这些指标会被 STINTaskStore 收集并计算
-        total_completed = sum(
-            sat.completed_tasks_count 
-            for sat in self.satellites 
-            if hasattr(sat, 'completed_tasks_count')
-        )
-        total_expired = sum(
-            sat.expired_tasks_count 
-            for sat in self.satellites 
-            if hasattr(sat, 'expired_tasks_count')
-        )
+        # 使用唯一任务ID集合，避免 slice 级别的重复计数
+        all_completed_ids = set()
+        all_expired_ids = set()
+        all_offloaded_ids = set()  # 首跳卸载的任务ID集合
+        all_relay_ids = set()       # 中继的任务ID集合（二跳及以上）
+        for sat in self.satellites:
+            if hasattr(sat, 'completed_task_ids'):
+                all_completed_ids.update(sat.completed_task_ids)
+            if hasattr(sat, 'expired_task_ids'):
+                all_expired_ids.update(sat.expired_task_ids)
+            if hasattr(sat, 'offloaded_task_ids'):
+                all_offloaded_ids.update(sat.offloaded_task_ids)
+            if hasattr(sat, 'relay_task_ids'):
+                all_relay_ids.update(sat.relay_task_ids)
+        
+        # 排除已完成任务后的纯过期数（与终端日志保持一致）
+        pure_expired_ids = all_expired_ids - all_completed_ids
+        total_completed = len(all_completed_ids)
+        total_expired = len(pure_expired_ids)
+        total_offloaded_tasks = len(all_offloaded_ids)  # 首跳卸载任务数
+        total_relay_tasks = len(all_relay_ids)          # 中继任务数（二跳及以上）
+        
         total_processed = sum(
             sat.processed_data_total 
             for sat in self.satellites 
@@ -444,6 +471,18 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
             for sat in self.satellites 
             if hasattr(sat, 'offloaded_data_total')
         )
+        total_raw_data = sum(
+            getattr(sat, 'raw_data_received', 0.0)
+            for sat in self.satellites
+        )
+        total_first_hop_offloaded = sum(
+            getattr(sat, 'first_hop_offloaded', 0.0)
+            for sat in self.satellites
+        )
+        total_relay_offloaded = sum(
+            getattr(sat, 'relay_offloaded', 0.0)
+            for sat in self.satellites
+        )
         
         # 计算能耗和平均时延（从每个卫星的 data_store 获取）
         total_energy = 0.0
@@ -451,20 +490,32 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
         latency_count = 0
         
         # 直接遍历卫星，访问 satellite.data_store（由 GlobalReward.create_data_store 创建）
+        _debug_energy_list = []  # 调试用
         for sat in self.satellites:
-            if hasattr(sat, 'data_store') and hasattr(sat.data_store, 'data'):
-                store_data = sat.data_store.data
-                # 累加能耗（添加安全检查）
-                if hasattr(store_data, 'energy_consumed'):
-                    energy_val = store_data.energy_consumed
+            if hasattr(sat, 'data_store'):
+                # 关键修复：使用 new_data（本步增量）而非 data（累积值）
+                # 这避免了累积值溢出导致的 Infinity 问题
+                new_data = getattr(sat.data_store, 'new_data', None)
+                if new_data is not None and hasattr(new_data, 'energy_consumed'):
+                    energy_val = new_data.energy_consumed
+                    _debug_energy_list.append((sat.name, energy_val))
                     # 安全检查：跳过 NaN 或 Infinity
                     if not (np.isnan(energy_val) or np.isinf(energy_val)):
                         total_energy += energy_val
+                    else:
+                        logger.warning(f"[ENERGY SKIP] {sat.name} has invalid step energy: {energy_val}")
+                
                 # 累加时延（仅统计有完成任务的时延）
-                if hasattr(store_data, 'avg_latency') and hasattr(store_data, 'completed_tasks'):
-                    if len(store_data.completed_tasks) > 0 and store_data.avg_latency > 0:
-                        total_latency += store_data.avg_latency * len(store_data.completed_tasks)
-                        latency_count += len(store_data.completed_tasks)
+                store_data = getattr(sat.data_store, 'data', None)
+                if store_data is not None:
+                    if hasattr(store_data, 'avg_latency') and hasattr(store_data, 'completed_tasks'):
+                        if len(store_data.completed_tasks) > 0 and store_data.avg_latency > 0:
+                            total_latency += store_data.avg_latency * len(store_data.completed_tasks)
+                            latency_count += len(store_data.completed_tasks)
+        
+        # 调试：每100步打印一次所有卫星的能耗（现在是本步增量，不是累积值）
+        # if hasattr(self, 'simulator') and int(self.simulator.sim_time) % 100 == 0:
+        #     logger.info(f"[ENERGY STEP] t={self.simulator.sim_time:.1f}s: {_debug_energy_list} -> step_total={total_energy:.2f}J")
         
         avg_latency = total_latency / latency_count if latency_count > 0 else 0.0
         
@@ -473,25 +524,46 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
             logger.warning(f"total_energy invalid: {total_energy}, resetting to 0.0")
             total_energy = 0.0
         
-        # 添加全局物理指标到 info（这些会被传递到 BenchMARL）
-        info["completed_tasks"] = total_completed
-        info["expired_tasks"] = total_expired
-        info["processed_data"] = total_processed
-        info["offloaded_data"] = total_offloaded
-        info["energy_consumed"] = total_energy
-        info["avg_latency"] = avg_latency
+        # === Episode 级别的累积能耗 ===
+        self._episode_energy_consumed += total_energy
         
-        # === 计算 KPI 指标 ===
-        # 1. 任务完成率
-        total_tasks = total_completed + total_expired
-        info["task_completion_rate"] = total_completed / total_tasks if total_tasks > 0 else 0.0
+        # ========================================
+        # 指标命名规范：
+        # _xxx      = 内部指标（不记录到 WandB）
+        # ep_xxx    = Episode 级别 KPI（记录到 WandB）
+        # ========================================
         
-        # 2. 能效比 (bits/J)
-        info["energy_efficiency"] = total_processed / total_energy if total_energy > 0 else 0.0
+        # --- 内部指标（绝对值，供调试用，不记录到 WandB）---
+        info["_step_energy"] = total_energy          # 本步能耗 (J)
+        info["_ep_energy"] = self._episode_energy_consumed  # 累积能耗 (J)
+        info["_ep_processed"] = total_processed      # 累积处理数据 (bits)
+        info["ep_completed"] = total_completed      # 已完成任务数
+        info["ep_expired"] = total_expired          # 已超时任务数
+        # --- KPI 指标（比率/平均值，记录到 WandB）---
+        episode_total_tasks = total_completed + total_expired
         
-        # 3. 卸载比例
-        total_data = total_processed + total_offloaded
-        info["offload_ratio"] = total_offloaded / total_data if total_data > 0 else 0.0
+        info["ep_completion_rate"] = (
+            total_completed / episode_total_tasks 
+            if episode_total_tasks > 0 else 0.0
+        )
+        
+        info["ep_avg_latency"] = avg_latency        # 所有完成任务的平均时延 (s)
+        
+        info["ep_energy_efficiency"] = (
+            total_processed / self._episode_energy_consumed 
+            if self._episode_energy_consumed > 0 else 0.0
+        )  # bits/J
+        
+        info["ep_offload_ratio"] = (
+            total_offloaded_tasks / (total_completed + total_expired)
+            if (total_completed + total_expired) > 0 else 0.0
+        )  # 卸载任务数 / 总处理任务数
+        
+        # 中继比例（按任务数量计算）
+        info["ep_relay_ratio"] = (
+            total_relay_tasks / (total_completed + total_expired)
+            if (total_completed + total_expired) > 0 else 0.0
+        )  # 中继任务数 / 总处理任务数
         
         info["d_ts"] = self.latest_step_duration
         return info
@@ -516,9 +588,17 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
 
     def _get_truncated(self) -> bool:
         """Return the truncated flag for the step."""
-        return (self.simulator.sim_time >= self.time_limit) or any(
+        time_limit_reached = self.simulator.sim_time >= self.time_limit
+        resource_depleted = any(
             self.rewarder.is_truncated(satellite) for satellite in self.satellites
         )
+        
+        if time_limit_reached:
+            logger.info(f"⏱️ [TRUNCATED] Time limit reached: {self.simulator.sim_time:.1f}s / {self.time_limit}s")
+        elif resource_depleted:
+            logger.info(f"⚠️ [TRUNCATED] Resource depleted (battery/queue overflow)")
+        
+        return time_limit_reached or resource_depleted
 
     @property
     def action_space(self) -> spaces.Space[MultiSatAct]:
@@ -577,12 +657,35 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
                         if hasattr(act, 'neighbor_satellites') and hasattr(act, 'add_neighbor'):
                             # 清空旧邻居
                             act.neighbor_satellites.clear()
-                            # 添加其他卫星作为邻居（最多 4 个）
-                            neighbor_count = 0
-                            for other_sat in self.satellites:
-                                if other_sat != satellite and neighbor_count < 4:
-                                    act.add_neighbor(other_sat)
-                                    neighbor_count += 1
+                            
+                            # 获取邻居数量限制（从 action 实例或默认 4）
+                            max_neighbors = getattr(act, 'max_neighbors', 4)
+                            
+                            # === 优化版本：按 ISL 距离排序选择最近的邻居 ===
+                            other_sats = [s for s in self.satellites if s != satellite]
+                            
+                            # 计算到每个卫星的距离
+                            def get_distance(other_sat):
+                                try:
+                                    if hasattr(satellite, 'dynamics') and hasattr(other_sat, 'dynamics'):
+                                        r_self = satellite.dynamics.r_BN_N
+                                        r_other = other_sat.dynamics.r_BN_N
+                                        return np.linalg.norm(r_self - r_other)
+                                except:
+                                    pass
+                                return float('inf')  # 无法计算距离时放到最后
+                            
+                            # 按距离排序，选择最近的 max_neighbors 个
+                            sorted_by_distance = sorted(other_sats, key=get_distance)
+                            for neighbor in sorted_by_distance[:max_neighbors]:
+                                act.add_neighbor(neighbor)
+                            
+                            # === 原版本（FIFO 顺序）===
+                            # neighbor_count = 0
+                            # for other_sat in self.satellites:
+                            #     if other_sat != satellite and neighbor_count < 4:
+                            #         act.add_neighbor(other_sat)
+                            #         neighbor_count += 1
                 
                 satellite.set_action(action)
             if not satellite.is_alive():
@@ -636,9 +739,33 @@ class GeneralSatelliteTasking(Env, Generic[SatObs, SatAct]):
         truncated = self._get_truncated()
         info = self._get_info()
         logger.info(f"Step reward: {reward}")
+        
+        # Episode结束时输出详细统计
         if terminated or truncated:
-            logger.info(f"Episode terminated: {terminated}")
-            logger.info(f"Episode truncated: {truncated}")
+            total_completed = sum(
+                sat.completed_tasks_count for sat in self.satellites 
+                if hasattr(sat, 'completed_tasks_count')
+            )
+            total_expired = sum(
+                sat.expired_tasks_count for sat in self.satellites 
+                if hasattr(sat, 'expired_tasks_count')
+            )
+            
+            if hasattr(self.scenario, 'task_pool'):
+                pool_remaining = len(self.scenario.task_pool)
+                total_arrived = len(self.scenario.arrived_tasks) if hasattr(self.scenario, 'arrived_tasks') else 0
+                
+                logger.info(
+                    f"📊 [Episode End] Sim_time: {self.simulator.sim_time:.1f}s | "
+                    f"Terminated: {terminated} | Truncated: {truncated} | "
+                    f"Completed: {total_completed} | Expired: {total_expired} | "
+                    f"Pool remaining: {pool_remaining} | Total arrived: {total_arrived}"
+                )
+            else:
+                logger.info(
+                    f"📊 [Episode End] Terminated: {terminated} | Truncated: {truncated} | "
+                    f"Completed: {total_completed} | Expired: {total_expired}"
+                )
         else:
             logger.debug(f"Episode terminated: {terminated}")
             logger.debug(f"Episode truncated: {truncated}")
@@ -880,11 +1007,14 @@ class ConstellationTasking(
         """Format the observation per the PettingZoo Parallel API."""
         obs = {}
         for agent, satellites in self.meta_agent_groupings.items():
-            # Don't generate observations for agents that are dead
+            # 始终为所有 agents 生成观测
+            # 对于 dead agents，返回零向量以避免 TorchRL KeyError
             if agent in self.previously_dead:
-                continue
-
-            if self.generate_obs_retasking_only and not self._requires_retasking(agent):
+                # 返回零向量观测
+                agent_obs = [
+                    satellite.observation_space.low * 0 for satellite in satellites
+                ]
+            elif self.generate_obs_retasking_only and not self._requires_retasking(agent):
                 agent_obs = [
                     satellite.observation_space.low * 0 for satellite in satellites
                 ]
@@ -911,54 +1041,58 @@ class ConstellationTasking(
                 else:
                     satellite_rewards[satellite] = self.failure_penalty
 
-        reward = {
-            agent: sum(satellite_rewards[sat] for sat in sats)
-            for agent, sats in self.meta_agent_groupings.items()
-        }
-
-        reward_keys = list(reward.keys())
-        for agent in reward_keys:
+        # 始终为所有 agents 返回 reward，包括 dead agents
+        reward = {}
+        for agent, sats in self.meta_agent_groupings.items():
             if agent in self.previously_dead:
-                del reward[agent]
+                reward[agent] = 0.0  # Dead agents 返回 0
+            else:
+                reward[agent] = sum(satellite_rewards[sat] for sat in sats)
 
         return reward
 
     def _get_terminated(self) -> dict[AgentID, bool]:
         """Format terminations per the PettingZoo Parallel API."""
-        if self.terminate_on_time_limit and super()._get_truncated():
-            return {
-                agent: True
-                for agent in self.possible_agents
-                if agent not in self.previously_dead
-            }
-        else:
-            return {
-                agent: any(
+        # 始终为所有 agents 返回 terminated，包括 dead agents
+        terminated = {}
+        for agent, satellites in self.meta_agent_groupings.items():
+            if agent in self.previously_dead:
+                terminated[agent] = True  # Dead agents 视为已终止
+            elif self.terminate_on_time_limit and super()._get_truncated():
+                terminated[agent] = True
+            else:
+                terminated[agent] = any(
                     not sat.is_alive() or self.rewarder.is_terminated(sat)
                     for sat in satellites
                 )
-                for agent, satellites in self.meta_agent_groupings.items()
-                if agent not in self.previously_dead
-            }
+        return terminated
 
     def _get_truncated(self) -> dict[AgentID, bool]:
         """Format truncations per the PettingZoo Parallel API."""
-        truncated = super()._get_truncated()
-        return {
-            agent: truncated
-            or any(self.rewarder.is_truncated(sat) for sat in satellites)
-            for agent, satellites in self.meta_agent_groupings.items()
-            if agent not in self.previously_dead
-        }
+        truncated_global = super()._get_truncated()
+        # 始终为所有 agents 返回 truncated，包括 dead agents
+        truncated = {}
+        for agent, satellites in self.meta_agent_groupings.items():
+            if agent in self.previously_dead:
+                truncated[agent] = False  # Dead agents 不视为被截断
+            else:
+                truncated[agent] = truncated_global or any(
+                    self.rewarder.is_truncated(sat) for sat in satellites
+                )
+        return truncated
 
     def _get_info(self) -> dict[AgentID, dict]:
         """Format info per the PettingZoo Parallel API."""
         info_per_sat = super()._get_info()
 
         # Group info by agent
+        # 始终为所有 agents 返回 info，包括 dead agents，避免 TorchRL KeyError
         info = {}
         for agent, satellites in self.meta_agent_groupings.items():
-            if agent not in self.previously_dead:
+            if agent in self.previously_dead:
+                # Dead agents 返回默认 info
+                info[agent] = {"requires_retasking": False}
+            else:
                 info[agent] = {
                     "requires_retasking": any(
                         info_per_sat[sat.name]["requires_retasking"]
