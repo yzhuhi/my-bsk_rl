@@ -54,7 +54,7 @@ autodoc_default_options = {
     "undoc-members": None,
 }
 autodoc_typehints = "both"
-# nbsphinx_execute = "never"
+nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
 
 

@@ -75,6 +75,7 @@ from bsk_rl.act.discrete_actions import (
     Scan,
 )
 from bsk_rl.act.stin_continuous_actions import STINContinuousAction
+from bsk_rl.act.stin_hier_hybrid_actions import STINHierarchicalHybridAction
 
 __doc_title__ = "Actions"
 __all__ = [
@@ -92,4 +93,5 @@ __all__ = [
     "ImpulsiveThrust",
     "ImpulsiveThrustHill",
     "STINContinuousAction",
+    "STINHierarchicalHybridAction",
 ]

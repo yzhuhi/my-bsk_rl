@@ -174,19 +174,39 @@ class LiteComputationDynModel(LOSCommDynModel):
         )
         self.powerMonitor.addPowerNodeToModel(self.cpuPowerSink.nodePowerOutMsg)
         
-        # 设置发射机功耗节点
+        # 设置发射机功耗节点（动态，根据 Agent 决策）
         self.txPowerSink = simplePowerSink.SimplePowerSink()
         self.txPowerSink.ModelTag = "txPowerSink" + self.satellite.name
-        self.txPowerSink.nodePowerOut = 0.0
+        self.txPowerSink.nodePowerOut = 0.0  # 动态设置
         self.simulator.AddModelToTask(
             self.task_name, self.txPowerSink, ModelPriority=895
         )
         self.powerMonitor.addPowerNodeToModel(self.txPowerSink.nodePowerOutMsg)
+        
+        # 🆕 设置接收机功耗节点（静态，论文 LEO=8W）
+        # 接收功率主要由 LNA 放大器决定，与数据量无关
+        self.rxPowerSink = simplePowerSink.SimplePowerSink()
+        self.rxPowerSink.ModelTag = "rxPowerSink" + self.satellite.name
+        self.rxPowerSink.nodePowerOut = 0.0  # 初始关闭，有邻居时开启
+        self.rx_power_draw = -8.0  # [W] 静态接收功率（论文 LEO=8W）
+        self.simulator.AddModelToTask(
+            self.task_name, self.rxPowerSink, ModelPriority=894
+        )
+        self.powerMonitor.addPowerNodeToModel(self.rxPowerSink.nodePowerOutMsg)
     
     @property
     def cpu_process_rate(self) -> float:
         """计算处理速率 (bits/s) = F_max / c_t。"""
         return self.cpu_max_frequency / self.cpu_workload
+    
+    def set_rx_power(self, enabled: bool = True) -> None:
+        """开关接收机功耗。
+        
+        Args:
+            enabled: True 开启接收功耗，False 关闭。
+        """
+        if hasattr(self, 'rxPowerSink') and self.rxPowerSink is not None:
+            self.rxPowerSink.nodePowerOut = self.rx_power_draw if enabled else 0.0
     
     # 提供假的 storage 属性以兼容观察规格
     @property

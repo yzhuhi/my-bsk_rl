@@ -1,0 +1,141 @@
+# 存储容量约束修复方案
+
+## 问题摘要
+
+当前代码仅在接收来自**邻居卫星**的切片时执行存储容量检查（[process_incoming_slice](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1357-1404)），但在以下两个关键路径中**缺失**约束：
+1. 从地面用户接收原始任务 ([receive_task_from_scenario](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1295-1356))
+2. 本地切片生成回流到本地队列 ([_create_slice_for_target](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py#329-379), `target == self`)
+
+这导致 `raw_task_queue` 和 [slice_queue](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1438-1594) 可能无限增长，超过卫星的物理存储容量 `data_storage_capacity`。
+
+---
+
+## 修复计划
+
+### 文件 1: [computation_satellite.py](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py)
+
+#### 修改 1: [receive_task_from_scenario](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1295-1356) (L1295-1356)
+
+**当前逻辑**：
+```python
+# L1337-1338
+self.raw_task_queue.append(initial_slice)
+```
+
+**修改后逻辑**：
+```python
+# 检查存储容量
+current_total_data = (
+    sum(t.data_size for t in self.raw_task_queue) +
+    sum(t.data_size for t in self.slice_queue)
+)
+storage_capacity = getattr(self.dynamics, 'data_storage_capacity', float('inf'))
+
+if current_total_data + initial_slice.data_size > storage_capacity:
+    # 存储已满，拒绝任务
+    self.logger.warning(
+        f"[STORAGE FULL] Dropping task {initial_slice.task_id}: "
+        f"current {current_total_data/1e9:.2f} Gb + new {initial_slice.data_size/1e6:.2f} Mb > "
+        f"capacity {storage_capacity/1e9:.2f} Gb"
+    )
+    # 将任务标记为过期
+    initial_slice.status = TaskStatus.EXPIRED
+    if initial_slice.task_id not in self.expired_task_ids:
+        self.expired_tasks_count += 1
+        self.expired_task_ids.add(initial_slice.task_id)
+    self.expired_tasks_buffer.append(initial_slice)
+    return  # 🆕 不加入队列
+    
+# 存储足够，正常加入队列
+self.raw_task_queue.append(initial_slice)
+```
+
+---
+
+### 文件 2: [hier_computation_satellite.py](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py)
+
+#### 修改 2: [_create_slice_for_target](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py#329-379) (L329-379)
+
+**当前逻辑** (L367-368, L373):
+```python
+if target == self:
+    self.slice_queue.append(new_slice)  # 无检查
+    # ...
+else:
+    accepted = target.process_incoming_slice(new_slice)
+    if not accepted:
+        self.slice_queue.append(new_slice)  # 邻居拒绝后退回，无检查
+```
+
+**修改后逻辑**：
+```python
+if target == self:
+    # 🆕 本地分配也需要检查存储
+    current_total_data = (
+        sum(t.data_size for t in self.raw_task_queue) +
+        sum(t.data_size for t in self.slice_queue)
+    )
+    storage_capacity = getattr(self.dynamics, 'data_storage_capacity', float('inf'))
+    
+    if current_total_data + new_slice.data_size > storage_capacity:
+        self.logger.warning(
+            f"[STORAGE FULL] Dropping local slice {new_slice.task_id}: "
+            f"current {current_total_data/1e9:.2f} Gb + new {new_slice.data_size/1e6:.2f} Mb > "
+            f"capacity {storage_capacity/1e9:.2f} Gb"
+        )
+        # 标记为过期
+        new_slice.status = TaskStatus.EXPIRED
+        if new_slice.task_id not in self.expired_task_ids:
+            self.expired_tasks_count += 1
+            self.expired_task_ids.add(new_slice.task_id)
+        self.expired_tasks_buffer.append(new_slice)
+        return  # 🆕 不加入队列
+    
+    self.slice_queue.append(new_slice)
+    self.register_slice(task.task_id, 1, creation_time=new_slice.creation_time)
+else:
+    accepted = target.process_incoming_slice(new_slice)
+    if not accepted:
+        # 🆕 邻居拒绝后退回也需要检查本地存储
+        current_total_data = (
+            sum(t.data_size for t in self.raw_task_queue) +
+            sum(t.data_size for t in self.slice_queue)
+        )
+        storage_capacity = getattr(self.dynamics, 'data_storage_capacity', float('inf'))
+        
+        if current_total_data + new_slice.data_size > storage_capacity:
+            self.logger.warning(
+                f"[STORAGE FULL] Dropping rejected slice {new_slice.task_id}"
+            )
+            new_slice.status = TaskStatus.EXPIRED
+            if new_slice.task_id not in self.expired_task_ids:
+                self.expired_tasks_count += 1
+                self.expired_task_ids.add(new_slice.task_id)
+            self.expired_tasks_buffer.append(new_slice)
+        else:
+            self.slice_queue.append(new_slice)
+    else:
+        self.offloaded_data_total += data_size
+        self.first_hop_offloaded += data_size
+        self.offloaded_task_ids.add(task.task_id)
+    self.register_slice(task.task_id, 1, creation_time=new_slice.creation_time)
+```
+
+---
+
+## 验证计划
+
+### 1. 单元测试（如果存在）
+需要检查 `tests/` 目录下是否有相关测试，补充存储容量测试用例。
+
+### 2. 集成测试
+运行一个任务密集型场景（高任务生成率），观察：
+- 日志中是否出现 `[STORAGE FULL]` 警告
+- `expired_tasks_count` 是否正确增加
+- 队列总数据量是否被限制在 `data_storage_capacity` 以下
+
+### 3. 手动测试
+用户可以在训练配置中设置较小的 `data_storage_capacity`（如 10 Gb），然后观察：
+- 卫星在任务高峰期是否拒绝新任务
+- 被拒绝的任务是否被正确统计为 `EXPIRED`
+- 系统是否因存储溢出崩溃（修复后不应崩溃）

@@ -678,13 +678,31 @@ class BasicDynamicsModel(DynamicsModel):
 
     @aliveness_checker
     def battery_valid(self) -> bool:
-        """Check if the battery has charge remaining.
+        """Check if the battery has charge remaining (hard constraint).
 
         Note that this check is instantaneous. If a satellite runs out of power during a
         environment step but then recharges to have positive power at the end of the step,
         the satellite will still be considered alive.
+        
+        This is a HARD constraint: battery completely depleted = satellite dead.
+        For DoD soft constraint, use battery_dod_valid().
         """
         return self.battery_charge > 0
+    
+    def battery_dod_valid(self) -> bool:
+        """Check if the battery satisfies DoD (Depth of Discharge) constraint.
+        
+        This is a SOFT constraint: does NOT trigger episode termination directly.
+        Used by is_truncated() to determine if episode should be truncated
+        when ALL satellites violate this constraint.
+        
+        DoD constraint from paper:
+        B_max × (1 - Υ) ≤ B ≤ B_max
+        where Υ is the maximum depth of discharge (default 0.9 = 90%).
+        """
+        max_dod = getattr(self, 'max_depth_of_discharge', 0.9)
+        min_charge = self.powerMonitor.storageCapacity * (1 - max_dod)
+        return self.battery_charge > min_charge
 
     @default_args(basePowerDraw=0.0)
     def setup_power_sink(

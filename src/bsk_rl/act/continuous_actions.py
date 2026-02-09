@@ -100,10 +100,12 @@ class ImpulsiveThrust(ContinuousAction):
         """Return the action space."""
         return spaces.Box(
             low=np.array(
-                [-self.max_dv, -self.max_dv, -self.max_dv, 2 * self.simulator.sim_rate]
+                [-self.max_dv, -self.max_dv, -self.max_dv, 2 * self.simulator.sim_rate],
+                dtype=np.float32,
             ),
             high=np.array(
-                [self.max_dv, self.max_dv, self.max_dv, self.max_drift_duration]
+                [self.max_dv, self.max_dv, self.max_dv, self.max_drift_duration],
+                dtype=np.float32,
             ),
             shape=(4,),
             dtype=np.float32,

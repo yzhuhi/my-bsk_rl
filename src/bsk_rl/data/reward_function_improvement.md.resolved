@@ -1,0 +1,115 @@
+# STIN 奖励函数优化方案 (v3)
+
+本文档基于 [stin_task_data.py](file:///e:/py_project/bsk_rl/src/bsk_rl/data/stin_task_data.py) 最新代码审查，提供完整的优化建议。
+
+---
+
+## 1. 当前架构分析
+
+### 参数配置 (当前简化版)
+| 参数 | 作用 | 状态 |
+|------|------|------|
+| `w_progress` | 处理数据量奖励（可选） | 可配置 |
+| `w_complete` | 任务完成基础奖励 | ✅ 启用 |
+| `w_expired` | 超时惩罚系数 | ✅ 启用 |
+| `w_energy` | 能耗成本（每焦耳） | ✅ 启用 |
+| `w_delay` | 时延敏感度 | ✅ 启用 |
+| `w_queue_penalty` | 队列长度惩罚（可选） | 可配置 |
+| `w_utilization` | 资源利用率奖励（可选） | 可配置 |
+| `w_pbrs_queue` | PBRS 势函数（可选） | 可配置 |
+| `global_reward_ratio` | 全局结果混合 | 可配置 |
+
+### 奖励公式
+```
+R_total = R_complete + R_expired + R_energy + R_shaping
+```
+
+其中：
+- `R_complete = w_complete × delay_factor × priority`
+- `R_expired = -w_expired × priority`
+- `R_energy = -w_energy × energy_consumed`
+- `R_shaping`（可选）：`w_progress / w_queue_penalty / w_utilization / w_pbrs_queue`
+
+全局混合（可选）：
+`R_final = R_local + α × (R_global_outcome - R_local_outcome)`，其中 α = `global_reward_ratio`
+- `R_energy = -w_energy × energy_consumed` (稠密负向)
+- `R_collaboration = R_delayed_bonus + R_liability` (稀疏)
+
+---
+
+## 2. 识别的问题
+
+### 问题 1: 稀疏奖励导致收敛慢
+**现象**：主奖励 `w_complete` 仅在任务完成时触发，训练初期 Agent 很难获得正向反馈。
+**代码位置**：L561-563
+
+### 问题 2: 队列惩罚与完成奖励量级不匹配
+**计算**：
+- 队列满时惩罚：`0.5 × (40/40) = 0.5` (每 step)
+- 任务完成奖励：`60 × 1.0 × 1.0 = 60` (一次性)
+- **结论**：惩罚量级太小，Agent 可能忽视队列管理
+
+---
+
+## 3. 优化建议
+
+### 方案 A: 激活稠密奖励 (`w_progress`)
+
+**修改**：将 `w_progress` 从 `0.0` 调整为 `1.0`
+
+**效果**：
+```python
+# 每 step 只要在处理数据就获得奖励
+reward += processed_data_gbits * 1.0
+```
+
+**注意**：需要确保 `processed_data` 在 [STINTaskData](file:///e:/py_project/bsk_rl/src/bsk_rl/data/stin_task_data.py#21-109) 中正确计算（当前为 Gbits）。
+
+---
+
+### 方案 B: 基于角色的信用分配
+
+---
+
+### 方案 C: 调整量级平衡
+
+建议参数调整：
+
+| 参数 | 当前值 | 建议值 | 理由 |
+|------|--------|--------|------|
+| `w_queue_penalty` | 0.5 | 1.0 | 适度增加队列管理压力 |
+| `w_expired` | 20.0 | 30.0 | 超时惩罚应更严厉 |
+| `w_progress` | 0.0 | 0.1 | 轻量稠密信号，缓解冷启动（可选） |
+
+这样失败只惩罚当前持有者，不连累链路上游。
+
+---
+
+## 4. 实施路线图
+
+1. **第一阶段 (快速验证)**：
+   - 设置 `w_progress = 0.1` 激活轻量稠密奖励
+   - 运行 100K steps 观察学习曲线
+
+2. **第二阶段 (量级调整)**：
+   - 根据第一阶段结果调整 `w_queue_penalty` 和 `w_expired`
+
+---
+
+## 5. 参考配置 (YAML)
+
+```yaml
+# 建议的奖励配置
+rewarder:
+  _target_: bsk_rl.data.stin_task_data.STINTaskReward
+  w_progress: 0.1
+  w_complete: 60.0
+  w_expired: 30.0
+  w_energy: 0.000003
+  w_delay: 0.6
+  w_queue_penalty: 1.0
+  w_utilization: 0.05
+  w_pbrs_queue: 0.1
+  global_reward_ratio: 0.2
+  max_queue_size: 40
+```

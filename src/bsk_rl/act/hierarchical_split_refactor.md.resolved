@@ -1,0 +1,116 @@
+# Level-1 层次化切分重构方案
+
+## 问题分析
+
+### 当前设计
+```
+Level-1 输出: [alpha_ud, alpha_cloud, alpha_sat0, alpha_sat1, ..., alpha_sat4]  → 7维
+经过 Softmax/归一化后 sum = 1
+```
+
+### 问题
+1. **概率空间挤压**：UD 和 Cloud 容易占据大部分概率，导致 5 个卫星分配比例极小
+2. **数值不稳定**：当 `alpha_sat_i < 0.01` 时，采样行为被噪声主导
+3. **梯度稀疏**：卫星协作分支几乎没有数据流过，学不到有效策略
+
+---
+
+## 建议方案：两阶段层次化切分
+
+### 新设计
+```
+阶段 1: 三大类别分配 (3D)
+  [alpha_local, alpha_cloud, alpha_offload] → sum = 1
+  - alpha_local: UD 本地处理
+  - alpha_cloud: 云端处理  
+  - alpha_offload: 卸载到卫星网络（含自己 + 邻居）
+
+阶段 2: 邻居路由 (K+1 维，含 self)
+  [beta_sat0, beta_sat1, ..., beta_satK] → sum = 1
+  - beta_sat0: 接入卫星（自己）
+  - beta_sat1..K: 各邻居卫星
+
+最终计算:
+  alpha_ud = alpha_local
+  alpha_cloud = alpha_cloud
+  alpha_sat_i = alpha_offload × beta_sat_i
+```
+
+### 维度变化
+| 模块 | 维度 | 说明 |
+|------|------|------|
+| Level-1 | 4 (UD/Cloud/Local/Offload) | 端侧切分比例 |
+| Level-2 | 4 + 2*(K+1) | 资源分配 + 路由（高/低优先级，含 self） |
+
+总维度增加 1D，但获得更好的训练稳定性。
+
+---
+
+## 代码修改计划
+
+### 文件 1: [stin_hier_hybrid_actions.py](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py)
+
+#### 修改点 1: [flat_space](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py#238-252) 属性 (L238-251)
+```python
+# 当前: 4 + (4 + 2*(K+1)) = 2K + 10
+# 说明: Level-1=4，Level-2=4+2*(K+1)
+```
+
+#### 修改点 2: [set_action](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py#311-393) 方法 (L311+)
+```python
+# 当前解析
+level1_ratios = self._normalize_ratios(parsed["level1"])
+alpha_ud = level1_ratios[0]
+alpha_cloud = level1_ratios[1]
+alpha_sats = level1_ratios[2:]  # 1 + K
+
+# 新版解析
+stage1 = self._normalize_ratios(parsed["level1"][:3])  # [local, cloud, offload]
+stage2 = self._normalize_ratios(parsed["level1"][3:])  # [sat0, sat1, ..., satK]
+
+alpha_ud = stage1[0]
+alpha_cloud = stage1[1]
+alpha_offload = stage1[2]
+alpha_sats = alpha_offload * stage2  # 卫星比例 = offload × 内部分配
+```
+
+---
+
+### 文件 2: [hier_computation_satellite.py](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py)
+
+#### 修改点: [schedule_collaboration_action_hier](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py#191-271) (L191+)
+调用者已经传入处理好的 `alpha_sats`，无需修改（保持接口兼容）。
+
+---
+
+### 文件 3: [hierarchical_actor.py](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py) (BenchMARL)
+
+#### 修改点: [_split_logits](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#131-136) / Level-1 分布
+需要调整 Level-1 输出维度从 7 → 8，并在网络内部处理两阶段归一化：
+- 前 3D 使用 Softmax/StickBreaking
+- 后 5D 使用独立的 Softmax
+
+---
+
+## 预期效果
+
+1. **稳定性提升**：两阶段归一化避免极小概率问题
+2. **协作学习改善**：即使 `alpha_offload = 0.2`，卫星间比例仍可正常分配 (如 [0.5, 0.3, 0.1, 0.1])
+3. **梯度改善**：两个独立的 Softmax 分支都有充足的梯度流
+
+---
+
+## 实施步骤
+
+1. **Step 1**: 修改 [stin_hier_hybrid_actions.py](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py) 的动作空间定义和解析逻辑
+2. **Step 2**: 修改 [hierarchical_actor.py](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py) 的网络输出维度和分布处理
+3. **Step 3**: 更新相关测试和配置文件
+4. **Step 4**: 运行消融实验对比收敛效果
+
+---
+
+## 风险评估
+
+- **兼容性**：需要同时修改环境 (`bsk_rl`) 和算法 (`BenchMARL`)，确保动作空间一致
+- **配置变更**：现有训练配置需要更新 `level1_dim` 参数
+- **预训练模型失效**：动作维度变化导致旧模型无法加载

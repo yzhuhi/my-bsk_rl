@@ -120,6 +120,17 @@ class ComputationDynModel(GroundStationDynModel):
             self.powerMonitor.addPowerNodeToModel(self.cpuPowerSink.nodePowerOutMsg)
         else:
             self.logger.error("Battery (powerMonitor) not initialized before CPU setup!")
+        
+        # 🆕 设置接收机功耗节点（静态，论文 LEO=8W）
+        self.rxPowerSink = simplePowerSink.SimplePowerSink()
+        self.rxPowerSink.ModelTag = "rxPowerSink" + self.satellite.name
+        self.rxPowerSink.nodePowerOut = 0.0  # 初始关闭
+        self.rx_power_draw = -8.0  # [W] 静态接收功率（论文 LEO=8W）
+        self.simulator.AddModelToTask(
+            self.task_name, self.rxPowerSink, ModelPriority=priority - 1
+        )
+        if self.powerMonitor:
+            self.powerMonitor.addPowerNodeToModel(self.rxPowerSink.nodePowerOutMsg)
 
     def set_cpu_power(self, power: float) -> None:
         """动态设置 CPU 功耗。
@@ -138,6 +149,15 @@ class ComputationDynModel(GroundStationDynModel):
         """
         if hasattr(self, 'basePowerSink') and self.basePowerSink is not None:
             self.basePowerSink.nodePowerOut = power
+    
+    def set_rx_power(self, enabled: bool = True) -> None:
+        """开关接收机功耗。
+        
+        Args:
+            enabled: True 开启接收功耗，False 关闭。
+        """
+        if hasattr(self, 'rxPowerSink') and self.rxPowerSink is not None:
+            self.rxPowerSink.nodePowerOut = self.rx_power_draw if enabled else 0.0
 
     @property
     def cpu_process_rate(self) -> float:

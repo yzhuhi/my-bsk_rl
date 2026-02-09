@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class STINContinuousAction(ContinuousAction):
     """
-    STIN 多智能体连续动作，总维度 N=10。
+    STIN 多智能体连续动作，总维度 N=16。
     实现了 ContinuousAction 的抽象方法。
     
     **安全屏蔽**：
@@ -35,7 +35,8 @@ class STINContinuousAction(ContinuousAction):
         - 队列满：强制提高本地处理比例
     """
     # 动作维度定义为类属性
-    REQUIRED_ACTION_DIMS = 10 
+    # 16D: [0-2] 资源, [3-4] α_local/α_cloud, [5] priority_threshold, [6:11] high_split, [11:16] low_split
+    REQUIRED_ACTION_DIMS = 16 
 
     def __init__(
         self, 
@@ -107,7 +108,7 @@ class STINContinuousAction(ContinuousAction):
             low=0.0,
             high=1.0,
             shape=(self.REQUIRED_ACTION_DIMS,),
-            dtype=np.float64,
+            dtype=np.float32,
         )
 
     @property
@@ -115,22 +116,30 @@ class STINContinuousAction(ContinuousAction):
         """
         实现 ContinuousAction 的抽象方法: 返回描述。
         
-        **动作维度定义 (10D)**:
+        **动作维度定义 (16D - 基于优先级的差异化切分)**:
             [0-2]: 资源分配 (CPU 频率、发射功率、平台功耗)
-            [3-4]: 一级任务切分 (UD 本地、云端偏好)
-            [5-9]: 二级卫星间切分 (自身 + 4 个邻居)
+            [3-4]: 一级任务切分 (UD 本地、云端偏好) - 统一应用
+            [5]: 优先级阈值 (高/低优先级任务的分界线)
+            [6-10]: 高优先级任务的卫星间切分 (自身 + 4 个邻居)
+            [11-15]: 低优先级任务的卫星间切分 (自身 + 4 个邻居)
         """
         return [
             "[0] CPU_Ratio: CPU 频率分配比例 [0,1] → [f_min, f_max]",
             "[1] TX_Power_Ratio: 发射功率分配比例 [0,1]",
             "[2] Platform_Power_Ratio: 平台功耗管理比例 [0,1]",
-            "[3] Alpha_Local: UD 本地保留比例 [0,1] (第一层切分)",
-            "[4] Alpha_Cloud: 云端偏好因子 [0,1] (第二层切分偏好)",
-            "[5] x_0: 自身处理比例 (归一化后)",
-            "[6] x_1: 邻居 1 协作比例 (归一化后)",
-            "[7] x_2: 邻居 2 协作比例 (归一化后)",
-            "[8] x_3: 邻居 3 协作比例 (归一化后)",
-            "[9] x_4: 邻居 4 协作比例 (归一化后)",
+            "[3] Alpha_Local: UD 本地保留比例 [0,1] (统一应用)",
+            "[4] Alpha_Cloud: 云端偏好因子 [0,1] (统一应用)",
+            "[5] Priority_Threshold: 优先级阈值 [0,1] (高/低分界)",
+            "[6] High_x_0: 高优先级-自身处理比例",
+            "[7] High_x_1: 高优先级-邻居1协作比例",
+            "[8] High_x_2: 高优先级-邻居2协作比例",
+            "[9] High_x_3: 高优先级-邻居3协作比例",
+            "[10] High_x_4: 高优先级-邻居4协作比例",
+            "[11] Low_x_0: 低优先级-自身处理比例",
+            "[12] Low_x_1: 低优先级-邻居1协作比例",
+            "[13] Low_x_2: 低优先级-邻居2协作比例",
+            "[14] Low_x_3: 低优先级-邻居3协作比例",
+            "[15] Low_x_4: 低优先级-邻居4协作比例",
         ]
 
 
@@ -167,25 +176,45 @@ class STINContinuousAction(ContinuousAction):
         platform_power_ratio = safe_action[2]   # [2] 平台功耗比例
         alpha_local = safe_action[3]            # [3] UD 本地保留比例
         alpha_cloud = safe_action[4]            # [4] 云端偏好因子
-        split_ratios = safe_action[5:]          # [5:10] 卫星间切分比例
+        priority_threshold = safe_action[5]     # [5] 优先级阈值
+        high_split_ratios = safe_action[6:11]   # [6:11] 高优先级任务的卫星间切分
+        low_split_ratios = safe_action[11:16]   # [11:16] 低优先级任务的卫星间切分
+        
+        # ✅ 修复1: 记录模式A执行前的切片队列长度，确保模式B只处理观测时已存在的切片
+        initial_slice_count = len(self.satellite.slice_queue) if hasattr(self.satellite, 'slice_queue') else 0
         
         # 1. 资源分配（本地控制）
         self.satellite.set_resource_allocation(cpu_ratio, tx_power_ratio, platform_power_ratio)
 
-        # 2. 层次化协作切分（一级 + 二级）
+        # 2. 模式 A: 切分原始任务（Softmax）
+        # 新切片会加入 slice_queue 末端，但本 step 不处理它们
         self.satellite.schedule_collaboration_action(
             alpha_local=alpha_local,
             alpha_cloud=alpha_cloud,
-            split_ratios=split_ratios,
+            priority_threshold=priority_threshold,
+            high_split_ratios=high_split_ratios,
+            low_split_ratios=low_split_ratios,
             neighbor_satellites=self.neighbor_satellites
         )
+        
+        # 3. 模式 B: 路由切片队列（Argmax）
+        # ✅ 修复2: 只处理 step 开始时就存在的切片（观测-动作一致性）
+        # ✅ 修复3: 对每个切片按其优先级选择高/低路由比例
+        if initial_slice_count > 0:
+            self.satellite.process_slice_queue(
+                high_split_ratios=high_split_ratios,
+                low_split_ratios=low_split_ratios,
+                priority_threshold=priority_threshold,
+                neighbor_satellites=self.neighbor_satellites,
+                max_slices=initial_slice_count  # ✅ 只处理前 N 个切片
+            )
     
     def _apply_shield(self, action: np.ndarray) -> np.ndarray:
         """应用安全屏蔽，返回修正后的动作。
-        
+
         硬约束检查：
             1. 电池 < threshold：限制 CPU/TX/Cloud 动作
-            2. 队列满：提高本地处理比例
+            2. 队列满：提高云端比例
         """
         # 延迟初始化 shield（避免循环导入）
         if self._shield is None:

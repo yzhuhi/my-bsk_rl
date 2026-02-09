@@ -5,12 +5,17 @@ Vizard Visualization Demo for Lite Computation Satellite
 This script demonstrates the 3D visualization of a LiteComputationSatellite 
 constellation using Basilisk's Vizard tool.
 
+**可视化规则（参考 Agile EOS 视频风格）：**
+    - 任务大小 (markerScale) → 表示数据量（数据越大，标记越大）
+    - 任务颜色 (color) → 表示优先级（绿色=低，黄色=中，红色=高）
+    - 任务完成后 → 颜色变蓝（通过 mark_task_completed 方法）
+
 Requirements:
 - Vizard must be downloaded and installed
 - Set VIZARD_PATH environment variable or modify the path below
 
 Usage:
-    python lite_demo_vizard.py
+    python computingSatellite_demo_vizard.py
     
 After running, open the generated .bin file in Vizard to view the simulation.
 """
@@ -26,7 +31,7 @@ from bsk_rl.comm import LOSMultiCommunication
 from bsk_rl.data import NoReward  # Use built-in NoReward instead of custom class
 from bsk_rl.scene import CityTaskScenario
 from bsk_rl.utils.orbital import walker_delta_args
-
+import numpy as np
 # Import TaskVizController if available
 try:
     from Basilisk.ExternalModules import taskVizController
@@ -157,12 +162,12 @@ def create_vizard_env():
     
     # Task scenario
     task_scenario = CityTaskScenario(
-        n_tasks=100,
+        n_tasks=300,
         n_select_from=500,
         data_size_range=(1e6, 50e6),
         workload_range=(500, 1500),
         max_delay_range=(60.0, 600.0),
-        task_arrival_rate=0.1,
+        task_arrival_rate=0.5,
     )
     
     # Create environment with Vizard enabled
@@ -244,22 +249,41 @@ def run_demo(env, steps=100):
         print("✗ TaskVizController not available")
     
     print(f"\nRunning simulation for {steps} steps...")
-    # Initialize ISL Visualizer
-    isl_visualizer = None
-    if VIZ_SUPPORT_AVAILABLE and hasattr(env.simulator, 'vizInstance'):
-        isl_visualizer = ISLVisualizer(env.simulator.vizInstance)
-        
-        # Attach visualizer callback to each satellite
-        for sat in env.satellites:
-            sat.isl_visualizer = isl_visualizer
-        
-        print(f"ISLVisualizer enabled for {len(env.satellites)} satellites")
+    print(f"\nRunning simulation for {steps} steps...")
+    
+    # 1. Force Enable Task Lines (Green)
+    if hasattr(env.simulator, 'vizInstance'):
+        env.simulator.vizInstance.settings.showLocationCommLines = 1
+        print("[OK] Task Lines Enabled (Green) [showLocationCommLines=1]")
     else:
-        print("ISLVisualizer not available (missing vizInstance or vizSupport)")
+        print("WARNING: vizInstance not found, task lines may not show")
+    
+    def make_forcing_action():
+        """Generate actions that force high ISL offloading to visualize lines."""
+        actions = {}
+        for sat in env.satellites:
+            action = np.zeros(sat.action_space.shape, dtype=np.float32)
+            # Full Power
+            action[0:3] = 1.0
+            # Force Offload: alpha_local=0.1 (low), alpha_cloud=0.1 (low) => alpha_sat=0.8 (high)
+            action[3] = 0.1  # alpha_local 
+            action[4] = 0.1  # alpha_cloud preference
+            action[5] = 0.5  # priority threshold
+            
+            # High ISL Weights to neighbors (not self)
+            # action[6] = self, action[7:11] = neighbors
+            action[6] = 0.1   # Low self ratio
+            action[7:11] = [0.8, 0.8, 0.8, 0.8]  # High neighbor ratios
+            # Low Priority same pattern
+            action[11] = 0.1
+            action[12:16] = [0.8, 0.8, 0.8, 0.8]
+            
+            actions[sat.id] = action
+        return actions
     
     for step in range(steps):
-        # Random actions for demo
-        actions = {sat.id: sat.action_space.sample() for sat in env.satellites}
+        # Force high offloading for ISL visualization
+        actions = make_forcing_action()
         obs, reward, terminated, truncated, info = env.step(actions)
         
         if step % 10 == 0:
@@ -286,8 +310,8 @@ if __name__ == "__main__":
     # Create environment
     print(f"\nCreating environment with 24 satellites...")
     env = create_vizard_env()
-    print(f"  ✓ Environment created")
-    print(f"  ✓ Vizard output: {VIZARD_OUTPUT_DIR}")
+    print(f"  [OK] Environment created")
+    print(f"  [OK] Vizard output: {VIZARD_OUTPUT_DIR}")
     
     # Run demo
     print("\n" + "-" * 60)

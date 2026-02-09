@@ -1,0 +1,152 @@
+# 修复 H-MAPPO 训练 NaN 问题
+
+## 问题描述
+
+从训练监控截图可以看到，以下 Actor 侧指标出现 NaN：
+- `loss_objective: NaN`
+- `loss_entropy: NaN`
+- `kl_approx: NaN`
+- `entropy: NaN`
+- `ESS: NaN`
+
+而 Critic 侧指标正常：
+- `loss_critic: 168.24`
+- `grad_norm_loss_critic: 117.73`
+
+![训练监控截图](uploaded_media_1769501253044.png)
+
+## 根因分析
+
+通过代码审查，确认了 NaN 产生的 **三个核心原因**：
+
+### 1. `RelaxedOneHotCategorical.log_prob` 的数值精度问题
+
+**位置**: [hierarchical_actor.py#L516-L519](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#L516-L519)
+
+**问题**: `RelaxedOneHotCategorical.log_prob()` 对输入有严格要求：
+- 输入必须是 **simplex 上的向量**（所有元素 > 0 且和为 1）
+- 但 `F.gumbel_softmax()` 的输出因浮点精度问题，可能出现：
+  - 元素 ≤ 0（极端情况）
+  - 元素和 ≠ 1.0（累积舍入误差）
+
+当这些不满足时，[log_prob()](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#585-609) 内部的 [log()](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#585-609) 操作会产生 `-inf` 或 `NaN`。
+
+### 2. L1 `logit_normal` 分布的边界问题
+
+**位置**: [hierarchical_actor.py#L385-L389](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#L385-L389)
+
+**问题**: L1 使用 `StickBreakingTransform` 将正态分布映射到 simplex：
+```python
+base_dist = Independent(Normal(loc1_reduced, scale1_reduced), 1)
+dist1 = TransformedDistribution(base_dist, dist_transforms.StickBreakingTransform())
+```
+
+`StickBreakingTransform.log_abs_det_jacobian()` 在边界值（0 或 1）时会产生 `-inf`，导致 [log_prob](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#585-609) 为 `-inf` 或 `NaN`。
+
+### 3. Routing Mask 全零导致 logits 为 `-inf`
+
+**位置**: [hierarchical_actor.py#L299-L305](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#L299-L305)
+
+**问题**: 当所有邻居都不可达时，[_apply_routing_mask](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#299-306) 会将所有 logits 设为 `-inf`：
+```python
+mask_fill = torch.finfo(logits.dtype).min
+return logits.masked_fill(mask <= 0, mask_fill)
+```
+
+后续 [softmax(-inf)](file:///e:/py_project/bsk_rl/tests/test_hier_sampling_routing.py#15-19) 会产生 `NaN`，即使已有 fallback 处理（第 264-276 行），也可能因时序问题未生效。
+
+---
+
+## 修复方案
+
+### 方案A: 数值稳定化（推荐）
+
+在保持现有架构的前提下，添加数值稳定检查。
+
+#### [MODIFY] [hierarchical_actor.py](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py)
+
+**修改 1**: 添加 simplex 归一化辅助函数（约第 40 行后）
+
+```python
+def _normalize_to_simplex(probs: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+    """将概率向量归一化到 simplex，确保 sum=1 且所有元素 > 0"""
+    probs = probs.clamp(min=eps)
+    return probs / probs.sum(dim=-1, keepdim=True)
+```
+
+**修改 2**: 在 [forward()](file:///e:/py_project/BenchMARL/benchmarl/models/conditional_dual_head_actor.py#248-266) 中调用 `RelaxedOneHotCategorical.log_prob` 前归一化（约第 516-519 行）
+
+```python
+# 🆕 归一化以满足 RelaxedOneHotCategorical 的 simplex 要求
+action2_high_probs = _normalize_to_simplex(action2_high_probs)
+action2_low_probs = _normalize_to_simplex(action2_low_probs)
+
+high_relaxed = RelaxedOneHotCategorical(tau, logits=high_routing_logits)
+...
+```
+
+**修改 3**: 对 [log_prob](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#585-609) 结果进行 NaN 保护（约第 522 行）
+
+```python
+log_prob = log_prob_l1 + log_prob_l2_resource + log_prob_high_routing + log_prob_low_routing
+# 🆕 NaN 保护：将 NaN/Inf 替换为安全值
+log_prob = torch.nan_to_num(log_prob, nan=0.0, posinf=0.0, neginf=-1e6)
+```
+
+**修改 4**: 在 `_HierarchicalDistribution.log_prob()` 中同样添加保护（约第 585-608 行）
+
+**修改 5**: 在 `_HierarchicalDistribution.entropy()` 中添加保护（约第 662-714 行）
+
+---
+
+## Verification Plan
+
+### 自动化测试
+
+1. **运行现有单元测试**
+   ```powershell
+   cd e:\py_project\bsk_rl
+   pytest tests/test_hier_sampling_routing.py -v
+   ```
+
+2. **运行 BenchMARL 模型测试**
+   ```powershell
+   cd e:\py_project\BenchMARL
+   pytest test/test_models.py -v -k "model"
+   ```
+
+### 手动验证
+
+3. **启动短时训练观察指标**
+   ```powershell
+   cd e:\py_project\BenchMARL
+   python -c "
+   # 快速验证 log_prob 不产生 NaN
+   import torch
+   from benchmarl.models.hierarchical_actor import _normalize_to_simplex
+   
+   # 模拟 Gumbel-Softmax 输出（含数值问题）
+   probs = torch.tensor([0.0, 0.3, 0.7001])  # sum != 1, 含 0
+   fixed = _normalize_to_simplex(probs)
+   print(f'Original: {probs}, sum={probs.sum():.4f}')
+   print(f'Fixed: {fixed}, sum={fixed.sum():.4f}')
+   assert fixed.sum().item() - 1.0 < 1e-6
+   assert torch.all(fixed > 0)
+   print('✓ simplex normalization works')
+   "
+   ```
+
+4. **用户手动确认**：修改后再次启动训练，观察 wandb/tensorboard 中的 `loss_objective`、[entropy](file:///e:/py_project/BenchMARL/benchmarl/models/hierarchical_actor.py#662-715) 等指标是否不再为 NaN。
+
+---
+
+## 风险评估
+
+| 修改 | 风险 | 缓解措施 |
+|------|------|----------|
+| simplex 归一化 | 可能引入轻微梯度偏差 | 使用极小 eps=1e-8 |
+| NaN 保护 | 掩盖真正的数值问题 | 添加 warning log |
+| log_prob clamp | 可能导致 ratio 爆炸 | 使用 -1e6 而非 -inf |
+
+> [!IMPORTANT]
+> 核心修复点是 `_normalize_to_simplex` 函数，确保 `RelaxedOneHotCategorical.log_prob()` 的输入满足 simplex 约束。

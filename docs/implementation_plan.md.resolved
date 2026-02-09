@@ -1,0 +1,164 @@
+# 条件化双头（Conditional Dual-Head）架构实现计划
+
+## 问题背景
+
+当前的分层 RL 架构（[STINHierarchicalHybridAction](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py#81-306)）使用**独立双头**设计：
+- **Head1（Level-1）**：任务切分比例 `[α_ud, α_cloud, α_sat0, ..., α_satK]`（7D）
+- **Head2（Level-2）**：资源+路由 `[cpu, tx, platform, threshold, high_probs..., low_probs...]`（14D）
+
+问题：Head1 和 Head2 **完全独立**输出，Head2 不知道 Head1 的意图。
+
+## 目标架构：条件化双头
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     共享 Encoder                            │
+│                    (Actor Network)                          │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+         ┌─────────────┴─────────────┐
+         ▼                           ▼
+┌─────────────────┐         ┌─────────────────────────────────┐
+│     Head1       │────────►│          Head2                  │
+│   (任务切分)     │ 意图编码 │   (资源分配 + 条件化路由)        │
+│   7D output     │         │   4D + (K+1)*2 = 14D output     │
+└─────────────────┘         └─────────────────────────────────┘
+```
+
+**关键改变**：Head2 接收 Head1 的输出作为**条件输入**，使其"知道"高层意图。
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **设计决策 1：条件化方式**
+> 有两种实现方式：
+> 1. **Concatenation**：将 Head1 输出直接拼接到 Head2 的隐藏层输入
+> 2. **FiLM（Feature-wise Linear Modulation）**：用 Head1 输出调制 Head2 的特征
+> 
+> 推荐使用 **Concatenation**，更简单且足够有效。
+
+> [!IMPORTANT]
+> **设计决策 2：BenchMARL 模型修改**
+> BenchMARL 默认的 MLP 模型不支持条件化双头。需要：
+> - 创建自定义 `ConditionalDualHeadMLP` 模型
+> - 或者在环境层模拟条件化（将 Head1 输出作为 Head2 的额外观测）
+> 
+> 推荐 **环境层模拟**，修改量最小。
+
+---
+
+## Proposed Changes
+
+### Component 1: 动作空间重构
+
+#### [MODIFY] [stin_hier_hybrid_actions.py](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py)
+
+**变更说明**：
+1. 修改 [set_action](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py#180-242) 方法，在解析 Head2 动作时注入 Head1 意图
+2. 新增 `_apply_conditional_routing` 方法，根据 Head1 的切分意图调整 Head2 的路由分布
+3. 动作空间维度更新为 2K+10（K=4 时为 18D，L2 含 self），语义同步调整
+
+**核心逻辑**：
+```python
+def set_action(self, action):
+    parsed = self._parse_action(action)
+    
+    # Head1: 任务切分
+    level1_ratios = self._normalize_ratios(parsed["level1"])
+    alpha_sats = level1_ratios[2:]  # 卫星切分比例
+    
+    # Head2: 条件化路由
+    # 思想：如果 Head1 决定大量切分给邻居 i，
+    #       Head2 的 high/low_split 也应倾向于保留在该邻居
+    high_split = self._apply_conditional_routing(
+        raw_split=parsed["level2"]["continuous"][4:4+(K+1)],
+        level1_intent=alpha_sats,  # ✅ 条件化输入
+    )
+    low_split = self._apply_conditional_routing(
+        raw_split=parsed["level2"]["continuous"][4+(K+1):],
+        level1_intent=alpha_sats,
+    )
+```
+
+**条件化调制函数**（软约束）：
+```python
+def _apply_conditional_routing(self, raw_split, level1_intent):
+    """根据 Level-1 意图调制路由分布。
+    
+    策略：将 Level-1 的卫星切分比例作为"先验"，
+         与 Level-2 的原始路由分布加权融合。
+    
+    Formula: final = β * level1_intent + (1-β) * raw_split
+    其中 β ∈ [0, 1] 是意图影响强度（可学习或固定）。
+    """
+    beta = 0.3  # 意图影响权重（初始值）
+    intent_aligned = np.zeros_like(raw_split)
+    intent_aligned[0] = level1_intent[0]  # self
+    intent_aligned[1:] = level1_intent[1:len(raw_split)]  # neighbors
+    
+    # 加权融合
+    final = beta * intent_aligned + (1 - beta) * raw_split
+    return self._normalize_ratios(final)
+```
+
+---
+
+### Component 2: 卫星类适配
+
+#### [MODIFY] [hier_computation_satellite.py](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py)
+
+**变更说明**：
+无需修改。所有条件化逻辑在 Action 层完成，Satellite 只负责执行。
+
+---
+
+### Component 3: 环境层适配
+
+#### [MODIFY] [common.py](file:///e:/py_project/BenchMARL/benchmarl/environments/hier_mylossatenv/common.py)
+
+**变更说明**：
+1. 动作空间维度为 2K+10（K=4 时为 18D），需同步修改
+2. 可选：在 [info_spec](file:///e:/py_project/BenchMARL/benchmarl/environments/hier_mylossatenv/common.py#249-283) 添加条件化相关的调试指标
+
+---
+
+## Verification Plan
+
+### Automated Tests
+
+1. **单元测试**：验证 `_apply_conditional_routing` 正确融合 Level-1 意图
+```bash
+cd e:\py_project\bsk_rl
+python -m pytest tests/act/test_stin_hier_hybrid_actions.py -v
+```
+
+2. **集成测试**：验证动作解析端到端正确
+```bash
+python -c "
+from bsk_rl.act.stin_hier_hybrid_actions import STINHierarchicalHybridAction
+import numpy as np
+
+action = np.random.rand(21)
+act = STINHierarchicalHybridAction(max_neighbors=4)
+# 验证条件化路由输出
+"
+```
+
+### Manual Verification
+
+1. 运行短期训练（5k steps）验证无报错
+2. 检查 WandB 日志确认策略正常学习
+
+---
+
+## 总结
+
+| 文件 | 变更类型 | 复杂度 |
+|------|---------|--------|
+| [stin_hier_hybrid_actions.py](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_hier_hybrid_actions.py) | MODIFY | ⭐⭐⭐ |
+| [hier_computation_satellite.py](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/hier_computation_satellite.py) | 无变更 | - |
+| [common.py](file:///e:/py_project/BenchMARL/benchmarl/environments/hier_mylossatenv/common.py) | 可选 | ⭐ |
+
+核心改动集中在 **stin_hier_hybrid_actions.py**，新增约 40 行条件化逻辑。

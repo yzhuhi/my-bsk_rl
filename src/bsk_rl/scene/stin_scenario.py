@@ -148,6 +148,9 @@ class STINTaskScenario(Scenario):
         priority_distribution: Optional[Callable] = None, # 12-26 改动：优先级生成函数被真正输入
         task_arrival_rate: float = 0.1,  # 任务到达率 (tasks/second)
         radius: float = orbitalMotion.REQ_EARTH * 1e3,
+        # --- 位置模糊化参数（模拟 GPS 误差/用户移动）---
+        enable_location_uncertainty: bool = False,  # 是否启用位置模糊化
+        location_uncertainty_radius: float = 5000.0,  # [m] 位置不确定性半径（高斯标准差）
     ) -> None:
         """初始化 STIN 计算任务场景。
         
@@ -160,7 +163,9 @@ class STINTaskScenario(Scenario):
             max_delay_range: [s] 最大时延要求范围。
             priority_distribution: 优先级生成函数，默认为 uniform(0, 1)。 
             task_arrival_rate: [tasks/s] 任务到达率（泊松过程）。
-            radius: [m] 任务来源位置的地球半径。 
+            radius: [m] 任务来源位置的地球半径。
+            enable_location_uncertainty: 是否启用位置模糊化模式。
+            location_uncertainty_radius: [m] 位置不确定性半径（高斯 1σ）。
         """
         super().__init__()
         self._n_tasks = n_tasks
@@ -175,6 +180,17 @@ class STINTaskScenario(Scenario):
         self.task_arrival_rate = task_arrival_rate
         self.radius = radius
         
+        # 动态到达率参数（默认静态）
+        self.dynamic_arrival_mode = 'static'  # 'static', 'sinusoidal', 'burst', 'time_of_day'
+        self.arrival_amplitude = 0.3          # 正弦波幅度（相对基线）
+        self.arrival_period = 1800.0          # 正弦波周期 [s]
+        self.burst_probability = 0.01         # 突发事件概率
+        self.burst_multiplier = 3.0           # 突发事件倍率
+        
+        # 位置模糊化参数
+        self.enable_location_uncertainty = enable_location_uncertainty
+        self.location_uncertainty_radius = location_uncertainty_radius
+        
         if priority_distribution is None:
             priority_distribution = lambda: np.random.rand()
         self.priority_distribution = priority_distribution
@@ -185,6 +201,50 @@ class STINTaskScenario(Scenario):
         self.task_pool: list[ComputationTask] = []  # 待到达任务池
         self.arrived_tasks: list[ComputationTask] = []  # 已到达任务队列
 
+    def get_arrival_rate(self, sim_time: float) -> float:
+        """根据仿真时间计算动态任务到达率。
+        
+        Args:
+            sim_time: 当前仿真时间 [s]
+            
+        Returns:
+            当前时刻的任务到达率 [tasks/s]
+        """
+        base_rate = self.task_arrival_rate
+        
+        if self.dynamic_arrival_mode == 'static':
+            return base_rate
+        
+        elif self.dynamic_arrival_mode == 'sinusoidal':
+            # 正弦波动：rate = base × (1 + amplitude × sin(2π × t / period))
+            phase = 2 * np.pi * sim_time / self.arrival_period
+            factor = 1 + self.arrival_amplitude * np.sin(phase)
+            return base_rate * max(0.1, factor)  # 最低 10% 基线
+        
+        elif self.dynamic_arrival_mode == 'burst':
+            # 突发模式：随机触发突发事件
+            if np.random.rand() < self.burst_probability:
+                return base_rate * self.burst_multiplier
+            return base_rate
+        
+        elif self.dynamic_arrival_mode == 'time_of_day':
+            # 分时段模式：模拟早晚高峰
+            # 假设一个轨道周期约 5400s，分成 6 个时段
+            period = 6000.0  # 轨道周期
+            phase = (sim_time % period) / period  # [0, 1)
+            
+            if 0.1 <= phase < 0.3:      # 早高峰
+                return base_rate * 1.5
+            elif 0.6 <= phase < 0.8:    # 晚高峰
+                return base_rate * 1.8
+            elif 0.8 <= phase < 0.9:    # 夜间低谷
+                return base_rate * 0.5
+            else:                        # 平时
+                return base_rate
+        
+        else:
+            return base_rate
+
     def reset_overwrite_previous(self) -> None:
         """清除上一个 episode 的任务列表。"""
         self.tasks = []
@@ -193,15 +253,15 @@ class STINTaskScenario(Scenario):
 
     def reset_pre_sim_init(self) -> None:
         """在仿真初始化前生成任务集。
-        
+
         注意：任务生成后放入task_pool，等待泊松过程动态到达
         """
         # 确定任务数量
         if isinstance(self._n_tasks, int):
             self.n_tasks = self._n_tasks
         else:
-            self.n_tasks = np.random.randint(self._n_tasks[0], self._n_tasks[1] + 1)
-        
+            self.n_tasks = np.random.randint(self._n_tasks[0], self._n_tasks[1] + 1) # yaml中改成序列就行 [1000,10000]
+
         logger.info(f"Generating {self.n_tasks} computation tasks for Poisson arrival")
         self._regenerate_tasks()
         
@@ -221,37 +281,34 @@ class STINTaskScenario(Scenario):
     def _visualize_task(self, task, vizSupport=None, vizInstance=None):
         """在 Vizard 中可视化任务位置。
         
-        此方法由 @vizard.visualize 装饰器控制，仅在 Vizard 可视化模式启用时执行。
-        任务位置会在地球表面显示为标记点，优先级高的任务标记更大。
-        
-        使用示例（无需手动调用，由 reset_during_sim_init 自动触发）::
-        
-            # 启用 Vizard 可视化
-            >>> env = ConstellationTasking(
-            ...     satellites=[...],
-            ...     scenario=STINTaskScenario(n_tasks=100),
-            ...     viz_args=dict(openBrowserOnRun=True),  # 启用 Vizard
-            ... )
-            >>> env.reset()  # 任务位置自动可视化
+        可视化规则（参考 Agile EOS 视频风格）：
+            - 任务大小 (markerScale) → 表示数据量（数据越大，标记越大）
+            - 任务颜色 (color) → 表示优先级（绿色=低，黄色=中，红色=高）
+            - 任务完成后 → 颜色变蓝（通过 mark_task_completed 方法）
         
         Args:
             task: 要可视化的 ComputationTask 对象。
             vizSupport: Vizard 支持模块（由装饰器注入）。
             vizInstance: Vizard 实例（由装饰器注入）。
-        
-        Note:
-            任务优先级 (priority) 用于设置可视化标记大小：
-            markerScale = sqrt(priority)，优先级越高标记越大。
         """
+        # 优先级到颜色的映射（绿→黄→红渐变）
+        color_rgba = self._priority_to_color(task.priority, vizSupport)
+        
+        # 数据量到大小的映射
+        # 标准化到 [0.3, 1.5] 范围，避免太小或太大
+        data_min, data_max = self.data_size_range
+        normalized_size = (task.data_size - data_min) / (data_max - data_min + 1e-6)
+        marker_scale = 0.3 + normalized_size * 1.2  # [0.3, 1.5]
+        
         vizSupport.addLocation(
             vizInstance,
             stationName=task.name,           # 任务名称（显示在 Vizard 中）
             parentBodyName="earth",          # 附着在地球上
             r_GP_P=list(task.r_LP_P),        # 任务在地球固连系中的位置 [m]
             fieldOfView=np.arctan(500/800),  # 视场角（约 32°）
-            color=vizSupport.toRGBA255("cyan"),  # 青色标记
+            color=color_rgba,                # 优先级颜色（绿→红渐变）
             range=1000.0 * 1000,             # 可见范围 1000 km
-            markerScale=np.sqrt(task.priority),  # 标记大小 = √优先级
+            markerScale=marker_scale,        # 标记大小 = 数据量映射
         )
         if vizInstance.settings.showLocationCones == 0:
             vizInstance.settings.showLocationCones = -1   # 禁用锥形范围显示
@@ -261,6 +318,66 @@ class STINTaskScenario(Scenario):
 
         if vizInstance.settings.showLocationLabels == 0:
             vizInstance.settings.showLocationLabels = -1  # 禁用标签显示
+    
+    def _priority_to_color(self, priority: float, vizSupport) -> list:
+        """将优先级 [0, 1] 映射到颜色（绿→黄→红渐变）。
+        
+        颜色方案：
+            - priority = 0.0: 绿色 (0, 255, 0)
+            - priority = 0.5: 黄色 (255, 255, 0)
+            - priority = 1.0: 红色 (255, 0, 0)
+        
+        Args:
+            priority: 任务优先级 [0, 1]
+            vizSupport: Vizard 支持模块
+            
+        Returns:
+            RGBA255 颜色列表 [R, G, B, A]
+        """
+        priority = max(0.0, min(1.0, priority))  # 裁剪到 [0, 1]
+        
+        if priority < 0.5:
+            # 绿→黄：G 保持 255，R 从 0 增到 255
+            t = priority * 2  # [0, 1]
+            r = int(255 * t)
+            g = 255
+            b = 0
+        else:
+            # 黄→红：R 保持 255，G 从 255 减到 0
+            t = (priority - 0.5) * 2  # [0, 1]
+            r = 255
+            g = int(255 * (1 - t))
+            b = 0
+        
+        return [r, g, b, 255]  # RGBA255 格式
+    
+    @vizard.visualize
+    def mark_task_completed(self, task, vizSupport=None, vizInstance=None):
+        """将任务标记为已完成（颜色变为蓝色）。
+        
+        任务完成后调用此方法，会在 Vizard 中将该任务的标记颜色更新为蓝色。
+        
+        注意：Vizard 的 addLocation 不支持直接更新颜色，
+        但可以通过 liveSettings 或重新添加 location 来实现更新。
+        这里我们使用 createTargetLine 从任务连接到地心来表示"已完成"状态。
+        
+        Args:
+            task: 已完成的 ComputationTask 对象
+            vizSupport: Vizard 支持模块（由装饰器注入）
+            vizInstance: Vizard 实例（由装饰器注入）
+        """
+        try:
+            # 方法 1: 用 createTargetLine 画一条蓝色目标线表示完成
+            # 由于 addLocation 不能动态更新颜色，我们用目标线覆盖显示完成状态
+            vizSupport.createTargetLine(
+                vizInstance,
+                toBodyName=task.name,      # 目标：任务 location
+                lineColor="blue",          # 蓝色表示已完成
+                fromBodyName="earth",      # 从地心（或可用其他参考点）
+            )
+        except Exception as e:
+            # 静默失败，不影响仿真
+            pass
 
     def _regenerate_tasks(self) -> None:
         """生成均匀分布的计算任务。
@@ -272,13 +389,22 @@ class STINTaskScenario(Scenario):
         # 计算截断正态分布的标准化边界 (论文公式 3) 12-26 改动
         a, b = self.data_size_range
         mu, sigma = self.data_size_mean, self.data_size_std
+        # ✅ 防止除零：sigma 至少为 1.0
+        sigma = max(sigma, 1.0)
         a_std = (a - mu) / sigma  # 标准化下界
         b_std = (b - mu) / sigma  # 标准化上界
         
         for i in range(self.n_tasks):
-            # 均匀分布的地理位置
+            # 均匀分布的地理位置（基准位置）
             x = np.random.normal(size=3)
             x *= self.radius / np.linalg.norm(x)
+            
+            # 位置模糊化：添加高斯扰动模拟 GPS 误差/用户移动
+            if self.enable_location_uncertainty:
+                # 在切平面内添加扰动（保持在地球表面）
+                perturbation = np.random.normal(0, self.location_uncertainty_radius, 3)
+                x = x + perturbation
+                x *= self.radius / np.linalg.norm(x)  # 投影回地球表面
             
             # 截断正态分布采样数据量 (论文公式 3)
             data_size = truncnorm.rvs(a_std, b_std, loc=mu, scale=sigma)
@@ -347,12 +473,33 @@ class STINTaskScenario(Scenario):
         
         Returns:
             本步到达的任务数
+
+        Note: 
+            如果lambda是静态的，稳态流量；如果是动态的，存在高峰低谷模式（增加了系统性的事变趋势）；
+
+            纯泊松（static）:
+            rate (恒定 1.4)
+            
+            正弦波动（sinusoidal）:
+            rate (在 1.0-1.8 之间波动)
+            
+            分时段（time_of_day）:
+            rate (早晚高峰)
+
+            纯泊松：已经有随机性，适合稳态场景
+            动态到达率：增加系统性的时变趋势（如早晚高峰）
         """
         if len(self.task_pool) == 0:
             return 0
         
+        # 获取当前仿真时间（从任意卫星的 simulator 获取）
+        current_sim_time = 0.0
+        if self.satellites and hasattr(self.satellites[0], 'simulator'):
+            current_sim_time = self.satellites[0].simulator.sim_time
+        
         # 计算期望到达数：λ = task_arrival_rate (tasks/s) × step_duration (s)
-        expected_arrivals = self.task_arrival_rate * step_duration
+        current_rate = self.get_arrival_rate(current_sim_time)
+        expected_arrivals = current_rate * step_duration
         
         # 泊松采样实际到达数
         actual_arrivals = np.random.poisson(expected_arrivals)
@@ -397,7 +544,7 @@ class STINTaskScenario(Scenario):
                 # 计算实际到达率
                 actual_rate = len(self.arrived_tasks) / max(1, self.satellites[0].simulator.sim_time) if self.satellites else 0
                 logger.debug(
-                    f"📦 [Poisson] +{actual_arrivals} tasks | "
+                    f"[Poisson] +{actual_arrivals} tasks | "
                     f"Pool: {len(self.task_pool)} | "
                     f"Arrived: {len(self.arrived_tasks)} | "
                     f"Config rate: {self.task_arrival_rate:.2f}/s | "
@@ -446,21 +593,29 @@ class STINTaskScenario(Scenario):
             
             # 如果有可见的卫星，根据优先级选择最优卫星
             if visible_satellites:
+                def _random_tiebreak(candidates, scores):
+                    scores = np.asarray(scores, dtype=np.float64)
+                    min_score = np.min(scores)
+                    idxs = np.where(np.isclose(scores, min_score, rtol=0.0, atol=1e-9))[0]
+                    return candidates[int(np.random.choice(idxs))]
+
                 # 高优先级任务：选择资源最充足的卫星（队列短 + 电量高）
                 # 低优先级任务：选择队列最短的卫星（简单负载均衡）
-                if task.priority > 0.7:  # 高优先级阈值
+                if task.priority > 0.5:  # 高优先级阈值
                     # 综合评分：队列越短越好，电量越高越好
                     def sat_score(s):
                         queue_len = len(s.task_queue) if hasattr(s, 'task_queue') else 0
                         battery_ratio = getattr(s, 'battery_charge_ratio', 1.0)
                         return queue_len - battery_ratio * 10  # 电量每10%抵消1个队列任务
-                    best_sat = min(visible_satellites, key=sat_score)
+                    scores = [sat_score(s) for s in visible_satellites]
+                    best_sat = _random_tiebreak(visible_satellites, scores)
                 else:
                     # 普通任务：简单负载均衡
-                    best_sat = min(
-                        visible_satellites,
-                        key=lambda s: len(s.task_queue) if hasattr(s, 'task_queue') else 0
-                    )
+                    scores = [
+                        len(s.task_queue) if hasattr(s, 'task_queue') else 0
+                        for s in visible_satellites
+                    ]
+                    best_sat = _random_tiebreak(visible_satellites, scores)
                 best_sat.receive_task_from_scenario(task)
                 task._assigned = True
                 assigned_count += 1
@@ -483,6 +638,7 @@ class CityTaskScenario(STINTaskScenario):
         n_tasks: Union[int, tuple[int, int]] = 10,
         n_select_from: Optional[int] = 100,  # 从前 N 个最大城市中选择
         location_offset: float = 50000,  # [m] 位置偏移
+        city_task_ratio: float = 1.0,  # 城市任务占比（其余为均匀分布）
         **kwargs,
     ) -> None:
         """初始化城市分布的计算任务场景。
@@ -491,11 +647,13 @@ class CityTaskScenario(STINTaskScenario):
             n_tasks: 任务数量。
             n_select_from: 从最大的 N 个城市中采样，None 表示全部。
             location_offset: [m] 任务位置相对城市中心的随机偏移。
+            city_task_ratio: 城市任务占比（其余为均匀分布）。
             **kwargs: 传递给 STINTaskScenario 的其他参数。
         """
         super().__init__(n_tasks=n_tasks, **kwargs)
         self.n_select_from = n_select_from
         self.location_offset = location_offset
+        self.city_task_ratio = city_task_ratio
 
     def _regenerate_tasks(self) -> None:
         """基于城市分布生成计算任务。"""
@@ -521,40 +679,71 @@ class CityTaskScenario(STINTaskScenario):
         # 计算截断正态分布的标准化边界 (论文公式 3)
         a, b = self.data_size_range
         mu, sigma = self.data_size_mean, self.data_size_std
+        # ✅ 防止除零：sigma 至少为 1.0
+        sigma = max(sigma, 1.0)
         a_std = (a - mu) / sigma
         b_std = (b - mu) / sigma
         
-        # 从前 N 个城市中随机选择
-        for i in np.random.choice(n_select, self.n_tasks, replace=False):
-            city = cities.iloc[i]
-            location = lla2ecef(city["lat"], city["lng"], self.radius)
-            
-            # 添加随机偏移
-            if self.location_offset > 0:
-                offset = np.random.normal(size=3)
-                offset /= np.linalg.norm(offset)
-                offset *= self.location_offset * np.random.rand()
-                location += offset
-                location /= np.linalg.norm(location)
-                location *= self.radius
-            
+        # 任务分布：城市占比 + 均匀分布（海上等）
+        city_ratio = float(self.city_task_ratio) if self.city_task_ratio is not None else 1.0
+        city_ratio = max(0.0, min(1.0, city_ratio))
+        n_city = int(round(self.n_tasks * city_ratio))
+        n_city = min(max(n_city, 0), self.n_tasks)
+        n_uniform = self.n_tasks - n_city
+
+        task_idx = 0
+
+        def _sample_task(location, name_prefix: str) -> None:
+            nonlocal task_idx
+            # 添加随机偏移（城市内部的空间分布）
+            loc = np.array(location, dtype=np.float64)
+            # 位置模糊化：添加高斯扰动模拟 GPS 误差/用户移动
+            if self.enable_location_uncertainty:
+                perturbation = np.random.normal(0, self.location_uncertainty_radius, 3)
+                loc = loc + perturbation
+                loc *= self.radius / np.linalg.norm(loc)  # 投影回地球表面
+
             # 截断正态分布采样数据量 (论文公式 3)
             data_size = truncnorm.rvs(a_std, b_std, loc=mu, scale=sigma)
             data_size = np.clip(data_size, a, b)
-            
+
             # 其他属性仍用均匀分布
             workload = np.random.uniform(*self.workload_range)
             max_delay = np.random.uniform(*self.max_delay_range)
-            
+
             task = ComputationTask(
-                name=f"{city['city']}, {city['iso2']}".replace("'", ""),
-                r_LP_P=location,
+                name=f"{name_prefix}-{task_idx}",
+                r_LP_P=loc,
                 data_size=data_size,
                 workload=workload,
                 max_delay=max_delay,
                 priority=self.priority_distribution(),
             )
             self.tasks.append(task)
+            task_idx += 1
+
+        # 城市任务：允许重复采样
+        if n_city > 0 and n_select > 0:
+            for i in np.random.choice(n_select, n_city, replace=True):
+                city = cities.iloc[i]
+                location = lla2ecef(city["lat"], city["lng"], self.radius)
+
+                # 添加随机偏移（城市内部的空间分布）
+                if self.location_offset > 0:
+                    offset = np.random.normal(size=3)
+                    offset /= np.linalg.norm(offset)
+                    offset *= self.location_offset * np.random.rand()
+                    location += offset
+                    location /= np.linalg.norm(location)
+                    location *= self.radius
+
+                _sample_task(location, f"{city['city']}, {city['iso2']}".replace("'", ""))
+
+        # 均匀分布任务（海上等）
+        for _ in range(n_uniform):
+            x = np.random.normal(size=3)
+            x *= self.radius / np.linalg.norm(x)
+            _sample_task(x, "task")
 
 
 __doc_title__ = "STIN Task Scenarios"

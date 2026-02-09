@@ -114,6 +114,125 @@ def get_current_task_priority(neighbor, self_sat) -> float:
     return 0.0
 
 
+# ============================================================
+# 🆕 观测空间增强：任务队列统计 + 邻居信道质量
+# ============================================================
+
+def get_min_remaining_deadline(sat, self_sat) -> float:
+    """获取任务队列中最紧急任务的剩余时延 [s]。
+    
+    用于观测空间，让 Agent 知道"接下来有没有急件"。
+    
+    Args:
+        sat: 目标卫星（可以是自身或邻居）
+        self_sat: 当前卫星（用于获取仿真时间）
+        
+    Returns:
+        最小剩余时延 [s]，无任务时返回大值 (1000.0)。
+    """
+    task_queue = getattr(sat, "task_queue", [])
+    if not task_queue:
+        return 1000.0  # 无任务，返回大值表示"不紧急"
+    
+    # 获取当前仿真时间
+    sim_time = 0.0
+    if hasattr(sat, "simulator") and sat.simulator is not None:
+        sim_time = sat.simulator.sim_time
+    
+    min_remaining = 1000.0
+    for task in task_queue:
+        # TaskSlice 有 deadline 属性（绝对时间）
+        deadline = getattr(task, "deadline", None)
+        if deadline is not None:
+            remaining = max(0.0, deadline - sim_time)
+            min_remaining = min(min_remaining, remaining)
+    
+    return min_remaining
+
+
+def get_avg_task_priority(sat, self_sat) -> float:
+    """获取任务队列的平均优先级 [0, 1]。
+    
+    用于观测空间，让 Agent 知道"手头任务整体优先级"。
+    
+    Args:
+        sat: 目标卫星（可以是自身或邻居）
+        self_sat: 当前卫星（未使用，保持接口一致）
+        
+    Returns:
+        平均优先级，无任务时返回 0.0。
+    """
+    task_queue = getattr(sat, "task_queue", [])
+    if not task_queue:
+        return 0.0
+    
+    priorities = [getattr(t, "priority", 0.5) for t in task_queue]
+    return sum(priorities) / len(priorities)
+
+
+def get_isl_channel_quality(neighbor, self_sat) -> float:
+    """获取到邻居的 ISL 信道质量评分 [0, 1]。
+    
+    基于 constants.calculate_isl_rate() 的 ISL 信道质量评分：
+        R_I = B_I × log₂(1 + SNR)
+        SNR = (p_I × g_I^tr × g_I^rc) / (L_I × N₀ × B_I)
+    
+    质量越高，传输速度越快、丢包率越低。
+    
+    Args:
+        neighbor: 邻居卫星
+        self_sat: 当前卫星
+        
+    Returns:
+        信道质量 [0, 1]，1.0 表示最佳，0.0 表示边缘可见。
+    """
+    from bsk_rl.utils.constants import (
+        calculate_isl_rate,
+        ISL_MAX_DISTANCE,
+        ISL_BANDWIDTH,  # 用于计算理论最大速率
+    )
+    
+    distance = get_isl_distance(neighbor, self_sat)
+    
+    # 支持从卫星属性/ sat_args 覆盖最大 ISL 距离（km -> m）
+    max_distance_m = ISL_MAX_DISTANCE
+    try:
+        max_km = getattr(self_sat, "isl_max_distance_km", None)
+        if max_km is not None and max_km > 0:
+            max_distance_m = float(max_km) * 1e3
+    except Exception:
+        pass
+    if max_distance_m == ISL_MAX_DISTANCE:
+        try:
+            sat_args = getattr(self_sat, "sat_args", {}) or {}
+            max_km = sat_args.get("isl_max_distance_km", None)
+            if max_km is not None and max_km > 0:
+                max_distance_m = float(max_km) * 1e3
+        except Exception:
+            pass
+    # 超出最大距离时返回 0
+    if distance > max_distance_m:
+        return 0.0
+    
+    # 获取当前发射功率（优先从卫星属性获取，否则从 sat_args 获取默认值）
+    tx_power = getattr(self_sat, 'current_tx_power', 0.0)
+    if tx_power <= 0:
+        # 回退到 sat_args 中的默认值（与 computation_satellite.py L781 一致）
+        default_power = abs(getattr(self_sat, 'sat_args', {}).get('transmitterPowerDraw', -15.0))
+        tx_power = default_power
+    
+    # 使用物理模型计算 ISL 速率 [bps]
+    isl_rate = calculate_isl_rate(tx_power, distance, max_distance=max_distance_m)
+    
+    # 归一化到 [0, 1]
+    # 理论最大速率 ≈ bandwidth × log2(1 + 高SNR) ≈ 1 Gbps
+    # 使用 500 Mbps 作为"优秀"基准（实际工程上的高速链路）
+    max_expected_rate = 5 * ISL_BANDWIDTH  # 500 Mbps = 5 × 100e6
+    quality = min(isl_rate / max_expected_rate, 1.0)
+    
+    return quality
+
+
 
 class STINRelativeObservations(Observation):
     """
@@ -229,11 +348,14 @@ class STINRelativeObservations(Observation):
     @property
     def observation_space(self) -> spaces.Box:
         """定义观测空间：N_neighbors * N_features 的一维向量。"""
+        dtype = self.dtype
+        low = np.asarray(-np.inf, dtype=dtype) if dtype is not None else -np.inf
+        high = np.asarray(np.inf, dtype=dtype) if dtype is not None else np.inf
         return spaces.Box(
-            low=-np.inf,
-            high=np.inf,
+            low=low,
+            high=high,
             shape=(self.num_total_obs,),
-            dtype=self.dtype,
+            dtype=dtype,
         )
 
     def get_obs(self) -> np.ndarray:
@@ -272,6 +394,14 @@ class STINRelativeObservations(Observation):
                         value = np.array([value])
                     
                     value_normalized = value / norm
+                    
+                    # ✅ NaN/Inf 保护：防止异常值传播到神经网络
+                    value_normalized = np.nan_to_num(
+                        value_normalized, 
+                        nan=0.0, 
+                        posinf=1.0, 
+                        neginf=-1.0
+                    )
                     obs_list.extend(value_normalized.flatten())
                     
             else:
@@ -301,5 +431,9 @@ __all__ = [
     "get_queue_workload",
     "get_cpu_freq",
     "get_isl_distance",
-    "get_current_task_priority",  # 🔮 Future Work
+    "get_current_task_priority",
+    # 🆕 观测空间增强
+    "get_min_remaining_deadline",   # 最紧急任务剩余时延
+    "get_avg_task_priority",        # 平均任务优先级
+    "get_isl_channel_quality",      # ISL 信道质量评分
 ]

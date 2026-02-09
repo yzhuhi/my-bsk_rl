@@ -1,0 +1,112 @@
+# ComputationSatellite 核心逻辑详解
+
+本文档详细说明 [ComputationSatellite](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#349-1852) 类的内部运作机制，包括任务切片、协作调度、计算执行和队列管理。
+
+## 1. 任务切片系统 (Task Slicing)
+
+### 核心概念
+任务切片是 STIN 网络中计算任务的基本单元。一个原始任务可以被切分为多个切片，并在不同节点并行处理。
+
+### 数据结构
+[TaskSlice](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_continuous_actions.py#20-23) 类包含以下关键属性：
+- **基本属性**：[task_id](file:///e:/py_project/bsk_rl/src/bsk_rl/scene/stin_scenario.py#110-117), `data_size` (bits), [workload](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#215-219) (cycles/bit)
+- **时延追踪**：
+  - `creation_time`: 原始任务到达时间（绝对时间）
+  - `max_delay`: 最大允许时延（从创建开始计算）
+  - `last_completion_time`: 最后一个切片完成的时间
+- **路径记录**：
+  - `origin_satellite`: 任务最初接入的卫星
+  - `access_satellite`: 负责追踪该切片的接入卫星
+  - `hop_count`: 经过的跳数
+
+### 切分流程
+1. **源切分 (Primary Split)**:
+   - 接入卫星接收任务后，将其切分为 `α_local` (UD), `α_cloud` (云), `α_sat` (卫星) 三部分。
+2. **卫星间切分 (Secondary Split)**:
+   - `α_sat` 部分进一步切分给自己 (`x_self`) 和邻居 (`x_neighbors`)。
+   - 每个邻居接收一个切片，包含了 `α_sat * x_neighbor` 的比例数据。
+3. **递归切分**:
+   - 邻居收到切片后，可再次调用 `execute_collaborative_split` 进行二次切分（前提是未达到跳数限制）。
+   - **注册修正**：如果在非接入卫星上进行了 1->N 的切分，需要向接入卫星注册额外的 N-1 个切片，保证 `slice_registry` 计数正确。
+
+---
+
+## 2. 协作调度动作 (Collaborative Scheduling)
+
+### 连续动作空间 (10D)
+Agent 在每一步生成一个 10 维连续向量：
+
+| 维度 | 名称 | 作用 |
+|------|------|------|
+| [0] | **CPU频率比例** | 控制计算速度与能耗 (`f_min` ~ `f_max`) |
+| [1] | **发射功率比例** | 控制 ISL/SGL 通信速率 (`0` ~ `P_max`) |
+| [2] | **平台功耗比例** | 暂未使用 (保留) |
+| [3] | **α_local** | UD 本地处理比例偏好 |
+| [4] | **α_cloud** | 云端处理比例偏好 |
+| [5-9]| **Split Ratios** | 卫星间协作权重 (自身 + 4个邻居) |
+
+### 调度逻辑 ([schedule_collaboration_action](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#832-1205))
+1. **解析动作**: 将 `α` 参数归一化，确保 `α_local + α_cloud + α_sat = 1`。
+2. **UD 处理**: 若 `α_local > 0`，计算 UD 处理时间。若能完成，标记为 UD 完成（不进入卫星队列，但计入 `ep_ud_completed`）。
+3. **云端处理**: 若 `α_cloud > 0`，计算 SGL 传输时延。若能完成，标记为云端完成。
+4. **卫星处理**: 若 `α_sat > 0`，调用 `execute_collaborative_split` 将剩余比例分发给自身和邻居。
+
+---
+
+## 3. 计算执行流程 (Computation Process)
+
+### 执行函数 ([execute_local_compute](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1310-1427))
+卫星每个时间步 (`d_ts`) 调用一次此函数。
+
+1. **资源分配**: 根据动作设定当前的 CPU 频率 `f_cpu`。
+2. **处理队列**: 从 [task_queue](file:///e:/py_project/bsk_rl/src/bsk_rl/obs/stin_relative_observations.py#68-71) 取出队首任务。
+3. **计算逻辑**:
+   - 计算处理速率 `R_proc = f_cpu / workload` (bits/s)。
+   - 计算本步处理数据量 `processed = min(remaining_data, R_proc * d_ts)`。
+   - 扣除数据量，累加能耗。
+4. **完成判定**:
+   - 当 `remaining_data <= 0`，任务计算完成。
+   - **移入结果队列**: 完成的任务从 [task_queue](file:///e:/py_project/bsk_rl/src/bsk_rl/obs/stin_relative_observations.py#68-71) 移入 `result_queue`，等待传输。
+
+### 切片聚合 (`slice_aggregation`)
+当一个切片完成时：
+1. **查找接入卫星**: 通过 `access_satellite` 字段。
+2. **通知完成**: 调用接入卫星的 [mark_slice_completed(task_id, completion_time)](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#603-622)。
+3. **更新注册表**:
+   - 接入卫星增加 `completed_count`。
+   - 更新 `last_completion_time` 为当前时间（如果更晚）。
+4. **全任务完成判定**:
+   - 当 `completed_count == total_slice_count` 时，整个任务视为完成。
+   - 此时记录 `ep_completed` 指标。
+
+---
+
+## 4. 队列管理 (Queue Management)
+
+### 任务队列 ([task_queue](file:///e:/py_project/bsk_rl/src/bsk_rl/obs/stin_relative_observations.py#68-71))
+- **内容**: 待计算的 [TaskSlice](file:///e:/py_project/bsk_rl/src/bsk_rl/act/stin_continuous_actions.py#20-23) 对象。
+- **策略**: FIFO (先入先出)。
+- **保护**: `Action Shield` 监控队列长度，若超过 `max_queue_size`，强制增加本地/丢弃处理以防溢出。
+- **超时清理**: 每次处理前检查队首是否超时 ([is_expired](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#257-260))，超时则移入 `expired_tasks_buffer`。
+
+### 结果队列 (`result_queue`)
+- **内容**: 已计算完成 (`COMPUTED`) 或待中继 (`RELAYED`) 的切片。
+- **处理**: 由 [execute_result_relay](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1428-1556) 函数处理。
+- **逻辑**:
+  1. 检查对 UD 可见性。
+  2. **可见**: 直接下传，标记 `COMPLETED`。
+  3. **不可见**: 查找最佳中继邻居 ([_find_best_relay_satellite](file:///e:/py_project/bsk_rl/src/bsk_rl/sats/computation_satellite.py#1688-1743))。
+  4. **中继**: 传输给邻居的 `result_queue` (不是 task_queue)。
+  5. **阻塞处理**: 若无可见邻居，保留在队列中等待下一步（非阻塞式轮询）。
+
+---
+
+## 5. 奖励与反馈
+
+### 时延计算 (Absolute Time Model)
+- **T_UD**: UD 本地处理时间。
+- **T_CLOUD**: SGL 传输 + 传播 + 云端计算。
+- **T_SAT**: `last_completion_time - creation_time`。
+- **T_Total**: [max(T_UD, T_SAT, T_CLOUD)](file:///e:/py_project/BenchMARL/benchmarl/environments/mylossatenv/common.py#200-202)。
+
+该模型准确反映了并行处理和多跳协作的真实时延。

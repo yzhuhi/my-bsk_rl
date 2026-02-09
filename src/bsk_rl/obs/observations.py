@@ -40,11 +40,20 @@ def nested_obs_to_space(obs_dict, dtype):
             }
         )
     elif isinstance(obs_dict, list):
-        return spaces.Box(low=-1e16, high=1e16, shape=(len(obs_dict),), dtype=dtype)
+        shape = (len(obs_dict),)
+        low = np.full(shape, -1e16, dtype=dtype)
+        high = np.full(shape, 1e16, dtype=dtype)
+        return spaces.Box(low=low, high=high, shape=shape, dtype=dtype)
     elif isinstance(obs_dict, (float, int)):
-        return spaces.Box(low=-1e16, high=1e16, shape=(1,), dtype=dtype)
+        shape = (1,)
+        low = np.full(shape, -1e16, dtype=dtype)
+        high = np.full(shape, 1e16, dtype=dtype)
+        return spaces.Box(low=low, high=high, shape=shape, dtype=dtype)
     elif isinstance(obs_dict, np.ndarray):
-        return spaces.Box(low=-1e16, high=1e16, shape=obs_dict.shape, dtype=dtype)
+        shape = obs_dict.shape
+        low = np.full(shape, -1e16, dtype=dtype)
+        high = np.full(shape, 1e16, dtype=dtype)
+        return spaces.Box(low=low, high=high, shape=shape, dtype=dtype)
     else:
         raise TypeError(f"Cannot convert {obs_dict} to gym space.")
 
@@ -124,6 +133,11 @@ class ObservationBuilder(Resetable):
     def obs_ndarray(self) -> np.ndarray:
         """Numpy vector observation format."""
         _, obs = vectorize_nested_dict(self.obs_dict())
+        # ✅ NaN/Inf 保护：防止异常值传播到神经网络
+        # ⚠️ 关键修复：posinf=1e6 太大会导致梯度爆炸，改为 10.0
+        obs = np.nan_to_num(obs, nan=0.0, posinf=10.0, neginf=-10.0)
+        # 额外裁剪：确保所有观测值在合理范围内
+        obs = np.clip(obs, -10.0, 10.0)
         return obs
 
     def obs_array_keys(self) -> list[str]:
@@ -264,15 +278,24 @@ class SatProperties(Observation):
         obs = {}
         for obs_property in self.obs_properties:
             prop = obs_property["prop"]
-            if "fn" in obs_property:
-                value = obs_property["fn"](self.satellite)
-            else:
-                module = obs_property["module"]
-                value = getattr(getattr(self.satellite, module), prop)
+            try:
+                if "fn" in obs_property:
+                    value = obs_property["fn"](self.satellite)
+                else:
+                    module = obs_property["module"]
+                    value = getattr(getattr(self.satellite, module), prop)
+            except Exception:
+                value = 0.0
             if isinstance(value, list):
                 value = np.array(value)
             norm = obs_property["norm"]
-            obs[obs_property["name"]] = value / norm
+            result = value / norm
+            # NaN/Inf 保护：防止异常值流入神经网络导致梯度爆炸
+            if isinstance(result, np.ndarray):
+                result = np.nan_to_num(result, nan=0.0, posinf=1.0, neginf=-1.0)
+            elif isinstance(result, float) and (np.isnan(result) or np.isinf(result)):
+                result = 0.0
+            obs[obs_property["name"]] = result
         return obs
 
 

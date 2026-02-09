@@ -6,6 +6,7 @@ bsk_rl.utils.constants: 物理常量和系统默认值定义
 """
 
 import numpy as np
+from typing import Optional
 
 # =============================================================================
 # 物理常量
@@ -90,7 +91,7 @@ SGL_CHANNEL_GAIN = 500.0        # h_S - 等效信道增益 (含下行路径损�
 NOISE_POWER_DENSITY = 4e-21     # [W/Hz] N₀ - 噪声功率谱密度 (典型 290K 系统温度)
 
 # --- ISL 最大通信距离 ---
-ISL_MAX_DISTANCE = 5000e3       # [m] Dis_I^max - 5000 km (Iridium 跨面链路)
+ISL_MAX_DISTANCE = 5000e3       # [m] Dis_I^max - 6000 km (Iridium 跨面链路)
 
 
 def calculate_isl_path_loss(distance: float, carrier_freq: float = ISL_CARRIER_FREQ) -> float:
@@ -110,7 +111,11 @@ def calculate_isl_path_loss(distance: float, carrier_freq: float = ISL_CARRIER_F
     return (4 * np.pi * distance * carrier_freq / SPEED_OF_LIGHT) ** 2
 
 
-def calculate_isl_rate(tx_power: float, distance: float) -> float:
+def calculate_isl_rate(
+    tx_power: float,
+    distance: float,
+    max_distance: Optional[float] = None,
+) -> float:
     """计算 ISL 传输速率 - 论文公式 (6)
     
     R_I = B_I × log₂(1 + (p_I × g_I^tr × g_I^rc) / (L_I × N₀ × B_I))
@@ -126,7 +131,10 @@ def calculate_isl_rate(tx_power: float, distance: float) -> float:
         return 1e3  # 最低 1 kbps
     
     # 检查是否超过最大通信距离
-    if distance > ISL_MAX_DISTANCE:
+    max_distance_m = ISL_MAX_DISTANCE
+    if max_distance is not None and max_distance > 0:
+        max_distance_m = float(max_distance)
+    if distance > max_distance_m:
         return 1e3  # 超出范围，返回最低速率
     
     path_loss = calculate_isl_path_loss(distance)

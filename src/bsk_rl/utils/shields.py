@@ -42,10 +42,10 @@ class STINActionShield:
         battery_threshold: float = 0.20,      # 电量阈值
         low_battery_cpu_cap: float = 0.3,     # 低电量时 CPU 比例上限
         low_battery_tx_cap: float = 0.2,      # 低电量时 TX 功率上限
-        low_battery_cloud_cap: float = 0.5,   # 低电量时云端卸载上限
+        low_battery_cloud_cap: float = 0.6,   # 低电量时云端卸载上限
         # 队列溢出约束
         max_queue_size: int = 50,             # 最大队列长度
-        queue_full_local_boost: float = 0.6,  # 队列满时本地处理比例下限
+        queue_full_local_boost: float = 0.6,  # 队列满时云端比例下限（兼容旧参数名）
         # 日志控制
         log_interventions: bool = True,
     ):
@@ -57,7 +57,7 @@ class STINActionShield:
             low_battery_tx_cap: 低电量时发射功率比例上限。
             low_battery_cloud_cap: 低电量时云端卸载比例上限。
             max_queue_size: 触发队列保护的任务数量。
-            queue_full_local_boost: 队列满时强制的本地处理比例下限。
+            queue_full_local_boost: 队列满时强制的云端比例下限（兼容旧参数名）。
             log_interventions: 是否记录干预日志。
         """
         self.battery_threshold = battery_threshold
@@ -65,7 +65,7 @@ class STINActionShield:
         self.low_battery_tx_cap = low_battery_tx_cap
         self.low_battery_cloud_cap = low_battery_cloud_cap
         self.max_queue_size = max_queue_size
-        self.queue_full_local_boost = queue_full_local_boost
+        self.queue_full_cloud_boost = queue_full_local_boost
         self.log_interventions = log_interventions
         
         # 统计
@@ -139,7 +139,7 @@ class STINActionShield:
                 self.battery_interventions += 1
         
         # ----------------------------------------------------------------
-        # 2. 队列溢出约束：队列满时增加本地处理
+        # 2. 队列溢出约束：队列满时提高云端比例
         # ----------------------------------------------------------------
         queue_size = len(satellite.task_queue) if hasattr(satellite, 'task_queue') else 0
         
@@ -152,13 +152,13 @@ class STINActionShield:
             storage_overflow = satellite.storage_fraction >= 0.95  # 存储使用率 >= 95%
         
         if queue_overflow or storage_overflow:
-            # 强制提高本地处理比例，减少卸载
-            if safe_action[3] < self.queue_full_local_boost:
-                old_local = safe_action[3]
-                safe_action[3] = self.queue_full_local_boost
+            # 强制提高云端偏好比例，减少卫星本地负载
+            if safe_action[4] < self.queue_full_cloud_boost:
+                old_cloud = safe_action[4]
+                safe_action[4] = self.queue_full_cloud_boost
                 modified = True
                 reason = f"Queue={queue_size}" if queue_overflow else f"Storage={satellite.storage_fraction:.0%}"
-                reasons.append(f"Local {old_local:.2f}→{self.queue_full_local_boost:.2f} ({reason})")
+                reasons.append(f"Cloud {old_cloud:.2f}→{self.queue_full_cloud_boost:.2f} ({reason})")
                 self.queue_interventions += 1
         
         # ----------------------------------------------------------------
@@ -174,6 +174,94 @@ class STINActionShield:
         
         return safe_action
     
+    def apply_hierarchical(
+        self, 
+        satellite: "ComputationSatellite", 
+        level1: np.ndarray,       # [alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]
+        level2_continuous: np.ndarray,  # [cpu, tx, threshold, high_n..., high_self, low_n..., low_self]
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """应用安全屏蔽（分层动作空间版）。
+        
+        动作索引定义：
+            Level-1: [alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]
+            Level-2: [cpu, tx, threshold, high_n0, ..., high_self, low_n0, ..., low_self]
+        
+        Args:
+            satellite: 卫星对象，用于读取状态。
+            level1: Level-1 动作向量（任务切分比例）。
+            level2_continuous: Level-2 连续动作向量（资源+路由）。
+            
+        Returns:
+            (safe_level1, safe_level2_continuous) 修正后的安全动作向量元组。
+        """
+        safe_l1 = level1.copy().astype(np.float64)
+        safe_l2 = level2_continuous.copy().astype(np.float64)
+        modified = False
+        reasons = []
+        
+        # ----------------------------------------------------------------
+        # 1. 电池安全约束：低电量时限制高功耗动作
+        # ----------------------------------------------------------------
+        battery_soc = self.get_battery_soc(satellite)
+        
+        if battery_soc < self.battery_threshold:
+            # 限制 CPU 频率 → level2[0]
+            if safe_l2[0] > self.low_battery_cpu_cap:
+                safe_l2[0] = self.low_battery_cpu_cap
+                modified = True
+                reasons.append(f"CPU {level2_continuous[0]:.2f}→{self.low_battery_cpu_cap:.2f}")
+            
+            # 限制发射功率 → level2[1]
+            if safe_l2[1] > self.low_battery_tx_cap:
+                safe_l2[1] = self.low_battery_tx_cap
+                modified = True
+                reasons.append(f"TX {level2_continuous[1]:.2f}→{self.low_battery_tx_cap:.2f}")
+            
+            # 限制云端卸载（需要通信功耗）→ level1[1]
+            if safe_l1[1] > self.low_battery_cloud_cap:
+                safe_l1[1] = self.low_battery_cloud_cap
+                modified = True
+                reasons.append(f"Cloud {level1[1]:.2f}→{self.low_battery_cloud_cap:.2f}")
+            
+            if modified:
+                self.battery_interventions += 1
+        
+        # ----------------------------------------------------------------
+        # 2. 队列溢出约束：队列满时提高云端比例
+        # ----------------------------------------------------------------
+        queue_size = len(satellite.task_queue) if hasattr(satellite, 'task_queue') else 0
+        
+        # 2a. 任务数量限制
+        queue_overflow = queue_size >= self.max_queue_size
+        
+        # 2b. 存储容量限制（基于数据量）
+        storage_overflow = False
+        if hasattr(satellite, 'storage_fraction'):
+            storage_overflow = satellite.storage_fraction >= 0.95  # 存储使用率 >= 95%
+        
+        if queue_overflow or storage_overflow:
+            # 强制提高云端比例，减少卫星本地负载 → level1[1] (alpha_cloud)
+            if safe_l1[1] < self.queue_full_cloud_boost:
+                old_cloud = safe_l1[1]
+                safe_l1[1] = self.queue_full_cloud_boost
+                modified = True
+                reason = f"Queue={queue_size}" if queue_overflow else f"Storage={satellite.storage_fraction:.0%}"
+                reasons.append(f"Cloud {old_cloud:.2f}→{self.queue_full_cloud_boost:.2f} ({reason})")
+                self.queue_interventions += 1
+        
+        # ----------------------------------------------------------------
+        # 3. 日志记录
+        # ----------------------------------------------------------------
+        if modified:
+            self.intervention_count += 1
+            if self.log_interventions:
+                logger.debug(
+                    f"[Shield-Hier] {satellite.name}: SOC={battery_soc:.1%}, "
+                    f"Queue={queue_size}, Modified: {', '.join(reasons)}"
+                )
+        
+        return safe_l1, safe_l2
+
     def get_stats(self) -> dict:
         """获取屏蔽统计信息。"""
         return {

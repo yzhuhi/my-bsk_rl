@@ -45,6 +45,7 @@ from bsk_rl.obs.observations import (
 )
 from bsk_rl.obs.relative_observations import RelativeProperties
 from bsk_rl.obs.stin_relative_observations import STINRelativeObservations
+from bsk_rl.obs.stin_hier_observations import STINHierarchicalObservations
 
 __doc_title__ = "Observations"
 __all__ = [
@@ -52,6 +53,7 @@ __all__ = [
     "SatProperties",
     "RelativeProperties",
     "STINRelativeObservations",
+    "STINHierarchicalObservations",
     "Time",
     "OpportunityProperties",
     "Eclipse",
