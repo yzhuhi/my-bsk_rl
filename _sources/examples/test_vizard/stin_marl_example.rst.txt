@@ -1,0 +1,13 @@
+.. _examples.test_vizard.stin_marl_example:
+.. currentmodule:: examples.test_vizard.stin_marl_example
+
+stin_marl_example
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: examples.test_vizard.stin_marl_example
+   :members:
+   :show-inheritance:
+

@@ -1,0 +1,223 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "d356b5fc",
+   "metadata": {},
+   "source": [
+    "定义卫星"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "fcae5f06",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from bsk_rl import sats, obs, act, data, scene, SatelliteTasking\n",
+    "from bsk_rl.sim import dyn, fsw\n",
+    "import numpy as np\n",
+    "\n",
+    "from Basilisk.architecture import bskLogging\n",
+    "bskLogging.setDefaultLogLevel(bskLogging.BSK_WARNING)\n",
+    "\n",
+    "class SimpleSatellite(sats.Satellite):\n",
+    "    observation_spec = [obs.Time()]\n",
+    "    action_spec = [act.Drift()]\n",
+    "    dyn_type = dyn.BasicDynamicsModel\n",
+    "    fsw_type = fsw.BasicFSWModel"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a4b06eb4",
+   "metadata": {},
+   "source": [
+    "#### Setting Satellite Parameters\n",
+    "\n",
+    "Without instantiating the satellite, parameters that can be set in the various models can be inspected.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "83d387c1",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'hs_min': 0.0,\n",
+       " 'maxCounterValue': 4,\n",
+       " 'thrMinFireTime': 0.02,\n",
+       " 'desatAttitude': 'sun',\n",
+       " 'controlAxes_B': [1, 0, 0, 0, 1, 0, 0, 0, 1],\n",
+       " 'thrForceSign': 1,\n",
+       " 'K': 7.0,\n",
+       " 'Ki': -1,\n",
+       " 'P': 35.0,\n",
+       " 'utc_init': 'this value will be set by the world model',\n",
+       " 'batteryStorageCapacity': 288000.0,\n",
+       " 'storedCharge_Init': <function bsk_rl.sim.dyn.base.BasicDynamicsModel.<lambda>()>,\n",
+       " 'disturbance_vector': None,\n",
+       " 'dragCoeff': 2.2,\n",
+       " 'basePowerDraw': 0.0,\n",
+       " 'wheelSpeeds': <function bsk_rl.sim.dyn.base.BasicDynamicsModel.<lambda>()>,\n",
+       " 'maxWheelSpeed': inf,\n",
+       " 'u_max': 0.2,\n",
+       " 'rwBasePower': 0.4,\n",
+       " 'rwMechToElecEfficiency': 0.0,\n",
+       " 'rwElecToMechEfficiency': 0.5,\n",
+       " 'panelArea': 1.0,\n",
+       " 'panelEfficiency': 0.2,\n",
+       " 'nHat_B': array([ 0,  0, -1]),\n",
+       " 'mass': 330,\n",
+       " 'width': 1.38,\n",
+       " 'depth': 1.04,\n",
+       " 'height': 1.58,\n",
+       " 'sigma_init': <function bsk_rl.sim.dyn.base.BasicDynamicsModel.<lambda>()>,\n",
+       " 'omega_init': <function bsk_rl.sim.dyn.base.BasicDynamicsModel.<lambda>()>,\n",
+       " 'rN': None,\n",
+       " 'vN': None,\n",
+       " 'oe': <function bsk_rl.utils.orbital.random_orbit(i: Optional[float] = None, a: Optional[float] = 6871, e: float = 0, Omega: Optional[float] = None, omega: Optional[float] = None, f: Optional[float] = None, alt: float = None, r_body: float = 6371) -> Basilisk.utilities.orbitalMotion.ClassicElements>,\n",
+       " 'mu': 398600436000000.0,\n",
+       " 'min_orbital_radius': 6578136.6,\n",
+       " 'thrusterPowerDraw': 0.0}"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "SimpleSatellite.default_sat_args()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "9caa7aa0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sat = SimpleSatellite(\n",
+    "    name='SimpleSat-1',\n",
+    "    sat_args=dict(\n",
+    "        mass=300,\n",
+    "        dragCoeff=lambda:np.random.uniform(2.0,2.4),\n",
+    "    ),\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "8a74ad8d",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'hs_min': 0.0,\n",
+       " 'maxCounterValue': 4,\n",
+       " 'thrMinFireTime': 0.02,\n",
+       " 'desatAttitude': 'sun',\n",
+       " 'controlAxes_B': [1, 0, 0, 0, 1, 0, 0, 0, 1],\n",
+       " 'thrForceSign': 1,\n",
+       " 'K': 7.0,\n",
+       " 'Ki': -1,\n",
+       " 'P': 35.0,\n",
+       " 'utc_init': 'this value will be set by the world model',\n",
+       " 'batteryStorageCapacity': 288000.0,\n",
+       " 'storedCharge_Init': 244227.64867226896,\n",
+       " 'disturbance_vector': None,\n",
+       " 'dragCoeff': 2.025520513584977,\n",
+       " 'basePowerDraw': 0.0,\n",
+       " 'wheelSpeeds': array([-1148.99565787, -1076.90398644,  -102.96042933]),\n",
+       " 'maxWheelSpeed': inf,\n",
+       " 'u_max': 0.2,\n",
+       " 'rwBasePower': 0.4,\n",
+       " 'rwMechToElecEfficiency': 0.0,\n",
+       " 'rwElecToMechEfficiency': 0.5,\n",
+       " 'panelArea': 1.0,\n",
+       " 'panelEfficiency': 0.2,\n",
+       " 'nHat_B': array([ 0,  0, -1]),\n",
+       " 'mass': 300,\n",
+       " 'width': 1.38,\n",
+       " 'depth': 1.04,\n",
+       " 'height': 1.58,\n",
+       " 'sigma_init': array([0.84862357, 0.58302595, 0.4793429 ]),\n",
+       " 'omega_init': array([ 2.99809963e-05, -9.84192085e-05,  4.38706944e-05]),\n",
+       " 'rN': None,\n",
+       " 'vN': None,\n",
+       " 'oe': <Basilisk.utilities.orbitalMotion.ClassicElements at 0x1631dd19490>,\n",
+       " 'mu': 398600436000000.0,\n",
+       " 'min_orbital_radius': 6578136.6,\n",
+       " 'thrusterPowerDraw': 0.0}"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sat.generate_sat_args()  # Called by the environment on reset()\n",
+    "sat.sat_args"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "fd046eff",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "New value of dragCoeff: 2.1874143071842127\n",
+      "New value of dragCoeff: 2.0812057552488277\n",
+      "New value of dragCoeff: 2.1961634875794527\n"
+     ]
+    }
+   ],
+   "source": [
+    "for _ in range(3):\n",
+    "    sat.generate_sat_args()  # Called by the environment on reset()\n",
+    "    print(\"New value of dragCoeff:\", sat.sat_args[\"dragCoeff\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "606a4663",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Basilisk",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

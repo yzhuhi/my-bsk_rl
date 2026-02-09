@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setting Satellite Parameters &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Setting Satellite Parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/2.satellite_configuration.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>定义卫星</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">sats</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">act</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">SatelliteTasking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">dyn</span><span class="p">,</span> <span class="n">fsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.architecture</span><span class="w"> </span><span class="kn">import</span> <span class="n">bskLogging</span>
+<span class="n">bskLogging</span><span class="o">.</span><span class="n">setDefaultLogLevel</span><span class="p">(</span><span class="n">bskLogging</span><span class="o">.</span><span class="n">BSK_WARNING</span><span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SimpleSatellite</span><span class="p">(</span><span class="n">sats</span><span class="o">.</span><span class="n">Satellite</span><span class="p">):</span>
+    <span class="n">observation_spec</span> <span class="o">=</span> <span class="p">[</span><span class="n">obs</span><span class="o">.</span><span class="n">Time</span><span class="p">()]</span>
+    <span class="n">action_spec</span> <span class="o">=</span> <span class="p">[</span><span class="n">act</span><span class="o">.</span><span class="n">Drift</span><span class="p">()]</span>
+    <span class="n">dyn_type</span> <span class="o">=</span> <span class="n">dyn</span><span class="o">.</span><span class="n">BasicDynamicsModel</span>
+    <span class="n">fsw_type</span> <span class="o">=</span> <span class="n">fsw</span><span class="o">.</span><span class="n">BasicFSWModel</span>
+</pre></div>
+</div>
+</div>
+<section id="Setting-Satellite-Parameters">
+<h1>Setting Satellite Parameters<a class="headerlink" href="#Setting-Satellite-Parameters" title="Link to this heading"></a></h1>
+<p>Without instantiating the satellite, parameters that can be set in the various models can be inspected.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SimpleSatellite</span><span class="o">.</span><span class="n">default_sat_args</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;hs_min&#39;: 0.0,
+ &#39;maxCounterValue&#39;: 4,
+ &#39;thrMinFireTime&#39;: 0.02,
+ &#39;desatAttitude&#39;: &#39;sun&#39;,
+ &#39;controlAxes_B&#39;: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+ &#39;thrForceSign&#39;: 1,
+ &#39;K&#39;: 7.0,
+ &#39;Ki&#39;: -1,
+ &#39;P&#39;: 35.0,
+ &#39;utc_init&#39;: &#39;this value will be set by the world model&#39;,
+ &#39;batteryStorageCapacity&#39;: 288000.0,
+ &#39;storedCharge_Init&#39;: &lt;function bsk_rl.sim.dyn.base.BasicDynamicsModel.&lt;lambda&gt;()&gt;,
+ &#39;disturbance_vector&#39;: None,
+ &#39;dragCoeff&#39;: 2.2,
+ &#39;basePowerDraw&#39;: 0.0,
+ &#39;wheelSpeeds&#39;: &lt;function bsk_rl.sim.dyn.base.BasicDynamicsModel.&lt;lambda&gt;()&gt;,
+ &#39;maxWheelSpeed&#39;: inf,
+ &#39;u_max&#39;: 0.2,
+ &#39;rwBasePower&#39;: 0.4,
+ &#39;rwMechToElecEfficiency&#39;: 0.0,
+ &#39;rwElecToMechEfficiency&#39;: 0.5,
+ &#39;panelArea&#39;: 1.0,
+ &#39;panelEfficiency&#39;: 0.2,
+ &#39;nHat_B&#39;: array([ 0,  0, -1]),
+ &#39;mass&#39;: 330,
+ &#39;width&#39;: 1.38,
+ &#39;depth&#39;: 1.04,
+ &#39;height&#39;: 1.58,
+ &#39;sigma_init&#39;: &lt;function bsk_rl.sim.dyn.base.BasicDynamicsModel.&lt;lambda&gt;()&gt;,
+ &#39;omega_init&#39;: &lt;function bsk_rl.sim.dyn.base.BasicDynamicsModel.&lt;lambda&gt;()&gt;,
+ &#39;rN&#39;: None,
+ &#39;vN&#39;: None,
+ &#39;oe&#39;: &lt;function bsk_rl.utils.orbital.random_orbit(i: Optional[float] = None, a: Optional[float] = 6871, e: float = 0, Omega: Optional[float] = None, omega: Optional[float] = None, f: Optional[float] = None, alt: float = None, r_body: float = 6371) -&gt; Basilisk.utilities.orbitalMotion.ClassicElements&gt;,
+ &#39;mu&#39;: 398600436000000.0,
+ &#39;min_orbital_radius&#39;: 6578136.6,
+ &#39;thrusterPowerDraw&#39;: 0.0}
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sat</span> <span class="o">=</span> <span class="n">SimpleSatellite</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;SimpleSat-1&#39;</span><span class="p">,</span>
+    <span class="n">sat_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="n">mass</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+        <span class="n">dragCoeff</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span><span class="mf">2.4</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sat</span><span class="o">.</span><span class="n">generate_sat_args</span><span class="p">()</span>  <span class="c1"># Called by the environment on reset()</span>
+<span class="n">sat</span><span class="o">.</span><span class="n">sat_args</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;hs_min&#39;: 0.0,
+ &#39;maxCounterValue&#39;: 4,
+ &#39;thrMinFireTime&#39;: 0.02,
+ &#39;desatAttitude&#39;: &#39;sun&#39;,
+ &#39;controlAxes_B&#39;: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+ &#39;thrForceSign&#39;: 1,
+ &#39;K&#39;: 7.0,
+ &#39;Ki&#39;: -1,
+ &#39;P&#39;: 35.0,
+ &#39;utc_init&#39;: &#39;this value will be set by the world model&#39;,
+ &#39;batteryStorageCapacity&#39;: 288000.0,
+ &#39;storedCharge_Init&#39;: 244227.64867226896,
+ &#39;disturbance_vector&#39;: None,
+ &#39;dragCoeff&#39;: 2.025520513584977,
+ &#39;basePowerDraw&#39;: 0.0,
+ &#39;wheelSpeeds&#39;: array([-1148.99565787, -1076.90398644,  -102.96042933]),
+ &#39;maxWheelSpeed&#39;: inf,
+ &#39;u_max&#39;: 0.2,
+ &#39;rwBasePower&#39;: 0.4,
+ &#39;rwMechToElecEfficiency&#39;: 0.0,
+ &#39;rwElecToMechEfficiency&#39;: 0.5,
+ &#39;panelArea&#39;: 1.0,
+ &#39;panelEfficiency&#39;: 0.2,
+ &#39;nHat_B&#39;: array([ 0,  0, -1]),
+ &#39;mass&#39;: 300,
+ &#39;width&#39;: 1.38,
+ &#39;depth&#39;: 1.04,
+ &#39;height&#39;: 1.58,
+ &#39;sigma_init&#39;: array([0.84862357, 0.58302595, 0.4793429 ]),
+ &#39;omega_init&#39;: array([ 2.99809963e-05, -9.84192085e-05,  4.38706944e-05]),
+ &#39;rN&#39;: None,
+ &#39;vN&#39;: None,
+ &#39;oe&#39;: &lt;Basilisk.utilities.orbitalMotion.ClassicElements at 0x1631dd19490&gt;,
+ &#39;mu&#39;: 398600436000000.0,
+ &#39;min_orbital_radius&#39;: 6578136.6,
+ &#39;thrusterPowerDraw&#39;: 0.0}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">sat</span><span class="o">.</span><span class="n">generate_sat_args</span><span class="p">()</span>  <span class="c1"># Called by the environment on reset()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New value of dragCoeff:&quot;</span><span class="p">,</span> <span class="n">sat</span><span class="o">.</span><span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;dragCoeff&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+New value of dragCoeff: 2.1874143071842127
+New value of dragCoeff: 2.0812057552488277
+New value of dragCoeff: 2.1961634875794527
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

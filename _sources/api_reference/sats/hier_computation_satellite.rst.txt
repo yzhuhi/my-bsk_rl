@@ -1,0 +1,13 @@
+.. _bsk_rl.sats.hier_computation_satellite:
+.. currentmodule:: bsk_rl.sats.hier_computation_satellite
+
+Hierarchical Computation Satellite
+==================================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: bsk_rl.sats.hier_computation_satellite
+   :members:
+   :show-inheritance:
+

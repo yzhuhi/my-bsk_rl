@@ -1,0 +1,13 @@
+.. _bsk_rl.act.stin_hier_hybrid_actions:
+.. currentmodule:: bsk_rl.act.stin_hier_hybrid_actions
+
+STIN Hierarchical Hybrid Actions
+================================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: bsk_rl.act.stin_hier_hybrid_actions
+   :members:
+   :show-inheritance:
+

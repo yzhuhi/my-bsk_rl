@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>examples.test_vizard.stin_marl_example &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">examples.test_vizard.stin_marl_example</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for examples.test_vizard.stin_marl_example</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;STIN MARL Environment Usage Example.</span>
+
+<span class="sd">This example demonstrates how to set up and use the STIN (Satellite-Terrestrial </span>
+<span class="sd">Integrated Network) multi-agent reinforcement learning environment.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINTaskReward</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">CityTaskScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># 1. 创建 STIN MARL 环境</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="create_stin_environment">
+<a class="viewcode-back" href="../../../examples/test_vizard/stin_marl_example.html#examples.test_vizard.stin_marl_example.create_stin_environment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_stin_environment</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;创建完整的 STIN MARL 环境。&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    constellation_args = walker_delta_args(</span>
+<span class="sd">        n_planes=6,           # 铱星有 6 个轨道面</span>
+<span class="sd">        n_sats_per_plane=11,  # 每个面 11 颗工作卫星 (总计 66 颗)</span>
+<span class="sd">        altitude=781,         # [km] 标准高度约为 781 km</span>
+<span class="sd">        inc=86.4,             # [deg] 轨道倾角 (近极地轨道)</span>
+<span class="sd">        clusterspacing=2,     # [F参数] 铱星的相位因子是 2 (Walker 66/6/2)</span>
+<span class="sd">    )</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Walker Delta 星座配置（6 颗卫星，800km 高度，60° 倾角）</span>
+    <span class="n">constellation_args</span> <span class="o">=</span> <span class="n">walker_delta_args</span><span class="p">(</span>
+        <span class="n">n_planes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>           <span class="c1"># 2 个轨道面</span>
+        <span class="n">n_sats_per_plane</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>   <span class="c1"># 每个面 3 颗卫星</span>
+        <span class="n">altitude</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>         <span class="c1"># [km] 轨道高度</span>
+        <span class="n">inc</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>               <span class="c1"># [deg] 轨道倾角</span>
+        <span class="n">clusterspacing</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>     <span class="c1"># [deg] 卫星间相位差</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 计算任务场景（基于城市分布）</span>
+    <span class="n">task_scenario</span> <span class="o">=</span> <span class="n">CityTaskScenario</span><span class="p">(</span>
+        <span class="n">n_tasks</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                          <span class="c1"># 20 个任务</span>
+        <span class="n">n_select_from</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>                   <span class="c1"># 从前 100 大城市中选择</span>
+        <span class="n">data_size_range</span><span class="o">=</span><span class="p">(</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">10e6</span><span class="p">),</span>         <span class="c1"># 1-10 Mb</span>
+        <span class="n">workload_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>          <span class="c1"># 100-1000 cycles/bit</span>
+        <span class="n">max_delay_range</span><span class="o">=</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>         <span class="c1"># 5-20 秒时延约束</span>
+        <span class="n">task_arrival_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>               <span class="c1"># 0.1 tasks/s 到达率</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 奖励函数配置</span>
+    <span class="n">reward_system</span> <span class="o">=</span> <span class="n">STINTaskReward</span><span class="p">(</span>
+        <span class="n">base_reward</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>        <span class="c1"># 基础完成奖励</span>
+        <span class="n">timeout_penalty</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>    <span class="c1"># 超时惩罚</span>
+        <span class="n">delay_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>       <span class="c1"># 时延权重</span>
+        <span class="n">energy_weight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>      <span class="c1"># 能耗权重</span>
+        <span class="n">balance_weight</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>    <span class="c1"># 负载均衡权重</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 创建环境</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+        <span class="n">satellites</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">ComputationSatellite</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;sat-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">sat_args</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;cpuMaxFrequency&quot;</span><span class="p">:</span> <span class="mf">2.0e9</span><span class="p">,</span>     <span class="c1"># 2 GHz</span>
+                    <span class="s2">&quot;cpuMinFrequency&quot;</span><span class="p">:</span> <span class="mf">0.5e9</span><span class="p">,</span>     <span class="c1"># 0.5 GHz</span>
+                    <span class="s2">&quot;cpuWorkload&quot;</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span>         <span class="c1"># 500 cycles/bit</span>
+                    <span class="s2">&quot;batteryStorageCapacity&quot;</span><span class="p">:</span> <span class="mf">80.0</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>  <span class="c1"># 80 Wh</span>
+                    <span class="s2">&quot;taskMinimumElevation&quot;</span><span class="p">:</span> <span class="mf">10.0</span> <span class="o">*</span> <span class="mf">3.14159</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>  <span class="c1"># 10°</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">sat_arg_randomizer</span><span class="o">=</span><span class="n">constellation_args</span><span class="p">,</span>
+        <span class="n">scenario</span><span class="o">=</span><span class="n">task_scenario</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">reward_system</span><span class="p">,</span>
+        <span class="n">sim_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">max_step_duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>  <span class="c1"># 60 秒 per step</span>
+        <span class="n">time_limit</span><span class="o">=</span><span class="mf">3600.0</span><span class="p">,</span>       <span class="c1"># 1 小时 episode</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">env</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># 2. 使用环境进行训练</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="example_training_loop">
+<a class="viewcode-back" href="../../../examples/test_vizard/stin_marl_example.html#examples.test_vizard.stin_marl_example.example_training_loop">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">example_training_loop</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;示例训练循环（使用随机动作）。&quot;&quot;&quot;</span>
+    
+    <span class="n">env</span> <span class="o">=</span> <span class="n">create_stin_environment</span><span class="p">()</span>
+    
+    <span class="c1"># 重置环境</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">total_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">step_count</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="c1"># 随机动作（实际训练中使用 RL 算法）</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+        
+        <span class="c1"># 执行动作</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+        
+        <span class="c1"># 累计奖励</span>
+        <span class="n">step_reward</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">step_reward</span>
+        <span class="n">step_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c1"># 打印步骤信息</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step </span><span class="si">{</span><span class="n">step_count</span><span class="si">}</span><span class="s2">: Reward = </span><span class="si">{</span><span class="n">step_reward</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;Cumulative = </span><span class="si">{</span><span class="n">total_reward</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># 检查是否结束</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">terminated</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">truncated</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Episode finished after </span><span class="si">{</span><span class="n">step_count</span><span class="si">}</span><span class="s2"> steps&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total reward: </span><span class="si">{</span><span class="n">total_reward</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># 3. 分析任务完成情况</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="analyze_task_completion">
+<a class="viewcode-back" href="../../../examples/test_vizard/stin_marl_example.html#examples.test_vizard.stin_marl_example.analyze_task_completion">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">analyze_task_completion</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;分析任务完成情况和性能指标。&quot;&quot;&quot;</span>
+    
+    <span class="n">total_completed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_expired</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_delay</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;completed_tasks_count&#39;</span><span class="p">):</span>
+            <span class="n">total_completed</span> <span class="o">+=</span> <span class="n">sat</span><span class="o">.</span><span class="n">completed_tasks_count</span>
+            <span class="n">total_expired</span> <span class="o">+=</span> <span class="n">sat</span><span class="o">.</span><span class="n">expired_tasks_count</span>
+            
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> Statistics:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Completed: </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">completed_tasks_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Expired: </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">expired_tasks_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Processed Data: </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">processed_data_total</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Mb&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Offloaded Data: </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">offloaded_data_total</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Mb&quot;</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Global Statistics ===&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Completed: </span><span class="si">{</span><span class="n">total_completed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Expired: </span><span class="si">{</span><span class="n">total_expired</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">completion_rate</span> <span class="o">=</span> <span class="n">total_completed</span> <span class="o">/</span> <span class="p">(</span><span class="n">total_completed</span> <span class="o">+</span> <span class="n">total_expired</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completion Rate: </span><span class="si">{</span><span class="n">completion_rate</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span></div>
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># 运行示例</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating STIN MARL Environment...&quot;</span><span class="p">)</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">create_stin_environment</span><span class="p">()</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Environment created successfully!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of satellites: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of tasks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">tasks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Action space: </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Observation space: </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># 运行一个 episode</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running example training loop...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+    <span class="n">example_training_loop</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

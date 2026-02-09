@@ -1,0 +1,407 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIN Relative Observations &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Actions" href="../act/index.html" />
+    <link rel="prev" title="STIN Hierarchical Observations" href="stin_hier_observations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking"><code class="docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.SatelliteTasking"><code class="docutils literal notranslate"><span class="pre">SatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.ConstellationTasking"><code class="docutils literal notranslate"><span class="pre">ConstellationTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sats/index.html">Satellites</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Observations</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.Observation"><code class="docutils literal notranslate"><span class="pre">Observation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.SatProperties"><code class="docutils literal notranslate"><span class="pre">SatProperties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.RelativeProperties"><code class="docutils literal notranslate"><span class="pre">RelativeProperties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.STINRelativeObservations"><code class="docutils literal notranslate"><span class="pre">STINRelativeObservations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.STINHierarchicalObservations"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalObservations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.Time"><code class="docutils literal notranslate"><span class="pre">Time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.OpportunityProperties"><code class="docutils literal notranslate"><span class="pre">OpportunityProperties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.Eclipse"><code class="docutils literal notranslate"><span class="pre">Eclipse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.obs.ResourceRewardWeight"><code class="docutils literal notranslate"><span class="pre">ResourceRewardWeight</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="observations.html">Backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="relative_observations.html">Relative Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stin_hier_observations.html">STIN Hierarchical Observations</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">STIN Relative Observations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations"><code class="docutils literal notranslate"><span class="pre">STINRelativeObservations</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations.observation_space"><code class="docutils literal notranslate"><span class="pre">STINRelativeObservations.observation_space</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations.get_obs"><code class="docutils literal notranslate"><span class="pre">STINRelativeObservations.get_obs()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations.observation_description"><code class="docutils literal notranslate"><span class="pre">STINRelativeObservations.observation_description</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_battery_fraction"><code class="docutils literal notranslate"><span class="pre">get_battery_fraction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_storage_fraction"><code class="docutils literal notranslate"><span class="pre">get_storage_fraction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_task_queue_size"><code class="docutils literal notranslate"><span class="pre">get_task_queue_size()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_queue_workload"><code class="docutils literal notranslate"><span class="pre">get_queue_workload()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_cpu_freq"><code class="docutils literal notranslate"><span class="pre">get_cpu_freq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_isl_distance"><code class="docutils literal notranslate"><span class="pre">get_isl_distance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_current_task_priority"><code class="docutils literal notranslate"><span class="pre">get_current_task_priority()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_min_remaining_deadline"><code class="docutils literal notranslate"><span class="pre">get_min_remaining_deadline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_avg_task_priority"><code class="docutils literal notranslate"><span class="pre">get_avg_task_priority()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.obs.stin_relative_observations.get_isl_channel_quality"><code class="docutils literal notranslate"><span class="pre">get_isl_channel_quality()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../act/index.html">Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scene/index.html">Scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">Data &amp; Reward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm/index.html">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sim/index.html">Simulation (BSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Observations</a></li>
+      <li class="breadcrumb-item active">STIN Relative Observations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api_reference/obs/stin_relative_observations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stin-relative-observations">
+<span id="bsk-rl-obs-stin-relative-observations"></span><h1>STIN Relative Observations<a class="headerlink" href="#stin-relative-observations" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p id="module-bsk_rl.obs.stin_relative_observations">STINRelativeObservations: 针对 STIN 场景定制的相对观测。</p>
+<p>获取当前卫星相对于其 N 个最近邻居的状态，以支持 MARL 决策。
+支持灵活配置观测属性和归一化参数。</p>
+<dl class="simple">
+<dt>设计说明:</dt><dd><ul class="simple">
+<li><p>继承自 Observation 基类（而非 RelativeProperties）</p></li>
+<li><p>RelativeProperties 设计用于 1 对 1 (deputy vs chief) 场景</p></li>
+<li><p>STINRelativeObservations 设计用于 1 对 N (self vs N neighbors) 场景</p></li>
+<li><p>复用 relative_observations 模块中的辅助函数 (如 r_DC_N, v_DC_N) 计算相对状态</p></li>
+</ul>
+</dd>
+</dl>
+<p>使用示例:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span><span class="o">.</span><span class="n">STINRelativeObservations</span><span class="p">(</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;r_DC_N&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">1e7</span><span class="p">),</span>           <span class="c1"># 相对位置 [m]</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;v_DC_N&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">1e4</span><span class="p">),</span>           <span class="c1"># 相对速度 [m/s]</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;battery_fraction&quot;</span><span class="p">),</span>            <span class="c1"># 电池电量分数</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;task_queue_size&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">20.0</span><span class="p">),</span>  <span class="c1"># 任务队列负载</span>
+    <span class="n">max_neighbors</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.STINRelativeObservations">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINRelativeObservations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">neighbor_properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'neighbor_obs'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#STINRelativeObservations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="index.html#bsk_rl.obs.Observation" title="bsk_rl.obs.observations.Observation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Observation</span></code></a></p>
+<p>初始化相对观测。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>neighbor_properties</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – 邻居属性规范。每个属性是一个字典，包含：
+* <code class="docutils literal notranslate"><span class="pre">prop</span></code>: 属性名称（框架函数名或自定义函数）
+* <code class="docutils literal notranslate"><span class="pre">norm</span></code> <cite>optional</cite>: 归一化因子。默认 1.0。
+* <code class="docutils literal notranslate"><span class="pre">name</span></code> <cite>optional</cite>: 观测元素名称。默认为 <code class="docutils literal notranslate"><span class="pre">prop</span></code> 的值。
+* <code class="docutils literal notranslate"><span class="pre">fn</span></code> <cite>optional</cite>: 自定义函数 fn(neighbor, self_sat) -&gt; value。</p></li>
+<li><p><strong>max_neighbors</strong> (<em>int</em>) – 最大邻居数量。</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – 观测名称。</p></li>
+</ul>
+</dd>
+</dl>
+<p>示例:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">STINRelativeObservations</span><span class="p">(</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;r_DC_N&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">1e7</span><span class="p">),</span>           <span class="c1"># 相对位置</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;v_DC_N&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">1e4</span><span class="p">),</span>           <span class="c1"># 相对速度</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;battery_fraction&quot;</span><span class="p">),</span>            <span class="c1"># 电池</span>
+    <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;task_queue_size&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">20.0</span><span class="p">),</span>  <span class="c1"># 队列</span>
+    <span class="n">max_neighbors</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.STINRelativeObservations.observation_space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">observation_space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Box</span></span><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations.observation_space" title="Link to this definition"></a></dt>
+<dd><p>定义观测空间：N_neighbors * N_features 的一维向量。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.STINRelativeObservations.get_obs">
+<span class="sig-name descname"><span class="pre">get_obs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#STINRelativeObservations.get_obs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations.get_obs" title="Link to this definition"></a></dt>
+<dd><p>构造卫星的相对观测向量。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>形状为 (num_total_obs,) 的观测向量</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.STINRelativeObservations.observation_description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">observation_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.STINRelativeObservations.observation_description" title="Link to this definition"></a></dt>
+<dd><p>人类可读的观测空间描述。</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_battery_fraction">
+<span class="sig-name descname"><span class="pre">get_battery_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_battery_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_battery_fraction" title="Link to this definition"></a></dt>
+<dd><p>获取邻居的电池电量分数（兼容 simpleBattery 和 powerMonitor）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_storage_fraction">
+<span class="sig-name descname"><span class="pre">get_storage_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_storage_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_storage_fraction" title="Link to this definition"></a></dt>
+<dd><p>获取邻居的存储空间分数（兼容不同动力学模型）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_task_queue_size">
+<span class="sig-name descname"><span class="pre">get_task_queue_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_task_queue_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_task_queue_size" title="Link to this definition"></a></dt>
+<dd><p>获取邻居的任务队列长度。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_queue_workload">
+<span class="sig-name descname"><span class="pre">get_queue_workload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_queue_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_queue_workload" title="Link to this definition"></a></dt>
+<dd><p>获取邻居的队列总工作量 [cycles]。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_cpu_freq">
+<span class="sig-name descname"><span class="pre">get_cpu_freq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_cpu_freq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_cpu_freq" title="Link to this definition"></a></dt>
+<dd><p>获取邻居的当前 CPU 频率 [Hz]。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_isl_distance">
+<span class="sig-name descname"><span class="pre">get_isl_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_isl_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_isl_distance" title="Link to this definition"></a></dt>
+<dd><p>获取到邻居的 ISL 距离 [m]。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_current_task_priority">
+<span class="sig-name descname"><span class="pre">get_current_task_priority</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_current_task_priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_current_task_priority" title="Link to this definition"></a></dt>
+<dd><p>获取邻居当前任务的优先级 [0, 1]。</p>
+<p>✅ 已启用: TaskSlice 现已包含 priority 属性。
+可用于邻居观测空间：</p>
+<blockquote>
+<div><p>dict(prop=”get_current_task_priority”, norm=1.0)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>🔮 Future Work 扩展方向：</dt><dd><ol class="arabic simple">
+<li><p>将邻居优先级加入 STINRelativeObservations（增加 4D）</p></li>
+<li><p>添加动作空间维度：”优先处理高优先级任务”开关 (11D 动作)</p></li>
+<li><p>Agent 可根据自身和邻居的任务优先级分布，决定卸载策略
+（高优先级任务不卸载，低优先级任务卸载给有空闲的邻居）</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>当前队列首任务的优先级，无任务时返回 0.0。</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_min_remaining_deadline">
+<span class="sig-name descname"><span class="pre">get_min_remaining_deadline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_min_remaining_deadline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_min_remaining_deadline" title="Link to this definition"></a></dt>
+<dd><p>获取任务队列中最紧急任务的剩余时延 [s]。</p>
+<p>用于观测空间，让 Agent 知道”接下来有没有急件”。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sat</strong> – 目标卫星（可以是自身或邻居）</p></li>
+<li><p><strong>self_sat</strong> – 当前卫星（用于获取仿真时间）</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>最小剩余时延 [s]，无任务时返回大值 (1000.0)。</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_avg_task_priority">
+<span class="sig-name descname"><span class="pre">get_avg_task_priority</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_avg_task_priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_avg_task_priority" title="Link to this definition"></a></dt>
+<dd><p>获取任务队列的平均优先级 [0, 1]。</p>
+<p>用于观测空间，让 Agent 知道”手头任务整体优先级”。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sat</strong> – 目标卫星（可以是自身或邻居）</p></li>
+<li><p><strong>self_sat</strong> – 当前卫星（未使用，保持接口一致）</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>平均优先级，无任务时返回 0.0。</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bsk_rl.obs.stin_relative_observations.get_isl_channel_quality">
+<span class="sig-name descname"><span class="pre">get_isl_channel_quality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self_sat</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/obs/stin_relative_observations.html#get_isl_channel_quality"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.obs.stin_relative_observations.get_isl_channel_quality" title="Link to this definition"></a></dt>
+<dd><p>获取到邻居的 ISL 信道质量评分 [0, 1]。</p>
+<dl class="simple">
+<dt>基于 constants.calculate_isl_rate() 的 ISL 信道质量评分：</dt><dd><p>R_I = B_I × log₂(1 + SNR)
+SNR = (p_I × g_I^tr × g_I^rc) / (L_I × N₀ × B_I)</p>
+</dd>
+</dl>
+<p>质量越高，传输速度越快、丢包率越低。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>neighbor</strong> – 邻居卫星</p></li>
+<li><p><strong>self_sat</strong> – 当前卫星</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>信道质量 [0, 1]，1.0 表示最佳，0.0 表示边缘可见。</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="stin_hier_observations.html" class="btn btn-neutral float-left" title="STIN Hierarchical Observations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../act/index.html" class="btn btn-neutral float-right" title="Actions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

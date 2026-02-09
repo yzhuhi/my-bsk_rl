@@ -1,0 +1,1001 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloud Environment with Re-imaging &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Agile Earth-Observing Satellite Environment" href="aeos.html" />
+    <link rel="prev" title="Cloud Environment" href="cloud_environment.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#environments">Environments</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="simple_environment.html">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="satellite_configuration.html">Satellite Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multiagent_envs.html">Multi-Agent Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fault_environment.html">Fault Environment Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fault_environment.html#Configure-Satellite-Pareameters">Configure Satellite Pareameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="communication_action.html">Broadcast Communication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cloud_environment.html">Cloud Environment</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html#earth-observation">Earth Observation</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="cloud_environment.html">Cloud Environment</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Cloud Environment with Re-imaging</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#Loading-Modules">Loading Modules</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#Making-a-Scenario-with-Cloud-Covered-Targets">Making a Scenario with Cloud Covered Targets</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#Making-a-Rewarder-Considering-Cloud-Coverage-for-the-Single-picture-Case">Making a Rewarder Considering Cloud Coverage for the Single-picture Case</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#Making-a-Rewarder-Considering-Cloud-Coverage-for-the-Re-imaging-Case">Making a Rewarder Considering Cloud Coverage for the Re-imaging Case</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#Configuring-the-Satellite-to-Have-Access-to-Cloud-Information">Configuring the Satellite to Have Access to Cloud Information</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#Initializing-and-Interacting-with-the-Environment">Initializing and Interacting with the Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="aeos.html">Agile Earth-Observing Satellite Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#rso-inspection">RSO Inspection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#training">Training</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Cloud Environment with Re-imaging</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/cloud_environment_with_reimaging.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Cloud-Environment-with-Re-imaging">
+<h1>Cloud Environment with Re-imaging<a class="headerlink" href="#Cloud-Environment-with-Re-imaging" title="Link to this heading"></a></h1>
+<p>This tutorial demonstrates the configuration and use of a BSK-RL environment considering cloud coverage and re-imaging capabilities. Two reward functions are presented: a single-picture binary case (where targets are deemed occluded by clouds or not and no re-imaging is allowed) and a re-imaging case where the problem is formulated in terms of the targets’ probability of being successfully observed. Still, the satellite cannot observe the true cloud coverage of each target, only its forecast.
+The satellite has to image targets while keeping a positive battery level. This example script is part of an upcoming publication.</p>
+<section id="Loading-Modules">
+<h2>Loading Modules<a class="headerlink" href="#Loading-Modules" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.architecture</span><span class="w"> </span><span class="kn">import</span> <span class="n">bskLogging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">orbitalMotion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">act</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">sats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">dyn</span><span class="p">,</span> <span class="n">fsw</span><span class="p">,</span> <span class="n">world</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene.targets</span><span class="w"> </span><span class="kn">import</span> <span class="n">UniformTargets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Data</span><span class="p">,</span> <span class="n">DataStore</span><span class="p">,</span> <span class="n">GlobalReward</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data.unique_image_data</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UniqueImageData</span><span class="p">,</span>
+    <span class="n">UniqueImageStore</span><span class="p">,</span>
+    <span class="n">UniqueImageReward</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">bskLogging</span><span class="o">.</span><span class="n">setDefaultLogLevel</span><span class="p">(</span><span class="n">bskLogging</span><span class="o">.</span><span class="n">BSK_WARNING</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Making-a-Scenario-with-Cloud-Covered-Targets">
+<h2>Making a Scenario with Cloud Covered Targets<a class="headerlink" href="#Making-a-Scenario-with-Cloud-Covered-Targets" title="Link to this heading"></a></h2>
+<p>To account for clouds in the simulation process, we can associate a cloud coverage value to each target that represents the percentage of cloud coverage over that area. Cloud coverage can be randomly generated or derived from real data. Here, we have an example on how to use a stochastic cloud model using UniformTargets as a base and attach the following information to each target:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cloud_cover_true</span></code> represents the true cloud coverage. Information from external sources, such as historical cloud data, can be used here based on each target’s position.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cloud_cover_forecast</span></code> represents the cloud coverage forecast. Forecast from external sources can be plugged in here.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cloud_cover_sigma</span></code> represents the standard deviation of the cloud coverage forecast.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">belief</span></code> represents the probability that the target was successfully observed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prev_obs</span></code> time at which the last picture of the target was taken.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CloudTargets</span><span class="p">(</span><span class="n">UniformTargets</span><span class="p">):</span>
+    <span class="n">mu_data</span> <span class="o">=</span> <span class="mf">0.6740208166434426</span>  <span class="c1"># Average global cloud coverage</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_targets</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">priority_distribution</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">orbitalMotion</span><span class="o">.</span><span class="n">REQ_EARTH</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
+        <span class="n">sigma_levels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>
+        <span class="n">reward_thresholds</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
+        <span class="n">belief_init</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.94</span><span class="p">),</span>
+        <span class="n">prev_obs_init</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">5700.0</span><span class="p">),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n_targets</span><span class="p">,</span> <span class="n">priority_distribution</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_thresholds</span> <span class="o">=</span> <span class="n">reward_thresholds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_levels</span> <span class="o">=</span> <span class="n">sigma_levels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">belief_init</span> <span class="o">=</span> <span class="n">belief_init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_obs_init</span> <span class="o">=</span> <span class="n">prev_obs_init</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">regenerate_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">regenerate_targets</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">:</span>
+            <span class="c1"># Initialize true cloud coverage</span>
+            <span class="n">cloud_cover_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                <span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_data</span> <span class="o">*</span> <span class="mi">2</span>
+            <span class="p">)</span>  <span class="c1"># Instead, true cloud coverage can be obtained by historical data based on the target&#39;s position</span>
+            <span class="n">cloud_cover_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">cloud_cover_true</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">cloud_cover_true</span> <span class="o">=</span> <span class="n">cloud_cover_true</span>
+
+            <span class="c1"># Initialize cloud coverage forecast</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">cloud_cover_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sigma_levels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">cloud_cover_forecast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">cloud_cover_true</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">cloud_cover_sigma</span>
+            <span class="p">)</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">cloud_cover_forecast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">cloud_cover_forecast</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+            <span class="c1"># Set reward threshold</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_thresholds</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">reward_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_thresholds</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">reward_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">reward_thresholds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_thresholds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Initialize beliefs and previous observations</span>
+            <span class="n">b_S1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">belief_init</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">belief_init</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">b_S0</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">b_S1</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">belief</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">b_S0</span><span class="p">,</span> <span class="n">b_S1</span><span class="p">])</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">prev_obs</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prev_obs_init</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_obs_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">belief_update_var</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+
+<span class="c1"># Define the randomization interval for the number of targets</span>
+<span class="n">n_targets</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">CloudTargets</span><span class="p">(</span><span class="n">n_targets</span><span class="o">=</span><span class="n">n_targets</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Making-a-Rewarder-Considering-Cloud-Coverage-for-the-Single-picture-Case">
+<h2>Making a Rewarder Considering Cloud Coverage for the Single-picture Case<a class="headerlink" href="#Making-a-Rewarder-Considering-Cloud-Coverage-for-the-Single-picture-Case" title="Link to this heading"></a></h2>
+<p>When considering targets potentially covered by clouds, we can use a binary reward model where the reward is proportional to the target priority if the target’s cloud coverage is below its <code class="docutils literal notranslate"><span class="pre">reward_threshold</span></code> (how much cloud coverage is acceptable). Therefore, we create a modified rewarder <code class="docutils literal notranslate"><span class="pre">CloudImageBinaryRewarder</span></code>; it has similar settings as the <a class="reference internal" href="../api_reference/data/index.html"><span class="doc">UniqueImageReward</span></a> class, but <code class="docutils literal notranslate"><span class="pre">cloud_covered</span></code> and <code class="docutils literal notranslate"><span class="pre">cloud_free</span></code> information is added. Additionally, the
+<code class="docutils literal notranslate"><span class="pre">calculate_reward</span></code> function is modified for the binary reward model.</p>
+<p>For this case, the reward function is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}R = \begin{cases}
+\rho_i &amp; \text{if } c_{p_i} \leq c_{\text{thr}_i} \\
+0 &amp; \text{otherwise.}
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_i\)</span> is priority, <span class="math notranslate nohighlight">\(c_{p_i}\)</span> is the true cloud coverage, and <span class="math notranslate nohighlight">\(c_{\text{thr}_i}\)</span> is the <code class="docutils literal notranslate"><span class="pre">reward_threshold</span></code> for target <span class="math notranslate nohighlight">\(i\)</span>. For a case where the reward is linearly proportional to the cloud coverage, see <a class="reference internal" href="cloud_environment.html"><span class="doc">Cloud Environment</span></a></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene.targets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">Target</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CloudImageBinaryData</span><span class="p">(</span><span class="n">UniqueImageData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DataType for unique images of targets.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">imaged</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">duplicates</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">known</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cloud_covered</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cloud_free</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct unit of data to record unique images.</span>
+
+<span class="sd">        Keeps track of ``imaged`` targets, a count of ``duplicates`` (i.e. images that</span>
+<span class="sd">        were not rewarded due to the target already having been imaged), and all</span>
+<span class="sd">        ``known`` targets in the environment. It also keeps track of which targets are considered</span>
+<span class="sd">        ``cloud_covered`` and ``cloud_free`` based on the specified threshold.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            imaged: Set of targets that are known to be imaged.</span>
+<span class="sd">            duplicates: Count of target imaging duplication.</span>
+<span class="sd">            known: Set of targets that are known to exist (imaged and unimaged).</span>
+<span class="sd">            cloud_covered: Set of imaged targets that are known to be cloud covered.</span>
+<span class="sd">            cloud_free: Set of imaged targets that are known to be cloud free.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">imaged</span><span class="o">=</span><span class="n">imaged</span><span class="p">,</span> <span class="n">duplicates</span><span class="o">=</span><span class="n">duplicates</span><span class="p">,</span> <span class="n">known</span><span class="o">=</span><span class="n">known</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cloud_covered</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cloud_covered</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cloud_free</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cloud_free</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cloud_covered</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cloud_covered</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cloud_free</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cloud_free</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;CloudImageBinaryData&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CloudImageBinaryData&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine two units of data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Another unit of data to combine with this one.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Combined unit of data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">imaged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaged</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">imaged</span>
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">duplicates</span>
+            <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">duplicates</span>
+            <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imaged</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">imaged</span><span class="p">)</span>
+            <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">imaged</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">known</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">known</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">known</span>
+        <span class="n">cloud_covered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_covered</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">cloud_covered</span>
+        <span class="n">cloud_free</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_free</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">cloud_free</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="n">imaged</span><span class="o">=</span><span class="n">imaged</span><span class="p">,</span>
+            <span class="n">duplicates</span><span class="o">=</span><span class="n">duplicates</span><span class="p">,</span>
+            <span class="n">known</span><span class="o">=</span><span class="n">known</span><span class="p">,</span>
+            <span class="n">cloud_covered</span><span class="o">=</span><span class="n">cloud_covered</span><span class="p">,</span>
+            <span class="n">cloud_free</span><span class="o">=</span><span class="n">cloud_free</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CloudImageBinaryDataStore</span><span class="p">(</span><span class="n">UniqueImageStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DataStore for unique images of targets.&quot;&quot;&quot;</span>
+
+    <span class="n">data_type</span> <span class="o">=</span> <span class="n">CloudImageBinaryData</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare_log_states</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">old_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">new_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloudImageBinaryData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for an increase in logged data to identify new images.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            old_state: older storedData from satellite storage unit</span>
+<span class="sd">            new_state: newer storedData from satellite storage unit</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Targets imaged at new_state that were unimaged at old_state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_increase</span> <span class="o">=</span> <span class="n">new_state</span> <span class="o">-</span> <span class="n">old_state</span>
+        <span class="k">if</span> <span class="n">data_increase</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">UniqueImageData</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_target_colors</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span><span class="p">])</span>
+            <span class="n">cloud_coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span><span class="o">.</span><span class="n">cloud_cover_true</span>
+            <span class="n">cloud_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span><span class="o">.</span><span class="n">reward_threshold</span>
+            <span class="k">if</span> <span class="n">cloud_coverage</span> <span class="o">&gt;</span> <span class="n">cloud_threshold</span><span class="p">:</span>
+                <span class="n">cloud_covered</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span><span class="p">]</span>
+                <span class="n">cloud_free</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cloud_covered</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">cloud_free</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">CloudImageBinaryData</span><span class="p">(</span>
+                <span class="n">imaged</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span><span class="p">},</span>
+                <span class="n">cloud_covered</span><span class="o">=</span><span class="n">cloud_covered</span><span class="p">,</span>
+                <span class="n">cloud_free</span><span class="o">=</span><span class="n">cloud_free</span><span class="p">,</span>
+            <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CloudImageBinaryRewarder</span><span class="p">(</span><span class="n">UniqueImageReward</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DataManager for rewarding unique images.&quot;&quot;&quot;</span>
+
+    <span class="n">data_store_type</span> <span class="o">=</span> <span class="n">CloudImageBinaryDataStore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_reward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">new_data_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CloudImageBinaryData</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reward new each unique image once using self.reward_fn().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new_data_dict: Record of new images for each satellite</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            reward: Cumulative reward across satellites for one step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">imaged_counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">new_data</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">new_data</span><span class="o">.</span><span class="n">imaged</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">imaged_counts</span><span class="p">:</span>
+                    <span class="n">imaged_counts</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">imaged_counts</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">sat_id</span><span class="p">,</span> <span class="n">new_data</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">new_data</span><span class="o">.</span><span class="n">cloud_free</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imaged</span><span class="p">:</span>
+                    <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">priority</span><span class="p">)</span> <span class="o">/</span> <span class="n">imaged_counts</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="n">reward</span>
+
+
+<span class="c1"># Define the reward function as a function of the priority of the target and the cloud cover</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">reward_function_binary</span><span class="p">(</span><span class="n">priority</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">priority</span>
+
+
+<span class="c1"># Uncomment this line and comment the reward in the cell below to use the binary reward function</span>
+<span class="c1"># rewarder = CloudImageBinaryRewarder(reward_fn=reward_function_binary)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Making-a-Rewarder-Considering-Cloud-Coverage-for-the-Re-imaging-Case">
+<h2>Making a Rewarder Considering Cloud Coverage for the Re-imaging Case<a class="headerlink" href="#Making-a-Rewarder-Considering-Cloud-Coverage-for-the-Re-imaging-Case" title="Link to this heading"></a></h2>
+<p>If the target is deemed occluded by clouds, it won’t be tasked again in the single-picture case. However, the problem can be formulated in terms of the probability of observing the target (<span class="math notranslate nohighlight">\(\text{P}(S=1)\)</span>, represented by the variable <code class="docutils literal notranslate"><span class="pre">belief</span></code> in the code) given the number of pictures and time difference between pictures (<span class="math notranslate nohighlight">\(\delta t_i\)</span>). Thus, a new rewarder named <code class="docutils literal notranslate"><span class="pre">CloudImageProbabilityRewarder</span></code> is created to accommodate this new formulation, as well as a new reward function.</p>
+<p>The reward function accounts for the desired success probability threshold for each target (<span class="math notranslate nohighlight">\(\theta_{\text{thr}_i}\)</span>, represented by <code class="docutils literal notranslate"><span class="pre">reward_threshold</span></code> in the code) and has a tunable parameter <span class="math notranslate nohighlight">\(\alpha\in[0,1]\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}R = \begin{cases}
+\rho_i\alpha_i\Delta \text{P}(S=1) + \rho_i(1 - \alpha) &amp; \text{ if }  \text{P}_i(S=1) \geq \theta_{\text{thr}_i} \\
+\rho_i\alpha_i\Delta \text{P}(S=1) &amp; \text{ otherwise.}
+\end{cases}\end{split}\]</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CloudImageProbabilityData</span><span class="p">(</span><span class="n">Data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DataType for unique images of targets.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">imaged</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">imaged_complete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">list_belief_update_var</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">known</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct unit of data to record unique images.</span>
+
+<span class="sd">        Keeps track of ``imaged`` targets and completely imaged targets (those with a success probability</span>
+<span class="sd">        higher than the ``reward_threshold``).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            imaged: List of targets that are known to be imaged.</span>
+<span class="sd">            imaged_complete: Set of targets that are known to be completely imaged (P(S=1) &gt;= reward_threshold).</span>
+<span class="sd">            list_belief_update_var: List of belief update variations for each target after each picture.</span>
+<span class="sd">            known: List of targets that are known to exist (imaged and not imaged)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">imaged</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">imaged</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">imaged_complete</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">imaged_complete</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">list_belief_update_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">list_belief_update_var</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">known</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">known</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">known</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">known</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">imaged</span> <span class="o">=</span> <span class="n">imaged</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imaged_complete</span> <span class="o">=</span> <span class="n">imaged_complete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_belief_update_var</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">list_belief_update_var</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;CloudImageProbabilityData&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CloudImageProbabilityData&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine two units of data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Another unit of data to combine with this one.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Combined unit of data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">imaged</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaged</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">imaged</span>
+        <span class="n">imaged_complete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imaged_complete</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">imaged_complete</span>
+        <span class="n">list_belief_update_var</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">list_belief_update_var</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">list_belief_update_var</span>
+        <span class="p">)</span>
+
+        <span class="n">known</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">known</span> <span class="o">|</span> <span class="n">other</span><span class="o">.</span><span class="n">known</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="n">imaged</span><span class="o">=</span><span class="n">imaged</span><span class="p">,</span>
+            <span class="n">imaged_complete</span><span class="o">=</span><span class="n">imaged_complete</span><span class="p">,</span>
+            <span class="n">list_belief_update_var</span><span class="o">=</span><span class="n">list_belief_update_var</span><span class="p">,</span>
+            <span class="n">known</span><span class="o">=</span><span class="n">known</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CloudImageProbabilityDataStore</span><span class="p">(</span><span class="n">DataStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DataStore for unique images of targets.&quot;&quot;&quot;</span>
+
+    <span class="n">data_type</span> <span class="o">=</span> <span class="n">CloudImageProbabilityData</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;DataStore for unique images.</span>
+
+<span class="sd">        Detects new images by watching for an increase in data in each target&#39;s corresponding</span>
+<span class="sd">        buffer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_log_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log the instantaneous storage unit state at the end of each step.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            array: storedData from satellite storage unit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">storageUnit</span><span class="o">.</span><span class="n">storageUnitDataOutMsg</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">msg</span><span class="o">.</span><span class="n">storedData</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare_log_states</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">old_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">new_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloudImageProbabilityData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for an increase in logged data to identify new images.</span>
+
+<span class="sd">        This method also performs the belief update (new probability of success) for each target</span>
+<span class="sd">        based on the cloud coverage forecast and the time difference between the current time and</span>
+<span class="sd">        the previous observation time. It also keeps track of the variation in the belief update.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            old_state: older storedData from satellite storage unit</span>
+<span class="sd">            new_state: newer storedData from satellite storage unit</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Targets imaged at new_state that were unimaged at old_state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data_increase</span> <span class="o">=</span> <span class="n">new_state</span> <span class="o">-</span> <span class="n">old_state</span>
+        <span class="k">if</span> <span class="n">data_increase</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CloudImageProbabilityData</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="c1"># return UniqueImageData(imaged={self.satellite.latest_target})</span>
+
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">latest_target</span>
+            <span class="n">current_sim_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+            <span class="n">belief_update_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">belief_update_func</span>
+
+            <span class="n">target_prev_obs</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">prev_obs</span>
+            <span class="p">)</span>  <span class="c1"># Time at which the target was previously observed</span>
+            <span class="n">target_time_diff</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">current_sim_time</span> <span class="o">-</span> <span class="n">target_prev_obs</span>
+            <span class="p">)</span>  <span class="c1"># Time difference between the current time and the previous observation time</span>
+            <span class="n">target_belief</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">belief</span>
+            <span class="p">)</span>  <span class="c1"># Belief of the target before the current picture</span>
+
+            <span class="n">target_cloud_cover_forecast</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">cloud_cover_forecast</span>
+            <span class="n">updated_belief</span> <span class="o">=</span> <span class="n">belief_update_func</span><span class="p">(</span>
+                <span class="n">target_belief</span><span class="p">,</span> <span class="n">target_cloud_cover_forecast</span><span class="p">,</span> <span class="n">target_time_diff</span>
+            <span class="p">)</span>
+
+            <span class="n">target</span><span class="o">.</span><span class="n">belief</span> <span class="o">=</span> <span class="n">updated_belief</span>  <span class="c1"># Update the belief of the target</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">belief_update_var</span> <span class="o">=</span> <span class="n">updated_belief</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_belief</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">target</span><span class="o">.</span><span class="n">prev_obs</span> <span class="o">=</span> <span class="n">current_sim_time</span>  <span class="c1"># Update the previous observation time</span>
+
+            <span class="k">if</span> <span class="n">updated_belief</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">target</span><span class="o">.</span><span class="n">reward_threshold</span><span class="p">:</span>
+                <span class="n">list_imaged_complete</span> <span class="o">=</span> <span class="p">[</span><span class="n">target</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">list_imaged_complete</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">list_belief_update_var</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">belief_update_var</span>
+
+            <span class="k">return</span> <span class="n">CloudImageProbabilityData</span><span class="p">(</span>
+                <span class="n">imaged</span><span class="o">=</span><span class="p">[</span><span class="n">target</span><span class="p">],</span>
+                <span class="n">imaged_complete</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">list_imaged_complete</span><span class="p">),</span>
+                <span class="n">list_belief_update_var</span><span class="o">=</span><span class="p">[</span><span class="n">list_belief_update_var</span><span class="p">],</span>
+            <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CloudImageProbabilityRewarder</span><span class="p">(</span><span class="n">GlobalReward</span><span class="p">):</span>
+    <span class="n">data_store_type</span> <span class="o">=</span> <span class="n">CloudImageProbabilityDataStore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Modifies the constructor to include the alpha parameter to tune the reward function and</span>
+<span class="sd">        the reward function.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            reward_fn: Reward as function of priority, targets belief, and alpha.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span> <span class="o">=</span> <span class="n">reward_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">initial_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">:</span> <span class="s2">&quot;sats.Satellite&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;UniqueImageData&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Furnish data to the scenario.</span>
+
+<span class="sd">        Currently, it is assumed that all targets are known a priori, so the initial data</span>
+<span class="sd">        given to the data store is the list of all targets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_type</span><span class="p">(</span><span class="n">known</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_reward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">new_data_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CloudImageProbabilityData</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reward new each unique image once using self.reward_fn().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new_data_dict: Record of new images for each satellite</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            reward: Cumulative reward across satellites for one step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">reward</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">sat_id</span><span class="p">,</span> <span class="n">new_data</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">target</span><span class="p">,</span> <span class="n">belief_variation</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">new_data</span><span class="o">.</span><span class="n">imaged</span><span class="p">,</span> <span class="n">new_data</span><span class="o">.</span><span class="n">list_belief_update_var</span>
+            <span class="p">):</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span> <span class="n">belief_variation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">reach_threshold</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">new_data</span><span class="o">.</span><span class="n">imaged_complete</span><span class="p">:</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">reach_threshold</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">reward</span>
+
+
+<span class="c1"># Define the reward function as a function of the priority of the target, the cloud cover, and the number of times the target has been imaged</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">reward_function_probability</span><span class="p">(</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">belief_variation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">reach_threshold</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Rewards based on the priority of the target, the belief variation, and the alpha parameter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        priority: Priority of the target.</span>
+<span class="sd">        belief_variation: Variation in the belief of the target after the picture.</span>
+<span class="sd">        alpha: Tuning parameter between 0 and 1.</span>
+<span class="sd">        reach_threshold: Boolean indicating whether the target has reached the reward threshold.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward for the target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">reach_threshold</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">priority</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">priority</span> <span class="o">*</span> <span class="n">belief_variation</span> <span class="o">*</span> <span class="n">alpha</span>
+
+
+<span class="n">rewarder</span> <span class="o">=</span> <span class="n">CloudImageProbabilityRewarder</span><span class="p">(</span>
+    <span class="n">reward_fn</span><span class="o">=</span><span class="n">reward_function_probability</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">CloudImageProbabilityDataStore</span></code> requires a function <code class="docutils literal notranslate"><span class="pre">belief_update_func</span></code> that returns the updated success probability for target <span class="math notranslate nohighlight">\(i\)</span> (<span class="math notranslate nohighlight">\(\text{P}^{(k+1)}_i(S=1)\)</span>) given its current success probability (<span class="math notranslate nohighlight">\(\text{P}^{(k)}_i(S=1)\)</span>), cloud coverage forecast (<span class="math notranslate nohighlight">\(c_{f_i}\)</span>), and the time different between the current and previous image (<span class="math notranslate nohighlight">\(\delta t_i\)</span>).</p>
+<p>The update in the success probability is given by:</p>
+<div class="math notranslate nohighlight">
+\[\text{P}^{(k+1)}(S=1) = 1 - \text{P}^{(k)}(S=1)\bar{c}_{f_i}\]</div>
+<p>To penalize two consecutive pictures without enough elapsed time (and not enough shift in clouds’ position), a new cloud-free probability variable <span class="math notranslate nohighlight">\(g_{f_i}\)</span> is introduced such that</p>
+<div class="math notranslate nohighlight">
+\[g^{(k)}_{f_i} = (1-c^{(k)}_{f_i})\beta(\delta t_i)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\beta\)</span> is given by a sigmoid</p>
+<div class="math notranslate nohighlight">
+\[\beta(\delta t) = \frac{1}{\eta_3+e^{-\eta_1(\frac{\delta t}{\tau}-\eta_2)}}\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[\bar{c}_{f_i} = 1 - g_{f_i}^{(k)}\]</div>
+<p>leading to:</p>
+<div class="math notranslate nohighlight">
+\[\text{P}^{(k+1)}(S=1) = \text{P}^{(k)}(S=1) + (1-\text{P}^{(k)}(S=1))(1-c^{(k)}_{f_i})\beta(\delta t_i)\]</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">time_variation</span><span class="p">(</span>
+    <span class="n">delta_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t_const</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">k_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">k_3</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Time variation function based on sigmoid function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        delta_t (float): Time difference between the current time and the previous observation time.</span>
+<span class="sd">        t_const (float): Time constant for the sigmoid function.</span>
+<span class="sd">        k_1 (float): Sigmoid function parameter.</span>
+<span class="sd">        k_2 (float): Sigmoid function parameter.</span>
+<span class="sd">        k_3 (float): Sigmoid function parameter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Time variation value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">delta_t</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">k_3</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k_1</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_t</span> <span class="o">/</span> <span class="n">t_const</span> <span class="o">-</span> <span class="n">k_2</span><span class="p">)))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">belief_update</span><span class="p">(</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">cloud_cover_forecast</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">delta_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t_const</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update the belief based on the cloud forecast and the time variation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        b (np.array): Belief array (b(S=0), b(S=1)).</span>
+<span class="sd">        cloud_forecast (float): Cloud coverage forecast.</span>
+<span class="sd">        delta_t (float): Time difference between the current time and the previous observation time.</span>
+<span class="sd">        t_const (float): Time constant for the sigmoid function.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Updated belief array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cloud_time_variation</span> <span class="o">=</span> <span class="n">time_variation</span><span class="p">(</span><span class="n">delta_t</span><span class="p">,</span> <span class="n">t_const</span><span class="p">)</span>
+    <span class="n">cloud_free</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cloud_cover_forecast</span><span class="p">)</span> <span class="o">*</span> <span class="n">cloud_time_variation</span>
+    <span class="n">cloud_cover_bar</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">cloud_free</span>
+    <span class="n">b_0</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cloud_cover_bar</span>
+    <span class="n">b_1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">b_0</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">b_0</span><span class="p">,</span> <span class="n">b_1</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">belief_update_func</span><span class="p">(</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">cloud_cover_forecast</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">delta_t</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Belief update function for the satellite.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        b (np.array): Belief array (b(S=0), b(S=1)).</span>
+<span class="sd">        cloud_forecast (float): Cloud coverage forecast.</span>
+<span class="sd">        delta_t (float): Time difference between the current time and the previous observation time.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Updated belief array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">time_constant</span> <span class="o">=</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">5</span>  <span class="c1"># 30 minutes</span>
+    <span class="k">return</span> <span class="n">belief_update</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cloud_cover_forecast</span><span class="p">,</span> <span class="n">delta_t</span><span class="p">,</span> <span class="n">time_constant</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Configuring-the-Satellite-to-Have-Access-to-Cloud-Information">
+<h2>Configuring the Satellite to Have Access to Cloud Information<a class="headerlink" href="#Configuring-the-Satellite-to-Have-Access-to-Cloud-Information" title="Link to this heading"></a></h2>
+<p>The satellite has observations and actions associated with it that are relevant to the decision-making process. The observation space can be modified to include information about the targets and the weather (cloud coverage forecast, reward threshold, success probability, etc) which allows better informed decision-making.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api_reference/obs/index.html"><span class="doc">Observations</span></a>:</p>
+<ul>
+<li><p>SatProperties: Body angular velocity, instrument pointing direction, body position, body velocity, battery charge (properties in <a class="reference internal" href="../api_reference/sim/fsw/index.html"><span class="doc">flight software model</span></a> or <a class="reference internal" href="../api_reference/sim/dyn/index.html"><span class="doc">dynamics model</span></a>). Also, customized dynamics property in CustomDynModel below: Angle between the sun and the solar panel.</p></li>
+<li><p>OpportunityProperties: Target’s priority, cloud coverage forecast, standard deviation of cloud coverage forecast, probability of being successfully imaged, and last time it was imaged (upcoming 32 targets).</p></li>
+<li><p>Time: Simulation time.</p></li>
+<li><p>Eclipse: Next eclipse start and end times.</p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="../api_reference/act/index.html"><span class="doc">Actions</span></a>:</p>
+<ul>
+<li><p>Charge: Enter a sun-pointing charging mode for 60 seconds.</p></li>
+<li><p>Image: Image target from upcoming 32 targets</p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="../api_reference/sim/dyn/index.html"><span class="doc">Dynamics model</span></a>: FullFeaturedDynModel is used and a property, angle between sun and solar panel, is added.</p></li>
+<li><p><a class="reference internal" href="../api_reference/sim/fsw/index.html"><span class="doc">Flight software model</span></a>: SteeringImagerFSWModel is used.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">CustomSatComposed</span><span class="p">(</span><span class="n">sats</span><span class="o">.</span><span class="n">ImagingSatellite</span><span class="p">):</span>
+    <span class="n">observation_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">SatProperties</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;omega_BP_P&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">0.03</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;c_hat_P&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;r_BN_P&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">orbitalMotion</span><span class="o">.</span><span class="n">REQ_EARTH</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;v_BN_P&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mf">7616.5</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;battery_charge_fraction&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;solar_angle_norm&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">Eclipse</span><span class="p">(),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">OpportunityProperties</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;priority&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sat</span><span class="p">,</span> <span class="n">opp</span><span class="p">:</span> <span class="n">opp</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cloud_cover_forecast</span>
+            <span class="p">),</span>  <span class="c1"># Cloud coverage forecast (percentage of the area covered by clouds)</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sat</span><span class="p">,</span> <span class="n">opp</span><span class="p">:</span> <span class="n">opp</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cloud_cover_sigma</span>
+            <span class="p">),</span>  <span class="c1"># Confidence on the cloud coverage forecast</span>
+            <span class="c1"># dict(fn=lambda sat, opp: opp[&quot;object&quot;].reward_threshold),   #Reward threshold for each target. Uncomment if using variable threshold</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sat</span><span class="p">,</span> <span class="n">opp</span><span class="p">:</span> <span class="n">opp</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">belief</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">),</span>  <span class="c1"># Probability of successfully imaging the target. Used only in the re-imaging case</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sat</span><span class="p">,</span> <span class="n">opp</span><span class="p">:</span> <span class="n">opp</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prev_obs</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mi">5700</span>
+            <span class="p">),</span>  <span class="c1"># Previous observation time. Used only in the re-imaging case</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">,</span>
+            <span class="n">n_ahead_observe</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">Time</span><span class="p">(),</span>
+    <span class="p">]</span>
+
+    <span class="n">action_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Charge</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">),</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">n_ahead_image</span><span class="o">=</span><span class="mi">32</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Modified the constructor to include the belief update function</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">belief_update_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">belief_update_func</span> <span class="o">=</span> <span class="n">belief_update_func</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">CustomDynModel</span><span class="p">(</span><span class="n">dyn</span><span class="o">.</span><span class="n">FullFeaturedDynModel</span><span class="p">):</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">solar_angle_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="n">sun_vec_N</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">gravFactory</span><span class="o">.</span><span class="n">spiceObject</span><span class="o">.</span><span class="n">planetStateOutMsgs</span><span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">sun_index</span>
+                <span class="p">]</span>
+                <span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">PositionVector</span>
+            <span class="p">)</span>
+            <span class="n">sun_vec_N_hat</span> <span class="o">=</span> <span class="n">sun_vec_N</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sun_vec_N</span><span class="p">)</span>
+            <span class="n">solar_panel_vec_B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># Not default configuration</span>
+            <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BN</span><span class="p">)</span>
+            <span class="n">solar_panel_vec_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">solar_panel_vec_B</span><span class="p">)</span>
+            <span class="n">error_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">solar_panel_vec_N</span><span class="p">,</span> <span class="n">sun_vec_N_hat</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">error_angle</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="n">dyn_type</span> <span class="o">=</span> <span class="n">CustomDynModel</span>
+    <span class="n">fsw_type</span> <span class="o">=</span> <span class="n">fsw</span><span class="o">.</span><span class="n">SteeringImagerFSWModel</span>
+</pre></div>
+</div>
+</div>
+<p>It is necessary to add a filter to remove targets that reached the success threshold from the targets list when re-imaging is allowed such that:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">belief_threshold_filter</span><span class="p">(</span><span class="n">opportunity</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">opportunity</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">opportunity</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">belief</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">opportunity</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reward_threshold</span>
+            <span class="k">else</span> <span class="kc">False</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<p>When instantiating a satellite, these parameters can be overriden with a constant or rerandomized every time the environment is reset using the <code class="docutils literal notranslate"><span class="pre">sat_args</span></code> dictionary.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dataStorageCapacity</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="mf">8e6</span> <span class="o">*</span> <span class="mi">100</span>
+<span class="n">sat_args</span> <span class="o">=</span> <span class="n">CustomSatComposed</span><span class="o">.</span><span class="n">default_sat_args</span><span class="p">(</span>
+    <span class="n">imageAttErrorRequirement</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">imageRateErrorRequirement</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">batteryStorageCapacity</span><span class="o">=</span><span class="mf">80.0</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">storedCharge_Init</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">80.0</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">u_max</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">K1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">nHat_B</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">imageTargetMinimumElevation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">45</span><span class="p">),</span>
+    <span class="n">rwBasePower</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">maxWheelSpeed</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span>
+    <span class="n">storageInit</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+        <span class="mi">0</span> <span class="o">*</span> <span class="n">dataStorageCapacity</span><span class="p">,</span>
+        <span class="mf">0.01</span> <span class="o">*</span> <span class="n">dataStorageCapacity</span><span class="p">,</span>
+    <span class="p">),</span>  <span class="c1"># Initialize storage use close to zero</span>
+    <span class="n">wheelSpeeds</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span>
+    <span class="p">),</span>  <span class="c1"># Initialize reaction wheel speeds close to zero</span>
+    <span class="n">dataStorageCapacity</span><span class="o">=</span><span class="n">dataStorageCapacity</span><span class="p">,</span>  <span class="c1"># Large storage to avoid filling up in three orbits</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Initializing-and-Interacting-with-the-Environment">
+<h2>Initializing and Interacting with the Environment<a class="headerlink" href="#Initializing-and-Interacting-with-the-Environment" title="Link to this heading"></a></h2>
+<p>For this example, we will be using the multi-agent <a class="reference internal" href="../api_reference/index.html"><span class="doc">ConstellationTasking</span></a> environment. Along with passing the satellite that we configured, the environment takes a <a class="reference internal" href="../api_reference/scene/index.html"><span class="doc">scenario</span></a>, which defines the environment the satellite is acting in, and a <a class="reference internal" href="../api_reference/data/index.html"><span class="doc">rewarder</span></a>, which defines how data collected from the scenario is rewarded.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+
+<span class="n">sat_arg_randomizer</span> <span class="o">=</span> <span class="n">walker_delta_args</span><span class="p">(</span>
+    <span class="n">altitude</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span> <span class="n">n_planes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inc</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">clustersize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">clusterspacing</span><span class="o">=</span><span class="mi">72</span>
+<span class="p">)</span>
+
+<span class="n">satellites</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">CustomSatComposed</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;EO-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sat_args</span><span class="p">,</span> <span class="n">belief_update_func</span><span class="o">=</span><span class="n">belief_update_func</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="c1"># Add filter to satellites to remove targets that have already reached the belief threshold</span>
+<span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">satellites</span><span class="p">:</span>
+    <span class="n">sat</span><span class="o">.</span><span class="n">add_access_filter</span><span class="p">(</span><span class="n">belief_threshold_filter</span><span class="p">)</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+    <span class="n">satellites</span><span class="o">=</span><span class="n">satellites</span><span class="p">,</span>
+    <span class="n">world_type</span><span class="o">=</span><span class="n">world</span><span class="o">.</span><span class="n">GroundStationWorldModel</span><span class="p">,</span>
+    <span class="n">world_args</span><span class="o">=</span><span class="n">world</span><span class="o">.</span><span class="n">GroundStationWorldModel</span><span class="o">.</span><span class="n">default_world_args</span><span class="p">(),</span>
+    <span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">,</span>
+    <span class="n">rewarder</span><span class="o">=</span><span class="n">rewarder</span><span class="p">,</span>
+    <span class="n">sat_arg_randomizer</span><span class="o">=</span><span class="n">sat_arg_randomizer</span><span class="p">,</span>
+    <span class="n">sim_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">max_step_duration</span><span class="o">=</span><span class="mf">300.0</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">95</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># half orbit</span>
+    <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+    <span class="n">failure_penalty</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="c1"># disable_env_checker=True,  # For debugging</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>First, reset the environment. It is possible to specify the seed when resetting the environment.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">observation</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>It is possible to print out the actions and observations. The composed satellite <a class="reference internal" href="../api_reference/sats/index.html"><span class="doc">action_description</span></a> returns a human-readable action map each satellite has the same action space and similar observation space.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Actions:&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">action_description</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;States:&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">observation_description</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Using the composed satellite features also provides a human-readable state:</span>
+<span class="k">for</span> <span class="n">satellite</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">satellite</span><span class="o">.</span><span class="n">observation_builder</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">:  </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Then, run the simulation until timeout or agent failure.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Vector with an action for each satellite (we can pass different actions for each satellite)</span>
+        <span class="c1"># Tasking all satellites to charge (tasking None as the first action will raise a warning)</span>
+        <span class="n">action_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">sat_i</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">sat_i</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Tasking random actions</span>
+        <span class="n">action_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">sat_i</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> <span class="k">for</span> <span class="n">sat_i</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">}</span>
+    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action_dict</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">terminated</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">(</span><span class="n">truncated</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Episode complete.&quot;</span><span class="p">)</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+</div>
+<p>After the running the simulation, we can check the reward, number of imaged targets that were covered by clouds and that were not covered by clouds (according to the threshold set in the rewarder).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total reward:&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">cum_reward</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of total images taken:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imaged</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Number of imaged targets (once or more):&quot;</span><span class="p">,</span>
+    <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imaged</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Number of re-images:&quot;</span><span class="p">,</span>
+    <span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imaged</span><span class="p">)</span>
+    <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imaged</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Number of completely imaged targets:&quot;</span><span class="p">,</span>
+    <span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">imaged_complete</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Check <a class="reference internal" href="rllib_training.html"><span class="doc">Training with RLlib PPO</span></a> for an example on how to train the agent in this environment.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cloud_environment.html" class="btn btn-neutral float-left" title="Cloud Environment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="aeos.html" class="btn btn-neutral float-right" title="Agile Earth-Observing Satellite Environment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

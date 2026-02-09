@@ -1,0 +1,433 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIN Hierarchical Hybrid Actions &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scenario" href="../scene/index.html" />
+    <link rel="prev" title="Discrete Backend" href="discrete_actions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking"><code class="docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.SatelliteTasking"><code class="docutils literal notranslate"><span class="pre">SatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.ConstellationTasking"><code class="docutils literal notranslate"><span class="pre">ConstellationTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sats/index.html">Satellites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../obs/index.html">Observations</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Actions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#discrete-actions">Discrete Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#continuous-actions">Continuous Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Action"><code class="docutils literal notranslate"><span class="pre">Action</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.DiscreteAction"><code class="docutils literal notranslate"><span class="pre">DiscreteAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.DiscreteFSWAction"><code class="docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Charge"><code class="docutils literal notranslate"><span class="pre">Charge</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Drift"><code class="docutils literal notranslate"><span class="pre">Drift</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Desat"><code class="docutils literal notranslate"><span class="pre">Desat</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Downlink"><code class="docutils literal notranslate"><span class="pre">Downlink</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Image"><code class="docutils literal notranslate"><span class="pre">Image</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Scan"><code class="docutils literal notranslate"><span class="pre">Scan</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.Broadcast"><code class="docutils literal notranslate"><span class="pre">Broadcast</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.ContinuousAction"><code class="docutils literal notranslate"><span class="pre">ContinuousAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.ImpulsiveThrust"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.ImpulsiveThrustHill"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrustHill</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.STINContinuousAction"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.act.STINHierarchicalHybridAction"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actions.html">Backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="discrete_actions.html">Discrete Backend</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">STIN Hierarchical Hybrid Actions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.link_satellite"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.link_satellite()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.space"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.space</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.flat_space"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.flat_space</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.action_description"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.action_description</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.action_description_dict"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.action_description_dict</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.set_action"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.set_action()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.reset_overwrite_previous"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.reset_overwrite_previous()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.add_neighbor"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.add_neighbor()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder"><code class="docutils literal notranslate"><span class="pre">HierarchicalHybridActionBuilder</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.action_space"><code class="docutils literal notranslate"><span class="pre">HierarchicalHybridActionBuilder.action_space</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.hierarchical_space"><code class="docutils literal notranslate"><span class="pre">HierarchicalHybridActionBuilder.hierarchical_space</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.action_description"><code class="docutils literal notranslate"><span class="pre">HierarchicalHybridActionBuilder.action_description</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.set_action"><code class="docutils literal notranslate"><span class="pre">HierarchicalHybridActionBuilder.set_action()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../scene/index.html">Scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">Data &amp; Reward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm/index.html">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sim/index.html">Simulation (BSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Actions</a></li>
+      <li class="breadcrumb-item active">STIN Hierarchical Hybrid Actions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api_reference/act/stin_hier_hybrid_actions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stin-hierarchical-hybrid-actions">
+<span id="bsk-rl-act-stin-hier-hybrid-actions"></span><h1>STIN Hierarchical Hybrid Actions<a class="headerlink" href="#stin-hierarchical-hybrid-actions" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p id="module-bsk_rl.act.stin_hier_hybrid_actions">STINHierarchicalHybridAction: 分层连续动作空间（High‑Level + Low‑Level）。</p>
+<p>定义星地融合网络的全连续动作空间。
+继承自 Action 以遵循 BSK-RL 框架。</p>
+<dl>
+<dt>动作空间维度:</dt><dd><p>REQUIRED_ACTION_DIMS_FORMULA = “K + 7”  (K = max_neighbors)
+K=4 时总维度: 11D</p>
+<dl class="simple">
+<dt>Level-1 (High-Level) - 任务切分 (4 维):</dt><dd><p>[alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]</p>
+</dd>
+<dt>Level-2 (Low-Level) - 资源与路由 (4 + 2*K 维):</dt><dd><p>连续部分: [cpu, tx, priority_threshold, high_split…, low_split…]</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>安全屏蔽 (Action Shielding)</strong>：</dt><dd><p>硬约束通过 STINActionShield 实现，在动作执行前自动修正违规动作：
+- 电池 &lt; 20%：限制 CPU/TX 功率
+- 队列满：提高本地处理比例</p>
+</dd>
+</dl>
+<p>设计目标（分层连续路由 - 双层分离）：</p>
+<p>第一层 (Level-1) - 任务切分：
+- 维度: 4
+- [alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]
+- 对 raw 任务队列中的每个任务，按此比例切分到 UD本地/云端/接入卫星本地/接入卫星切片队列
+- 归一化后 sum = 1</p>
+<p>第二层 (Level-2) - 切片路由 + 资源（简化为纯连续分布）：
+就相当于说切片不可再分了，对任务切片队列就是做路由；
+但是由于我们的step是一个duration time，我们要考虑动作怎么设计才能对当前step内的切片做一个轮询处理；
+形成两个分布，执行的时候根据分布采样；
+- 连续部分:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>资源参数 (3D): [cpu, tx, priority_threshold]</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>高优先级切片路由 (K)D: [high_n0, high_n1, …, high_nK-1]</p></li>
+<li><p>低优先级切片路由 (K)D: [low_n0, low_n1, …, low_nK-1]</p></li>
+</ul>
+<p>简化动作空间设计：排除优先级阈值，将切片路由简化成[high_n1, …, high_nK] 不给本地，同时只需要一套；</p>
+<p>处理流程：
+1. Level-1: 对任务队列中每个任务执行一级切分，生成切片 (只切分一次) （Zhang 等 - 2024- 只跳一次）
+2. Level-2: 对切片队列轮询处理</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>priority &gt;= threshold: 使用 high_split_ratios</p></li>
+<li><p>priority &lt; threshold: 使用 low_split_ratios</p></li>
+<li><p>对每个切片按对应分布采样路由目标</p></li>
+</ul>
+</div></blockquote>
+<p>总维度: 4 + (4 + 2*(K+1)) = 2K + 10
+K=4 时: 4 + 14 = 18D</p>
+<dl>
+<dt>执行语义（可切换）：</dt><dd><ul class="simple">
+<li><p>delayed: Level-1 在当前 step 新生成的切片不会被当前 step 的 Level-2 处理</p></li>
+<li><p>immediate: Level-1 新生成的切片可在当前 step 立即参与 Level-2 路由</p></li>
+<li><p>默认 delayed，以保持与旧实验行为兼容</p></li>
+</ul>
+<p>首选 ratio_normalize：</p>
+</dd>
+</dl>
+<p>在强化学习任务卸载场景中，我们通常希望 Agent 能够完全切断某条低效链路（例如直接丢弃或者完全不给云端）。线性归一化允许产生 0.0，这对于策略的稀疏性和可解释性非常重要。
+代码默认值也是这个，保持不动即可。
+慎用 softmax_all：
+除非你的 Reward 函数非常平滑，否则 Softmax 容易导致训练初期探索不足（很难输出 0 或 1）。
+grouped_softmax 是进阶选项：
+如果你发现 Agent 总是学不会在“本地计算”和“邻居卸载”之间做细微权衡（因为地面链路的数值太大掩盖了它们），可以尝试切换到这个模式。
+注意：本文件为新方案的独立实现，不覆盖现有 STINContinuousAction。</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINHierarchicalHybridAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stin_hier_continuous_act'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_shield</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">battery_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level1_norm_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ratio_normalize'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_execution_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'delayed'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="index.html#bsk_rl.act.Action" title="bsk_rl.act.actions.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
+<p>Initialize the action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Action name.</p></li>
+<li><p><strong>enable_shield</strong> (<em>bool</em>) – Whether to enable safety shielding.</p></li>
+<li><p><strong>battery_threshold</strong> (<em>float</em>) – Battery SOC threshold.</p></li>
+<li><p><strong>max_neighbors</strong> (<em>int</em>) – Maximum neighbors for routing.</p></li>
+<li><p><strong>level1_norm_mode</strong> (<em>str</em>) – Level-1 归一化模式，可选：
+- “grouped_softmax”: 分组 softmax + 门控
+- “softmax_all”: 全量 softmax（单头切分）
+- “ratio_normalize”: 非负线性归一化（不做 softmax/门控）</p></li>
+<li><p><strong>routing_execution_mode</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.link_satellite">
+<span class="sig-name descname"><span class="pre">link_satellite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satellite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><span class="pre">Satellite</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.link_satellite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.link_satellite" title="Link to this definition"></a></dt>
+<dd><p>Link the action to a satellite and load Shield configuration.</p>
+<dl class="simple">
+<dt>Shield 配置从 satellite.shield_config 读取，支持以下参数：</dt><dd><ul class="simple">
+<li><p>enable_shield: 是否启用安全屏蔽（默认 True）</p></li>
+<li><p>battery_threshold: 触发电池保护的 SOC 阈值（默认 0.15）</p></li>
+<li><p>low_battery_cpu_cap: 低电量时 CPU 功率上限（默认 0.3）</p></li>
+<li><p>low_battery_tx_cap: 低电量时发射功率上限（默认 0.2）</p></li>
+<li><p>max_queue_size: 触发队列保护的阈值（默认 50）</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>satellite</strong> (<a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><em>Satellite</em></a>) – Satellite to link to</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.space" title="Link to this definition"></a></dt>
+<dd><p>分层连续动作空间（统一路由版）：
+- level1: Box(4,) -&gt; [alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]
+- level2: {“continuous”: [cpu, tx, routing_probs…(含 self)]}</p>
+<p>其中 routing_probs 维度为 (K + 1)，K=max_neighbors。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.flat_space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">flat_space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.flat_space" title="Link to this definition"></a></dt>
+<dd><p>扁平化动作空间（用于 BenchMARL 兼容）：
+- [0:4]: level1 (alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload)
+- [4:6]: level2 资源 (cpu, tx)
+- [6:6+K+1]: level2 unified routing (K+1 维，含 self)</p>
+<p>总维度: 4 + 2 + (K+1) = K + 7
+K=4 时: 11</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.action_description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.action_description" title="Link to this definition"></a></dt>
+<dd><p>动作描述（扁平化列表形式，与 flat_space 对齐）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>按动作维度顺序排列的动作名称列表。</dt><dd><p>长度为 K + 7 (K = max_neighbors)。</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.action_description_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description_dict</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.action_description_dict" title="Link to this definition"></a></dt>
+<dd><p>动作描述（分层字典形式）。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.set_action" title="Link to this definition"></a></dt>
+<dd><p>解析并执行分层连续动作（统一路由版）。</p>
+<p>支持以下输入格式：
+1. Dict: {“level1”: array(4,), “level2”: {“continuous”: array(2+K+1,)}}
+2. Flat array: [level1…, cpu, tx, routing_split…]</p>
+<p>处理流程：
+1. 资源分配 (cpu, tx)
+2. Level-1 任务切分: 对 raw 任务队列按 alpha 比例切分，生成切片
+3. Level-2 切片路由: 对切片队列按统一路由分布进行处理</p>
+<dl class="simple">
+<dt>安全屏蔽流程：</dt><dd><ol class="arabic simple">
+<li><p>如果启用 shield，先对原始动作进行安全检查和修正</p></li>
+<li><p>解析修正后的动作分量</p></li>
+<li><p>执行资源分配和协作调度</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>Any</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.reset_overwrite_previous">
+<span class="sig-name descname"><span class="pre">reset_overwrite_previous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.reset_overwrite_previous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.reset_overwrite_previous" title="Link to this definition"></a></dt>
+<dd><p>Overwrite attributes from previous episode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.add_neighbor">
+<span class="sig-name descname"><span class="pre">add_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/hier_computation_satellite.html#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><span class="pre">HierComputationSatellite</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.add_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction.add_neighbor" title="Link to this definition"></a></dt>
+<dd><p>添加邻居卫星（通信模块调用）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>neighbor</strong> (<a class="reference internal" href="../sats/hier_computation_satellite.html#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><em>HierComputationSatellite</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">HierarchicalHybridActionBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satellite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/hier_computation_satellite.html#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><span class="pre">HierComputationSatellite</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#HierarchicalHybridActionBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="actions.html#bsk_rl.act.actions.ActionBuilder" title="bsk_rl.act.actions.ActionBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionBuilder</span></code></a></p>
+<p>Base class for all action builders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>satellite</strong> (<a class="reference internal" href="../sats/hier_computation_satellite.html#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><em>HierComputationSatellite</em></a>) – Satellite to build actions for.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.action_space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.action_space" title="Link to this definition"></a></dt>
+<dd><p>返回扁平化动作空间（Box 类型），兼容 BenchMARL/TorchRL。</p>
+<p>gym.py 的 action_spaces 属性期望 Box 或 Discrete 类型。
+分层 Dict 空间可通过 hierarchical_space 属性访问。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.hierarchical_space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">hierarchical_space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.hierarchical_space" title="Link to this definition"></a></dt>
+<dd><p>返回分层动作空间（Dict 类型），用于需要层级结构的场景。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.action_description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></span><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.action_description" title="Link to this definition"></a></dt>
+<dd><p>Return a description of the action space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#HierarchicalHybridActionBuilder.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.stin_hier_hybrid_actions.HierarchicalHybridActionBuilder.set_action" title="Link to this definition"></a></dt>
+<dd><p>Set the action to be taken.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>Any</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="discrete_actions.html" class="btn btn-neutral float-left" title="Discrete Backend" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../scene/index.html" class="btn btn-neutral float-right" title="Scenario" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

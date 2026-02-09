@@ -1,0 +1,13 @@
+.. _examples.test_vizard.lite_demo_visualize:
+.. currentmodule:: examples.test_vizard.lite_demo_visualize
+
+lite_demo_visualize
+===================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: examples.test_vizard.lite_demo_visualize
+   :members:
+   :show-inheritance:
+

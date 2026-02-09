@@ -1,0 +1,399 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training with RLlib PPO &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Time-Discounted GAE" href="time_discounted_gae.html" />
+    <link rel="prev" title="RSO Inspection" href="rso_inspection.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#environments">Environments</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#training">Training</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Training with RLlib PPO</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Define-the-Environment">Define the Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Set-Up-Custom-Logging">Set Up Custom Logging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Configure-Ray-and-PPO">Configure Ray and PPO</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Loading-the-Policy-Network">Loading the Policy Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Stepping-Through-the-Environment">Stepping Through the Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="time_discounted_gae.html">Time-Discounted GAE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="async_multiagent_training.html">Asynchronous Multiagent Decision Making</a></li>
+<li class="toctree-l3"><a class="reference internal" href="curriculum_learning.html">Training with Curriculum Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="training_with_shield.html">Shielded training with action masking and action replacement</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Training with RLlib PPO</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/rllib_training.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Training-with-RLlib-PPO">
+<h1>Training with RLlib PPO<a class="headerlink" href="#Training-with-RLlib-PPO" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="https://docs.ray.io/en/latest/rllib/index.html">RLlib</a> is a high-performance, distributed reinforcement learning library. It is preferable to other RL libraries (e.g. Stable Baselines</p>
+<ol class="arabic simple" start="3">
+<li><p>for <code class="docutils literal notranslate"><span class="pre">bsk_rl</span></code> environments because it steps environments copies asynchronously; because of the variable step lengths, variable episode step counts, and long episode reset times, stepping each environment independently can increase step throughput by 2-5 times.</p></li>
+</ol>
+<div class="admonition warning">
+<p><strong>Warning:</strong> RLlib had a bug that results in an undesirable timeout which stops training. It has since been resolved: <a class="reference external" href="https://github.com/ray-project/ray/pull/45147">https://github.com/ray-project/ray/pull/45147</a></p>
+</div>
+<p>RLlib is actively developed and can change significantly from version to version. For this script, the following version is used:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+<span class="n">version</span><span class="p">(</span><span class="s2">&quot;ray&quot;</span><span class="p">)</span>  <span class="c1"># Parent package of RLlib</span>
+</pre></div>
+</div>
+</div>
+<section id="Define-the-Environment">
+<h2>Define the Environment<a class="headerlink" href="#Define-the-Environment" title="Link to this heading"></a></h2>
+<p>A nadir-scanning environment is created, to the one used in <a class="reference external" href="https://hanspeterschaub.info/Papers/Stephenson2024.pdf">this paper</a>. The satellite has to collect data while managing the data buffer level and battery level.</p>
+<p>First, the satellite class is defined. A custom dynamics model is created that defines a few additional properties to use in the state.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">act</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">sats</span><span class="p">,</span> <span class="n">scene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">dyn</span><span class="p">,</span> <span class="n">fsw</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ScanningDownlinkDynModel</span><span class="p">(</span><span class="n">dyn</span><span class="o">.</span><span class="n">ContinuousImagingDynModel</span><span class="p">,</span> <span class="n">dyn</span><span class="o">.</span><span class="n">GroundStationDynModel</span><span class="p">):</span>
+    <span class="c1"># Define some custom properties to be accessed in the state</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">instrument_pointing_error</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">r_BN_P_unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_BN_P</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r_BN_P</span><span class="p">)</span>
+        <span class="n">c_hat_P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">fsw</span><span class="o">.</span><span class="n">c_hat_P</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="o">-</span><span class="n">r_BN_P_unit</span><span class="p">,</span> <span class="n">c_hat_P</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solar_pointing_error</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">gravFactory</span><span class="o">.</span><span class="n">spiceObject</span><span class="o">.</span><span class="n">planetStateOutMsgs</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">sun_index</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">PositionVector</span>
+        <span class="n">a_hat_N</span> <span class="o">=</span> <span class="n">a</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">nHat_B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;nHat_B&quot;</span><span class="p">]</span>
+        <span class="n">NB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BN</span><span class="p">)</span>
+        <span class="n">nHat_N</span> <span class="o">=</span> <span class="n">NB</span> <span class="o">@</span> <span class="n">nHat_B</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">nHat_N</span><span class="p">,</span> <span class="n">a_hat_N</span><span class="p">))</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ScanningSatellite</span><span class="p">(</span><span class="n">sats</span><span class="o">.</span><span class="n">AccessSatellite</span><span class="p">):</span>
+    <span class="n">observation_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">SatProperties</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;storage_level_fraction&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;battery_charge_fraction&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;wheel_speeds_fraction&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;instrument_pointing_error&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;solar_pointing_error&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">OpportunityProperties</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;opportunity_open&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mi">5700</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;opportunity_close&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="mi">5700</span><span class="p">),</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;ground_station&quot;</span><span class="p">,</span>
+            <span class="n">n_ahead_observe</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">Eclipse</span><span class="p">(</span><span class="n">norm</span><span class="o">=</span><span class="mi">5700</span><span class="p">),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">Time</span><span class="p">(),</span>
+    <span class="p">]</span>
+    <span class="n">action_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Scan</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">180.0</span><span class="p">),</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Charge</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">120.0</span><span class="p">),</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Downlink</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">),</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Desat</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">dyn_type</span> <span class="o">=</span> <span class="n">ScanningDownlinkDynModel</span>
+    <span class="n">fsw_type</span> <span class="o">=</span> <span class="n">fsw</span><span class="o">.</span><span class="n">ContinuousImagingFSWModel</span>
+</pre></div>
+</div>
+</div>
+<p>Next, parameters are set. Since this scenario is focused on maintaining acceptable data and power levels, these are tuned to create a sufficiently interesting mission.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sat</span> <span class="o">=</span> <span class="n">ScanningSatellite</span><span class="p">(</span>
+    <span class="s2">&quot;Scanner-1&quot;</span><span class="p">,</span>
+    <span class="n">sat_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="c1"># Data</span>
+        <span class="n">dataStorageCapacity</span><span class="o">=</span><span class="mi">5000</span> <span class="o">*</span> <span class="mf">8e6</span><span class="p">,</span>  <span class="c1"># bits</span>
+        <span class="n">storageInit</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5000</span> <span class="o">*</span> <span class="mf">8e6</span><span class="p">,</span>
+        <span class="n">instrumentBaudRate</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="mf">8e6</span><span class="p">,</span>
+        <span class="n">transmitterBaudRate</span><span class="o">=-</span><span class="mi">50</span> <span class="o">*</span> <span class="mf">8e6</span><span class="p">,</span>
+        <span class="c1"># Power</span>
+        <span class="n">batteryStorageCapacity</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>  <span class="c1"># W*s</span>
+        <span class="n">storedCharge_Init</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">200</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>
+        <span class="n">basePowerDraw</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">,</span>  <span class="c1"># W</span>
+        <span class="n">instrumentPowerDraw</span><span class="o">=-</span><span class="mf">30.0</span><span class="p">,</span>  <span class="c1"># W</span>
+        <span class="n">transmitterPowerDraw</span><span class="o">=-</span><span class="mf">25.0</span><span class="p">,</span>  <span class="c1"># W</span>
+        <span class="n">thrusterPowerDraw</span><span class="o">=-</span><span class="mf">80.0</span><span class="p">,</span>  <span class="c1"># W</span>
+        <span class="n">panelArea</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+        <span class="c1"># Attitude</span>
+        <span class="n">imageAttErrorRequirement</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">imageRateErrorRequirement</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">disturbance_vector</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>  <span class="c1"># N*m</span>
+        <span class="n">maxWheelSpeed</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span>  <span class="c1"># RPM</span>
+        <span class="n">wheelSpeeds</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">3000</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="n">desatAttitude</span><span class="o">=</span><span class="s2">&quot;nadir&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Finally, the environment arguments are set. Stepping through this environment is demonstrated at the bottom of the page.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">duration</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="mf">5700.0</span>  <span class="c1"># About 5 orbits</span>
+<span class="n">env_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">satellite</span><span class="o">=</span><span class="n">sat</span><span class="p">,</span>
+    <span class="n">scenario</span><span class="o">=</span><span class="n">scene</span><span class="o">.</span><span class="n">UniformNadirScanning</span><span class="p">(</span><span class="n">value_per_second</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">duration</span><span class="p">),</span>
+    <span class="n">rewarder</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">ScanningTimeReward</span><span class="p">(),</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+    <span class="n">failure_penalty</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">terminate_on_time_limit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Set-Up-Custom-Logging">
+<h2>Set Up Custom Logging<a class="headerlink" href="#Set-Up-Custom-Logging" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">bsk_rl</span></code> package supplies a utility to make logging information at the end of episodes easier. This is useful to see how an agent’s policy is changing over time, using a monitoring program such as <a class="reference external" href="https://www.tensorflow.org/tensorboard">TensorBoard</a>. The callback is configured by writing a function that takes the environment as an input and returns a dictionary with values to be logged.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">episode_data_callback</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">cum_reward</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">reward</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+    <span class="n">orbits</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span> <span class="o">/</span> <span class="p">(</span><span class="mi">95</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">reward</span><span class="o">=</span><span class="n">reward</span><span class="p">,</span>
+        <span class="c1"># Are satellites dying, and how and when?</span>
+        <span class="n">alive</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()),</span>
+        <span class="n">rw_status_valid</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">rw_speeds_valid</span><span class="p">()),</span>
+        <span class="n">battery_status_valid</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">battery_valid</span><span class="p">()),</span>
+        <span class="n">orbits_complete</span><span class="o">=</span><span class="n">orbits</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">orbits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;reward_per_orbit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward</span> <span class="o">/</span> <span class="n">orbits</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">env</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;orbits_complete_partial_only&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orbits</span>
+
+    <span class="k">return</span> <span class="n">data</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Configure-Ray-and-PPO">
+<h2>Configure Ray and PPO<a class="headerlink" href="#Configure-Ray-and-PPO" title="Link to this heading"></a></h2>
+<p>PPO (or some other algorithm) can be configured. Of particular importance are setting <code class="docutils literal notranslate"><span class="pre">sample_timeout_s</span></code> and <code class="docutils literal notranslate"><span class="pre">metrics_episode_collection_timeout_s</span></code> to appropriately high values for this environment. The <code class="docutils literal notranslate"><span class="pre">episode_data_callback</span></code> is included in the environment arguments, and the <code class="docutils literal notranslate"><span class="pre">WrappedEpisodeDataCallbacks</span></code> must be included in training to trigger logging.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">bsk_rl.utils.rllib</span>  <span class="c1"># noqa To access &quot;SatelliteTasking-RLlib&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ray.rllib.algorithms.ppo</span><span class="w"> </span><span class="kn">import</span> <span class="n">PPOConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.rllib.callbacks</span><span class="w"> </span><span class="kn">import</span> <span class="n">WrappedEpisodeDataCallbacks</span>
+
+<span class="n">N_CPUS</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">training_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">lr</span><span class="o">=</span><span class="mf">0.00003</span><span class="p">,</span>
+    <span class="n">gamma</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>  <span class="c1"># usually a larger number, like 2500</span>
+    <span class="n">num_sgd_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">fcnet_hiddens</span><span class="o">=</span><span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="n">vf_share_layers</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="n">lambda_</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">use_kl_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">clip_param</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">grad_clip</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">PPOConfig</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">training</span><span class="p">(</span><span class="o">**</span><span class="n">training_args</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">env_runners</span><span class="p">(</span><span class="n">num_env_runners</span><span class="o">=</span><span class="n">N_CPUS</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_timeout_s</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">environment</span><span class="p">(</span>
+        <span class="n">env</span><span class="o">=</span><span class="s2">&quot;SatelliteTasking-RLlib&quot;</span><span class="p">,</span>
+        <span class="n">env_config</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">env_args</span><span class="p">,</span> <span class="n">episode_data_callback</span><span class="o">=</span><span class="n">episode_data_callback</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">reporting</span><span class="p">(</span>
+        <span class="n">metrics_num_episodes_for_smoothing</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">metrics_episode_collection_timeout_s</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">checkpointing</span><span class="p">(</span><span class="n">export_native_model_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">framework</span><span class="p">(</span><span class="n">framework</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">api_stack</span><span class="p">(</span>
+        <span class="n">enable_rl_module_and_learner</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">enable_env_runner_and_connector_v2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">callbacks</span><span class="p">(</span><span class="n">WrappedEpisodeDataCallbacks</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Once the PPO configuration has been set, <code class="docutils literal notranslate"><span class="pre">ray</span></code> can be started and the agent can be trained.</p>
+<p>Training on a reasonably modern machine, we can achieve 5M steps over 32 processors in 6 to 18 hours, depending on specific environment configurations.</p>
+<p>Note that the custom logging metrics are reported under env_runners.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ray</span><span class="w"> </span><span class="kn">import</span> <span class="n">tune</span>
+
+<span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
+    <span class="n">ignore_reinit_error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_cpus</span><span class="o">=</span><span class="n">N_CPUS</span><span class="p">,</span>
+    <span class="n">object_store_memory</span><span class="o">=</span><span class="mi">2_000_000_000</span><span class="p">,</span>  <span class="c1"># 2 GB</span>
+<span class="p">)</span>
+
+<span class="c1"># Run the training</span>
+<span class="n">tune</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="s2">&quot;PPO&quot;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+    <span class="n">stop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;training_iteration&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>  <span class="c1"># Adjust the number of iterations as needed</span>
+    <span class="n">checkpoint_freq</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">checkpoint_at_end</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Shutdown Ray</span>
+<span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Loading-the-Policy-Network">
+<h2>Loading the Policy Network<a class="headerlink" href="#Loading-the-Policy-Network" title="Link to this heading"></a></h2>
+<p>The policy network can be found in the <code class="docutils literal notranslate"><span class="pre">p0</span></code> subdirectory of the checkpoint output, if using the torch backend, and the <code class="docutils literal notranslate"><span class="pre">model</span></code> subdirectory of the checkpoint output. Use <code class="docutils literal notranslate"><span class="pre">bsk_rl.utils.rllib.load_torch_mlp_policy</span></code> to load torch policies.</p>
+</section>
+<section id="Stepping-Through-the-Environment">
+<h2>Stepping Through the Environment<a class="headerlink" href="#Stepping-Through-the-Environment" title="Link to this heading"></a></h2>
+<p>The environment is stepped through with random actions to give a sense of how it acts.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">SatelliteTasking</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">SatelliteTasking</span><span class="p">(</span><span class="o">**</span><span class="n">env_args</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">terminated</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">terminated</span><span class="p">:</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+    <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rso_inspection.html" class="btn btn-neutral float-left" title="RSO Inspection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="time_discounted_gae.html" class="btn btn-neutral float-right" title="Time-Discounted GAE" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

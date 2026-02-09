@@ -1,0 +1,13 @@
+.. _examples.test_vizard.plot_constellation_links:
+.. currentmodule:: examples.test_vizard.plot_constellation_links
+
+plot_constellation_links
+========================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: examples.test_vizard.plot_constellation_links
+   :members:
+   :show-inheritance:
+

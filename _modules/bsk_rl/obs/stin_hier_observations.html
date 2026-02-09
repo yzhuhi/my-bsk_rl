@@ -1,0 +1,641 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.obs.stin_hier_observations &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bsk_rl.obs.stin_hier_observations</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.obs.stin_hier_observations</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">STINHierarchicalObservations: 针对分层动作空间的统一扁平观测。</span>
+
+<span class="sd">设计理念：</span>
+<span class="sd">    - L1 和 L2 使用**同一套观测**，观测本身不区分层级</span>
+<span class="sd">    - 分头的区别在于**网络端**：L2 Selector 额外接收 L1 输出作为条件</span>
+<span class="sd">    - 观测结构与 STINRelativeObservations 保持一致的扁平设计</span>
+<span class="sd">    - 支持可配置属性规范，与旧版 STINRelativeObservations 风格对齐</span>
+<span class="sd">    </span>
+<span class="sd">观测内容：</span>
+<span class="sd">    - 自身状态：队列、电池、CPU、TX 功率、任务统计（可配置）</span>
+<span class="sd">    - 邻居特征：队列、电池、ISL 距离/质量、CPU 频率（可配置）</span>
+<span class="sd">    - 邻居可达性掩码</span>
+
+<span class="sd">使用示例::</span>
+
+<span class="sd">    # 使用默认配置（向后兼容）</span>
+<span class="sd">    obs.STINHierarchicalObservations()</span>
+<span class="sd">    </span>
+<span class="sd">    # 使用可配置风格</span>
+<span class="sd">    obs.STINHierarchicalObservations(</span>
+<span class="sd">        self_properties=[</span>
+<span class="sd">            dict(prop=&quot;task_queue_size&quot;, norm=50.0),</span>
+<span class="sd">            dict(prop=&quot;battery_fraction&quot;),</span>
+<span class="sd">        ],</span>
+<span class="sd">        neighbor_properties=[</span>
+<span class="sd">            dict(prop=&quot;task_queue_size&quot;, norm=50.0),</span>
+<span class="sd">            dict(prop=&quot;isl_distance&quot;, norm=1e7),</span>
+<span class="sd">        ],</span>
+<span class="sd">        max_neighbors=4,</span>
+<span class="sd">    )</span>
+
+<span class="sd">注意：本文件为 Hier 方案的独立实现，不覆盖现有观测类。</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gymnasium</span><span class="w"> </span><span class="kn">import</span> <span class="n">spaces</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.obs.relative_observations</span><span class="w"> </span><span class="kn">import</span> <span class="n">r_DC_N</span>  <span class="c1"># 用于精确计算 ISL 距离</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.utilities.orbitalMotion</span><span class="w"> </span><span class="kn">import</span> <span class="n">REQ_EARTH</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.obs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Observation</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats.hier_computation_satellite</span><span class="w"> </span><span class="kn">import</span> <span class="n">HierComputationSatellite</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.act.stin_hier_hybrid_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINHierarchicalHybridAction</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># ============== 从旧版模块复用辅助函数 ==============</span>
+<span class="c1"># 统一签名为 get_xxx(sat, self_sat) 双参数形式</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.obs.stin_relative_observations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_battery_fraction</span><span class="p">,</span>
+    <span class="n">get_task_queue_size</span><span class="p">,</span>
+    <span class="n">get_queue_workload</span><span class="p">,</span>
+    <span class="n">get_isl_distance</span><span class="p">,</span>
+    <span class="n">get_isl_channel_quality</span><span class="p">,</span>
+    <span class="n">get_current_task_priority</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># ============== 新版独有的辅助函数 ==============</span>
+<span class="c1"># 以下函数为分层 RL 专用，在旧版中不存在或实现不同</span>
+<div class="viewcode-block" id="get_raw_queue_size">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_raw_queue_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_raw_queue_size</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取原始任务队列长度。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        原始队列长度（原始值），归一化由 norm 参数处理</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;raw_task_queue&#39;</span><span class="p">,</span> <span class="p">[])))</span></div>
+
+
+
+<div class="viewcode-block" id="get_avg_task_priority">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_avg_task_priority">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_avg_task_priority</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取任务队列平均优先级。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        平均优先级 [0, 1]，无任务时返回 0.5</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;task_queue&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">task_queue</span><span class="p">:</span>
+        <span class="n">priorities</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;priority&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">sat</span><span class="o">.</span><span class="n">task_queue</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">priorities</span><span class="p">))</span>
+    <span class="k">return</span> <span class="mf">0.5</span></div>
+
+
+
+<div class="viewcode-block" id="get_min_remaining_deadline">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_min_remaining_deadline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_min_remaining_deadline</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取最紧急任务的剩余时间 [s]。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        最小剩余时延 [s]，无任务时返回大值 (1000.0)，归一化由 norm 参数处理</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1000.0</span>  <span class="c1"># 无任务时返回大值表示&quot;不紧急&quot;</span>
+    
+    <span class="c1"># 获取当前仿真时间</span>
+    <span class="n">sim_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;simulator&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sim_time</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+    
+    <span class="n">min_remaining</span> <span class="o">=</span> <span class="mf">1000.0</span>
+    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">get_remaining_time</span><span class="p">(</span><span class="n">sim_time</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;get_remaining_time&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1000.0</span>
+        <span class="n">min_remaining</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_remaining</span><span class="p">,</span> <span class="n">remaining</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">min_remaining</span></div>
+
+
+
+<div class="viewcode-block" id="get_cpu_freq_ratio">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_cpu_freq_ratio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cpu_freq_ratio</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取当前 CPU 频率比例（归一化到 [0, 1]）。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        CPU 频率比例 [0, 1]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;current_cpu_freq&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;dynamics&#39;</span><span class="p">):</span>
+        <span class="n">max_freq</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;cpu_max_frequency&#39;</span><span class="p">,</span> <span class="mf">2e9</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sat</span><span class="o">.</span><span class="n">current_cpu_freq</span> <span class="o">/</span> <span class="n">max_freq</span> <span class="k">if</span> <span class="n">max_freq</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="get_tx_power_ratio">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_tx_power_ratio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tx_power_ratio</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取当前发射功率比例。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        发射功率比例 [0, 1]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;current_tx_power&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;dynamics&#39;</span><span class="p">):</span>
+        <span class="n">max_power</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;transmitter_power_draw&#39;</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sat</span><span class="o">.</span><span class="n">current_tx_power</span> <span class="o">/</span> <span class="n">max_power</span> <span class="k">if</span> <span class="n">max_power</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="get_total_queue_data">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_total_queue_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_total_queue_data</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取队列总数据量 [bits]。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        队列总数据量 [bits]，归一化由 norm 参数处理</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;task_queue&#39;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">data_size</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_queue</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="get_downstream_queue">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.get_downstream_queue">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_downstream_queue</span><span class="p">(</span><span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">:</span> <span class="s2">&quot;HierComputationSatellite&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取下游拥塞信号：邻居的邻居的平均队列长度。</span>
+<span class="sd">    </span>
+<span class="sd">    用于 Backpressure Routing: 不仅考虑直接邻居的队列，还考虑其下游的拥塞情况。</span>
+<span class="sd">    如果路由到某邻居，该邻居的邻居队列都很满，说明下游通道拥堵。</span>
+<span class="sd">    </span>
+<span class="sd">    计算方式：</span>
+<span class="sd">        downstream_queue = mean(neighbor_j.queue_size for j in sat.neighbors if j != self_sat)</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标邻居卫星（我们要评估将任务路由到此卫星后的下游情况）</span>
+<span class="sd">        self_sat: 当前卫星（排除自己，避免循环计算）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        下游平均队列长度 [任务数]，归一化由 norm 参数处理</span>
+<span class="sd">        若无有效下游邻居，返回 0.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 获取 sat 的邻居（即 self_sat 的二跳邻居）</span>
+    <span class="n">downstream_neighbors</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># 尝试从缓存的快照获取</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;_neighbor_snapshot&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cached</span><span class="p">:</span>
+        <span class="n">downstream_neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cached</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;get_isl_neighbors&quot;</span><span class="p">):</span>
+        <span class="n">downstream_neighbors</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">get_isl_neighbors</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">downstream_neighbors</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    
+    <span class="n">queue_sizes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">downstream_neighbors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">neighbor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># 排除 self_sat（避免将自己计入下游）</span>
+        <span class="k">if</span> <span class="n">self_sat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">neighbor</span> <span class="ow">is</span> <span class="n">self_sat</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># 获取该下游邻居的队列长度</span>
+        <span class="n">q_size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="s1">&#39;task_queue&#39;</span><span class="p">,</span> <span class="p">[])))</span>
+        <span class="n">queue_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q_size</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">queue_sizes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">queue_sizes</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># ============== 统一扁平观测类 ==============</span>
+
+<div class="viewcode-block" id="STINHierarchicalObservations">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.STINHierarchicalObservations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STINHierarchicalObservations</span><span class="p">(</span><span class="n">Observation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    统一扁平观测：L1 和 L2 共享相同的观测输入。</span>
+<span class="sd">    </span>
+<span class="sd">    设计说明：</span>
+<span class="sd">        - 观测本身不区分层级，网络端负责分头处理</span>
+<span class="sd">        - L2 Selector 会额外接收 L1 输出作为条件输入（在模型端实现）</span>
+<span class="sd">        - 结构与 STINRelativeObservations 保持一致</span>
+<span class="sd">        - 支持可配置属性规范，与旧版风格对齐</span>
+<span class="sd">    </span>
+<span class="sd">    观测维度（默认配置）：</span>
+<span class="sd">        - 邻居特征 (N x F): 每个邻居的状态（当前 F=8）</span>
+<span class="sd">        - 邻居掩码 (N): 可达性标记</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="o">*</span><span class="n">neighbor_properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">max_neighbors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hier_neighbor_obs&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化分层观测。</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            neighbor_properties: 邻居属性规范列表。</span>
+<span class="sd">            max_neighbors: 最大邻居数量。</span>
+<span class="sd">            name: 观测名称。</span>
+
+<span class="sd">        示例::</span>
+
+<span class="sd">            # 使用默认配置</span>
+<span class="sd">            STINHierarchicalObservations()</span>
+<span class="sd">            </span>
+<span class="sd">            # 使用可配置风格 (*args 传入属性)</span>
+<span class="sd">            STINHierarchicalObservations(</span>
+<span class="sd">                dict(prop=&quot;get_task_queue_size&quot;, norm=50.0),</span>
+<span class="sd">                dict(prop=&quot;get_isl_distance&quot;, norm=1e7),</span>
+<span class="sd">                max_neighbors=4,</span>
+<span class="sd">            )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span> <span class="o">=</span> <span class="n">max_neighbors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;STINHierarchicalHybridAction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># 处理邻居属性规范</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">prop_spec</span> <span class="ow">in</span> <span class="n">neighbor_properties</span><span class="p">:</span>
+            <span class="n">processed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_property_spec</span><span class="p">(</span><span class="n">prop_spec</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+        
+        <span class="c1"># 特征名称（用于描述输出）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="p">]</span>
+        
+        <span class="c1"># 计算维度（统一结构，支持向量特征）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_features</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)))</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span>
+        <span class="p">))</span>  <span class="c1"># 每个邻居的特征数</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_dim</span> <span class="o">=</span> <span class="n">max_neighbors</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_features</span>  <span class="c1"># 邻居特征</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_dim</span> <span class="o">=</span> <span class="n">max_neighbors</span>  <span class="c1"># 邻居可达性掩码</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_dim</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_property_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop_spec</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;处理属性规范，与 STINRelativeObservations 风格一致。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            prop_spec: 原始属性规范字典。</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            处理后的属性规范，包含 fn, norm, name。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 验证键</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prop&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;fn&quot;</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid property key: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">processed</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># 1. 处理函数</span>
+        <span class="k">if</span> <span class="s2">&quot;fn&quot;</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 尝试从本模块的预定义函数中获取</span>
+            <span class="n">prop_name</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prop&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prop_name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide either &#39;fn&#39; or &#39;prop&#39;&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># 首先尝试从 relative_observations 模块获取（如 r_DC_N, v_DC_N）</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">bsk_rl.obs.relative_observations</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rel_obs_module</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rel_obs_module</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">):</span>
+                <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rel_obs_module</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">)</span>
+            <span class="c1"># 然后从模块全局命名空间获取函数</span>
+            <span class="k">elif</span> <span class="n">prop_name</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+                <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">prop_name</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Property prop=&#39;</span><span class="si">{</span><span class="n">prop_name</span><span class="si">}</span><span class="s2">&#39; not found. &quot;</span>
+                    <span class="s2">&quot;Provide a custom &#39;fn&#39; or use predefined properties like: &quot;</span>
+                    <span class="s2">&quot;get_task_queue_size, get_battery_fraction, get_isl_distance, etc.&quot;</span>
+                <span class="p">)</span>
+        
+        <span class="c1"># 2. 处理归一化</span>
+        <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        
+        <span class="c1"># 3. 处理名称</span>
+        <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prop&quot;</span><span class="p">,</span> <span class="s2">&quot;custom&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;_normd&quot;</span>
+        
+        <span class="c1"># 4. 推断形状（调用一次函数来获取输出形状）</span>
+        <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 默认假设标量输出</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+        
+        <span class="k">return</span> <span class="n">processed</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;观测空间定义（统一扁平向量，使用 inf 作为范围）。&quot;&quot;&quot;</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">return</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span>
+            <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_dim</span><span class="p">,),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="STINHierarchicalObservations.get_obs">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_hier_observations.html#bsk_rl.obs.STINHierarchicalObservations.get_obs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取观测向量（仅包含邻居状态和 mask）。&quot;&quot;&quot;</span>
+        <span class="n">sat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span>
+        
+        <span class="c1"># 获取邻居列表（优先使用环境刷新后的快照）</span>
+        <span class="n">neighbors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cached_neighbors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;_neighbor_snapshot&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached_neighbors</span><span class="p">:</span>
+            <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cached_neighbors</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;action_builder&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">action_builder</span><span class="p">,</span> <span class="s2">&quot;_action&quot;</span><span class="p">):</span>
+                <span class="n">action_instance</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">action_builder</span><span class="o">.</span><span class="n">_action</span>
+                <span class="k">if</span> <span class="n">action_instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span> <span class="o">=</span> <span class="n">action_instance</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span><span class="p">,</span> <span class="s2">&quot;neighbor_satellites&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">neighbors</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">(</span><span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;get_isl_neighbors&quot;</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">neighbors</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">get_isl_neighbors</span><span class="p">()</span> <span class="ow">or</span> <span class="p">[]</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">neighbors</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># ============ 邻居特征 (N x neighbor_features) ============</span>
+        <span class="n">all_neighbor_features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">neighbor_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)</span> <span class="ow">and</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">current_neighbor_feats</span> <span class="o">=</span> <span class="p">[]</span>
+                
+                <span class="k">for</span> <span class="n">prop_spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="p">:</span>
+                    <span class="n">fn</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span>
+                    <span class="n">norm</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span>
+                    <span class="c1"># 调用函数</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">sat</span><span class="p">)</span>
+                    
+                    <span class="c1"># 处理标量或向量</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">])</span>
+                        
+                    <span class="c1"># 归一化并展平</span>
+                    <span class="n">feat</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="n">norm</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                    <span class="n">current_neighbor_feats</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+                
+                <span class="n">all_neighbor_features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">current_neighbor_feats</span><span class="p">)</span>
+                <span class="n">neighbor_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># 可达</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># 填充零：如果邻居不可达或不存在</span>
+                <span class="n">all_neighbor_features</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_features</span><span class="p">)</span>
+                <span class="n">neighbor_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># 不可达</span>
+
+        <span class="n">mask_snapshot</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;_neighbor_mask_snapshot&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask_snapshot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_snapshot</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span><span class="p">:</span>
+            <span class="n">neighbor_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask_snapshot</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mask_diag_remaining&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask_diag_remaining</span> <span class="o">=</span> <span class="mi">300</span>
+        <span class="n">action_neighbors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">action_neighbors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span><span class="p">,</span> <span class="s2">&quot;neighbor_satellites&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">action_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_neighbors</span><span class="p">)</span> <span class="k">if</span> <span class="n">action_neighbors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">snapshot_neighbors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;_neighbor_snapshot&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">snapshot_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">snapshot_neighbors</span><span class="p">)</span> <span class="k">if</span> <span class="n">snapshot_neighbors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">neighbor_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbors</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">mask_sum</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">neighbor_mask</span><span class="p">))</span>
+        <span class="n">snapshot_mismatch</span> <span class="o">=</span> <span class="n">snapshot_count</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">snapshot_count</span> <span class="o">!=</span> <span class="n">neighbor_count</span>
+        <span class="n">action_mismatch</span> <span class="o">=</span> <span class="n">action_count</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">action_count</span> <span class="o">!=</span> <span class="n">neighbor_count</span>
+        <span class="n">is_zero</span> <span class="o">=</span> <span class="n">neighbor_count</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">mask_sum</span> <span class="o">&lt;=</span> <span class="mf">0.0</span>
+        <span class="n">should_log</span> <span class="o">=</span> <span class="p">(</span><span class="n">snapshot_mismatch</span> <span class="ow">or</span> <span class="n">action_mismatch</span> <span class="ow">or</span> <span class="n">is_zero</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">should_log</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask_diag_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mask_diag_remaining</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;[MASK DIAG] sat=</span><span class="si">%s</span><span class="s2"> neighbors=</span><span class="si">%d</span><span class="s2"> action_neighbors=</span><span class="si">%d</span><span class="s2"> snapshot_neighbors=</span><span class="si">%d</span><span class="s2"> mask_sum=</span><span class="si">%.0f</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+                <span class="n">neighbor_count</span><span class="p">,</span>
+                <span class="n">action_count</span><span class="p">,</span>
+                <span class="n">snapshot_count</span><span class="p">,</span>
+                <span class="n">mask_sum</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># 扁平化输出：[neighbors_flat, mask]</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">all_neighbor_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="n">neighbor_mask</span><span class="p">,</span>
+        <span class="p">])</span>
+
+        <span class="c1"># ✅ NaN/Inf 保护</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observation_description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;人类可读的观测空间描述。&quot;&quot;&quot;</span>
+        <span class="n">desc</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># 移除了 Self 描述</span>
+        <span class="k">for</span> <span class="n">n_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">f_idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neighbor_feature_names</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">desc</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Neighbor</span><span class="si">{</span><span class="n">n_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">f_idx</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="n">desc</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Neighbor</span><span class="si">{</span><span class="n">n_idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;reachable_mask&quot;</span>
+
+        <span class="k">return</span> <span class="n">desc</span></div>
+
+
+<span class="n">__doc_title__</span> <span class="o">=</span> <span class="s2">&quot;STIN Hierarchical Observations&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;STINHierarchicalObservations&quot;</span><span class="p">,</span>
+    <span class="c1"># 从 stin_relative_observations 复用的函数（再导出）</span>
+    <span class="s2">&quot;get_battery_fraction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_task_queue_size&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_queue_workload&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_isl_distance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_isl_channel_quality&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_current_task_priority&quot;</span><span class="p">,</span>
+    <span class="c1"># 本模块独有的辅助函数</span>
+    <span class="s2">&quot;get_raw_queue_size&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_avg_task_priority&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_min_remaining_deadline&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_cpu_freq_ratio&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_tx_power_ratio&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_total_queue_data&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_downstream_queue&quot;</span><span class="p">,</span>  <span class="c1"># 🆕 下游拥塞信号 (Backpressure Routing)</span>
+<span class="p">]</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 设计说明 (Hier-MAPPO 架构)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#</span>
+<span class="c1"># 按照 Hier-MAPPO 框架设计，L1 和 L2 使用**同一套统一观测**：</span>
+<span class="c1">#   - Head1 (Discrete/Task Split): 使用观测决定任务切分 [α_local, α_cloud, α_sat]</span>
+<span class="c1">#   - Head2 (Continuous/Routing): 使用观测 + Head1 输出（条件化）决定路由</span>
+<span class="c1">#</span>
+<span class="c1"># 分头逻辑在**模型端**实现，而非观测端：</span>
+<span class="c1">#   - L2 Selector 网络接收 [观测, L1输出] 作为输入</span>
+<span class="c1">#   - 这使得 L2 的路由决策可以基于 L1 的切分意图</span>
+<span class="c1">#</span>
+<span class="c1"># 观测结构（扁平化，可配置）：</span>
+<span class="c1">#   - self_features (默认 8D): 可配置的自身状态特征</span>
+<span class="c1">#   - neighbor_features (N x 默认 6): 可配置的邻居特征</span>
+<span class="c1">#   - neighbor_mask (N): 邻居可达性掩码</span>
+<span class="c1">#</span>
+<span class="c1"># 观测结构（扁平化，可配置）：</span>
+<span class="c1">#   - neighbor_features (N x 默认 6): 可配置的邻居特征</span>
+<span class="c1">#   - neighbor_mask (N): 邻居可达性掩码</span>
+<span class="c1">#   - 自身特征由 obs.SatProperties 额外组合</span>
+<span class="c1">#</span>
+<span class="c1"># 默认总维度: (N * 6) + N = 7N</span>
+<span class="c1"># 当 N=4 时: 28D</span>
+<span class="c1">#</span>
+<span class="c1"># =============================================================================</span>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

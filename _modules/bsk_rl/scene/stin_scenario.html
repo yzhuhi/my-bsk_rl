@@ -1,0 +1,892 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.scene.stin_scenario &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bsk_rl.scene.stin_scenario</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.scene.stin_scenario</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">STINScenario: 定义 STIN 场景中的计算任务分布。</span>
+
+<span class="sd">设计说明:</span>
+<span class="sd">    - 继承自 Scenario 基类（参考 UniformTargets 的设计）</span>
+<span class="sd">    - 只负责生成计算任务（用户终端请求），不负责卫星轨道配置</span>
+<span class="sd">    - 卫星轨道配置应通过 `sat_arg_randomizer=walker_delta_args(...)` 完成</span>
+<span class="sd">    - 计算任务包含：数据量、计算复杂度、最大时延等属性</span>
+
+<span class="sd">使用示例:</span>
+<span class="sd">    &gt;&gt;&gt; from bsk_rl import ConstellationTasking</span>
+<span class="sd">    &gt;&gt;&gt; from bsk_rl.utils.orbital import walker_delta_args</span>
+<span class="sd">    &gt;&gt;&gt; from bsk_rl.scene import STINTaskScenario</span>
+<span class="sd">    &gt;&gt;&gt; from bsk_rl.sats import ComputationSatellite</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; env = ConstellationTasking(</span>
+<span class="sd">    ...     satellites=[ComputationSatellite() for _ in range(6)],</span>
+<span class="sd">    ...     sat_arg_randomizer=walker_delta_args(  # 星座在这里配置！</span>
+<span class="sd">    ...         n_planes=1,</span>
+<span class="sd">    ...         altitude=800,</span>
+<span class="sd">    ...         inc=60,</span>
+<span class="sd">    ...         clusterspacing=5,</span>
+<span class="sd">    ...     ),</span>
+<span class="sd">    ...     scenario=STINTaskScenario(n_tasks=10),  # 场景只负责任务</span>
+<span class="sd">    ... )</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">truncnorm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">orbitalMotion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">vizard</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">lla2ecef</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_UPLINK_RATE</span><span class="p">,</span> <span class="n">DEFAULT_FIBER_DISTANCE</span><span class="p">,</span> <span class="n">DEFAULT_CLOUD_CPU_FREQ</span><span class="p">,</span> <span class="n">DEFAULT_UD_CPU_FREQ</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">Satellite</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ComputationTask">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.ComputationTask">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ComputationTask</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;STIN 场景中的计算任务。</span>
+<span class="sd">    </span>
+<span class="sd">    表示用户终端（UD）发起的计算请求。</span>
+<span class="sd">    </span>
+<span class="sd">    时延模型所需属性:</span>
+<span class="sd">        - origin_position: 任务来源位置 (= r_LP_P)</span>
+<span class="sd">        - uplink_distance: 上行链路距离（需要在任务分配时计算）</span>
+<span class="sd">        </span>
+<span class="sd">    并行路径时延模型:</span>
+<span class="sd">        T_total = max(T_UD, T_SAT, T_CLOUD)</span>
+<span class="sd">        </span>
+<span class="sd">        - T_UD: UD 本地处理时延 = (alpha_local × data × workload) / f_ud</span>
+<span class="sd">        - T_SAT: 卫星路径时延 = T_tx_up(α_sat) + T_prop_up + T_queue + T_compute + T_isl + T_prop_down</span>
+<span class="sd">        - T_CLOUD: 云端路径时延 = T_tx_up(α_cloud) + T_tx_sgl(α_cloud) + 2×(T_prop_up + T_prop_sgl + T_fiber) + T_compute_cloud</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">r_LP_P</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>        <span class="c1"># [m] 任务来源位置（Planet-fixed）</span>
+    <span class="n">data_size</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># [bits] 输入数据量</span>
+    <span class="n">workload</span><span class="p">:</span> <span class="nb">float</span>           <span class="c1"># [cycles/bit] 计算复杂度</span>
+    <span class="n">max_delay</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># [s] 最大容忍时延</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="nb">float</span>           <span class="c1"># 优先级 [0, 1]，详见下方说明 / 12-26 改动</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># priority 字段设计说明：</span>
+    <span class="c1"># </span>
+    <span class="c1"># ✅ 已实现功能：</span>
+    <span class="c1">#   - 可视化标记大小 (markerScale = sqrt(priority))</span>
+    <span class="c1">#   - 任务到达优先级：高优先级任务更可能先到达 (process_task_arrivals)</span>
+    <span class="c1">#   - 分配优先级：高优先级任务分配给资源更充足的卫星 (assign_tasks_to_satellites)</span>
+    <span class="c1">#   - Agent 观测：current_task_priority 已加入观测空间 (41D)</span>
+    <span class="c1">#   - 奖励函数：超时惩罚已使用 priority 加权</span>
+    <span class="c1"># </span>
+    <span class="c1"># 🔮 Future Work（卫星层优先级队列）：</span>
+    <span class="c1">#   - 卫星端按优先级处理：在 task_queue 中使用优先级队列替代 FIFO</span>
+    <span class="c1">#     实现方式：max(task_queue, key=lambda t: t.priority) 或 heapq</span>
+    <span class="c1">#   - 奖励函数权重：完成高优先级任务获得更高奖励 （已实现）</span>
+    <span class="c1">#   - 分级处理 (SLA tiers)：根据优先级设置不同的 max_delay 乘数</span>
+    <span class="c1">#   - 抛弃策略：资源紧张时优先抛弃低优先级任务</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="n">uplink_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_UPLINK_RATE</span>  <span class="c1"># [bps] 上行传输速率</span>
+    
+    <span class="c1"># 云端路径参数</span>
+    <span class="n">fiber_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FIBER_DISTANCE</span>    <span class="c1"># [m] 网关到云服务器的光纤距离，默认 500 km</span>
+    <span class="n">cloud_cpu_freq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_CLOUD_CPU_FREQ</span>       <span class="c1"># [Hz] 云端 CPU 频率，默认 10 GHz</span>
+    
+    <span class="c1"># UD 本地参数</span>
+    <span class="n">ud_cpu_freq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_UD_CPU_FREQ</span>           <span class="c1"># [Hz] UD 本地 CPU 频率，默认 1 GHz</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">origin_position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;任务来源位置别名（用于 TaskSlice 兼容性）。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_LP_P</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取唯一标识符。&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">task_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;数值型任务 ID（从名称中提取）。&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">%</span> <span class="mi">100000</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_cycles</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算任务所需的总 CPU 周期数。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ComputationTask(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_size</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">Mb)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="STINTaskScenario">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STINTaskScenario</span><span class="p">(</span><span class="n">Scenario</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;STIN 计算任务场景：定义计算任务的分布。</span>
+<span class="sd">    </span>
+<span class="sd">    任务属性包括：</span>
+<span class="sd">    - 地理位置（用户终端位置）</span>
+<span class="sd">    - 数据量分布 截断正态分布</span>
+<span class="sd">    - 计算复杂度分布</span>
+<span class="sd">    - 时延要求分布</span>
+<span class="sd">    </span>
+<span class="sd">    注意：卫星轨道配置应通过 `sat_arg_randomizer` 参数完成，</span>
+<span class="sd">    而不是在此场景中定义。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_tasks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">data_size_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">10e6</span><span class="p">),</span>  <span class="c1"># (a, b) 截断范围 [bits]</span>
+        <span class="n">data_size_mean</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># 均值 μ，默认为范围中心</span>
+        <span class="n">data_size_std</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>   <span class="c1"># 标准差 σ，默认为范围的1/4</span>
+        <span class="n">workload_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>    <span class="c1"># cycles/bit</span>
+        <span class="n">max_delay_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>   <span class="c1"># 1-10 seconds</span>
+        <span class="n">priority_distribution</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="c1"># 12-26 改动：优先级生成函数被真正输入</span>
+        <span class="n">task_arrival_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>  <span class="c1"># 任务到达率 (tasks/second)</span>
+        <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">orbitalMotion</span><span class="o">.</span><span class="n">REQ_EARTH</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
+        <span class="c1"># --- 位置模糊化参数（模拟 GPS 误差/用户移动）---</span>
+        <span class="n">enable_location_uncertainty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># 是否启用位置模糊化</span>
+        <span class="n">location_uncertainty_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5000.0</span><span class="p">,</span>  <span class="c1"># [m] 位置不确定性半径（高斯标准差）</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化 STIN 计算任务场景。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            n_tasks: 每个 episode 的任务数量，可以是固定值或范围 (low, high)。</span>
+<span class="sd">            data_size_range: [bits] 任务数据量截断范围 (a, b)，对应论文公式 (3)。</span>
+<span class="sd">            data_size_mean: [bits] 数据量均值 μ，默认为 (a+b)/2。</span>
+<span class="sd">            data_size_std: [bits] 数据量标准差 σ，默认为 (b-a)/4。</span>
+<span class="sd">            workload_range: [cycles/bit] 计算复杂度范围。</span>
+<span class="sd">            max_delay_range: [s] 最大时延要求范围。</span>
+<span class="sd">            priority_distribution: 优先级生成函数，默认为 uniform(0, 1)。 </span>
+<span class="sd">            task_arrival_rate: [tasks/s] 任务到达率（泊松过程）。</span>
+<span class="sd">            radius: [m] 任务来源位置的地球半径。</span>
+<span class="sd">            enable_location_uncertainty: 是否启用位置模糊化模式。</span>
+<span class="sd">            location_uncertainty_radius: [m] 位置不确定性半径（高斯 1σ）。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_tasks</span> <span class="o">=</span> <span class="n">n_tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_size_range</span> <span class="o">=</span> <span class="n">data_size_range</span>
+        <span class="c1"># 截断正态分布参数 (论文公式 3) 12-26 改动：允许自定义均值和标准差</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">data_size_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_size_mean</span> <span class="o">=</span> <span class="n">data_size_mean</span> <span class="k">if</span> <span class="n">data_size_mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_size_std</span> <span class="o">=</span> <span class="n">data_size_std</span> <span class="k">if</span> <span class="n">data_size_std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">workload_range</span> <span class="o">=</span> <span class="n">workload_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_delay_range</span> <span class="o">=</span> <span class="n">max_delay_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_arrival_rate</span> <span class="o">=</span> <span class="n">task_arrival_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span>
+        
+        <span class="c1"># 动态到达率参数（默认静态）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_arrival_mode</span> <span class="o">=</span> <span class="s1">&#39;static&#39;</span>  <span class="c1"># &#39;static&#39;, &#39;sinusoidal&#39;, &#39;burst&#39;, &#39;time_of_day&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arrival_amplitude</span> <span class="o">=</span> <span class="mf">0.3</span>          <span class="c1"># 正弦波幅度（相对基线）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arrival_period</span> <span class="o">=</span> <span class="mf">1800.0</span>          <span class="c1"># 正弦波周期 [s]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">burst_probability</span> <span class="o">=</span> <span class="mf">0.01</span>         <span class="c1"># 突发事件概率</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">burst_multiplier</span> <span class="o">=</span> <span class="mf">3.0</span>           <span class="c1"># 突发事件倍率</span>
+        
+        <span class="c1"># 位置模糊化参数</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_location_uncertainty</span> <span class="o">=</span> <span class="n">enable_location_uncertainty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location_uncertainty_radius</span> <span class="o">=</span> <span class="n">location_uncertainty_radius</span>
+        
+        <span class="k">if</span> <span class="n">priority_distribution</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">priority_distribution</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">priority_distribution</span> <span class="o">=</span> <span class="n">priority_distribution</span>
+        
+        <span class="c1"># 任务列表</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ComputationTask</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># 泊松到达机制：任务池（待到达）和已到达队列</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ComputationTask</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># 待到达任务池</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ComputationTask</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># 已到达任务队列</span>
+
+<div class="viewcode-block" id="STINTaskScenario.get_arrival_rate">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.get_arrival_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_arrival_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sim_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;根据仿真时间计算动态任务到达率。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            sim_time: 当前仿真时间 [s]</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            当前时刻的任务到达率 [tasks/s]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_arrival_rate</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_arrival_mode</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">base_rate</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_arrival_mode</span> <span class="o">==</span> <span class="s1">&#39;sinusoidal&#39;</span><span class="p">:</span>
+            <span class="c1"># 正弦波动：rate = base × (1 + amplitude × sin(2π × t / period))</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sim_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrival_period</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrival_amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">base_rate</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>  <span class="c1"># 最低 10% 基线</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_arrival_mode</span> <span class="o">==</span> <span class="s1">&#39;burst&#39;</span><span class="p">:</span>
+            <span class="c1"># 突发模式：随机触发突发事件</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">burst_probability</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">base_rate</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">burst_multiplier</span>
+            <span class="k">return</span> <span class="n">base_rate</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_arrival_mode</span> <span class="o">==</span> <span class="s1">&#39;time_of_day&#39;</span><span class="p">:</span>
+            <span class="c1"># 分时段模式：模拟早晚高峰</span>
+            <span class="c1"># 假设一个轨道周期约 5400s，分成 6 个时段</span>
+            <span class="n">period</span> <span class="o">=</span> <span class="mf">6000.0</span>  <span class="c1"># 轨道周期</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="p">(</span><span class="n">sim_time</span> <span class="o">%</span> <span class="n">period</span><span class="p">)</span> <span class="o">/</span> <span class="n">period</span>  <span class="c1"># [0, 1)</span>
+            
+            <span class="k">if</span> <span class="mf">0.1</span> <span class="o">&lt;=</span> <span class="n">phase</span> <span class="o">&lt;</span> <span class="mf">0.3</span><span class="p">:</span>      <span class="c1"># 早高峰</span>
+                <span class="k">return</span> <span class="n">base_rate</span> <span class="o">*</span> <span class="mf">1.5</span>
+            <span class="k">elif</span> <span class="mf">0.6</span> <span class="o">&lt;=</span> <span class="n">phase</span> <span class="o">&lt;</span> <span class="mf">0.8</span><span class="p">:</span>    <span class="c1"># 晚高峰</span>
+                <span class="k">return</span> <span class="n">base_rate</span> <span class="o">*</span> <span class="mf">1.8</span>
+            <span class="k">elif</span> <span class="mf">0.8</span> <span class="o">&lt;=</span> <span class="n">phase</span> <span class="o">&lt;</span> <span class="mf">0.9</span><span class="p">:</span>    <span class="c1"># 夜间低谷</span>
+                <span class="k">return</span> <span class="n">base_rate</span> <span class="o">*</span> <span class="mf">0.5</span>
+            <span class="k">else</span><span class="p">:</span>                        <span class="c1"># 平时</span>
+                <span class="k">return</span> <span class="n">base_rate</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">base_rate</span></div>
+
+
+<div class="viewcode-block" id="STINTaskScenario.reset_overwrite_previous">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.reset_overwrite_previous">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_overwrite_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;清除上一个 episode 的任务列表。&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="STINTaskScenario.reset_pre_sim_init">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.reset_pre_sim_init">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_pre_sim_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;在仿真初始化前生成任务集。</span>
+
+<span class="sd">        注意：任务生成后放入task_pool，等待泊松过程动态到达</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 确定任务数量</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_tasks</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_tasks</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_tasks</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># yaml中改成序列就行 [1000,10000]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span><span class="si">}</span><span class="s2"> computation tasks for Poisson arrival&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_regenerate_tasks</span><span class="p">()</span>
+        
+        <span class="c1"># 将所有任务放入待到达池</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+        
+        <span class="c1"># 注意：不再在这里注册任务的access checking</span>
+        <span class="c1"># 任务将在到达时动态注册（在process_task_arrivals中）</span>
+
+<div class="viewcode-block" id="STINTaskScenario.reset_during_sim_init">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.reset_during_sim_init">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_during_sim_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;在仿真初始化期间可视化任务。&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_visualize_task</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></div>
+
+
+    <span class="nd">@vizard</span><span class="o">.</span><span class="n">visualize</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_visualize_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">vizSupport</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vizInstance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;在 Vizard 中可视化任务位置。</span>
+<span class="sd">        </span>
+<span class="sd">        可视化规则（参考 Agile EOS 视频风格）：</span>
+<span class="sd">            - 任务大小 (markerScale) → 表示数据量（数据越大，标记越大）</span>
+<span class="sd">            - 任务颜色 (color) → 表示优先级（绿色=低，黄色=中，红色=高）</span>
+<span class="sd">            - 任务完成后 → 颜色变蓝（通过 mark_task_completed 方法）</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            task: 要可视化的 ComputationTask 对象。</span>
+<span class="sd">            vizSupport: Vizard 支持模块（由装饰器注入）。</span>
+<span class="sd">            vizInstance: Vizard 实例（由装饰器注入）。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 优先级到颜色的映射（绿→黄→红渐变）</span>
+        <span class="n">color_rgba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_priority_to_color</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span> <span class="n">vizSupport</span><span class="p">)</span>
+        
+        <span class="c1"># 数据量到大小的映射</span>
+        <span class="c1"># 标准化到 [0.3, 1.5] 范围，避免太小或太大</span>
+        <span class="n">data_min</span><span class="p">,</span> <span class="n">data_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_range</span>
+        <span class="n">normalized_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">data_size</span> <span class="o">-</span> <span class="n">data_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">data_max</span> <span class="o">-</span> <span class="n">data_min</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="n">marker_scale</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="n">normalized_size</span> <span class="o">*</span> <span class="mf">1.2</span>  <span class="c1"># [0.3, 1.5]</span>
+        
+        <span class="n">vizSupport</span><span class="o">.</span><span class="n">addLocation</span><span class="p">(</span>
+            <span class="n">vizInstance</span><span class="p">,</span>
+            <span class="n">stationName</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>           <span class="c1"># 任务名称（显示在 Vizard 中）</span>
+            <span class="n">parentBodyName</span><span class="o">=</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span>          <span class="c1"># 附着在地球上</span>
+            <span class="n">r_GP_P</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">r_LP_P</span><span class="p">),</span>        <span class="c1"># 任务在地球固连系中的位置 [m]</span>
+            <span class="n">fieldOfView</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">500</span><span class="o">/</span><span class="mi">800</span><span class="p">),</span>  <span class="c1"># 视场角（约 32°）</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">color_rgba</span><span class="p">,</span>                <span class="c1"># 优先级颜色（绿→红渐变）</span>
+            <span class="nb">range</span><span class="o">=</span><span class="mf">1000.0</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span>             <span class="c1"># 可见范围 1000 km</span>
+            <span class="n">markerScale</span><span class="o">=</span><span class="n">marker_scale</span><span class="p">,</span>        <span class="c1"># 标记大小 = 数据量映射</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCones</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCones</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>   <span class="c1"># 禁用锥形范围显示</span>
+
+        <span class="k">if</span> <span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCommLines</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCommLines</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 启用蓝线</span>
+
+        <span class="k">if</span> <span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationLabels</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationLabels</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># 禁用标签显示</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_priority_to_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">priority</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">vizSupport</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;将优先级 [0, 1] 映射到颜色（绿→黄→红渐变）。</span>
+<span class="sd">        </span>
+<span class="sd">        颜色方案：</span>
+<span class="sd">            - priority = 0.0: 绿色 (0, 255, 0)</span>
+<span class="sd">            - priority = 0.5: 黄色 (255, 255, 0)</span>
+<span class="sd">            - priority = 1.0: 红色 (255, 0, 0)</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            priority: 任务优先级 [0, 1]</span>
+<span class="sd">            vizSupport: Vizard 支持模块</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RGBA255 颜色列表 [R, G, B, A]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">priority</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">priority</span><span class="p">))</span>  <span class="c1"># 裁剪到 [0, 1]</span>
+        
+        <span class="k">if</span> <span class="n">priority</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="c1"># 绿→黄：G 保持 255，R 从 0 增到 255</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">priority</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># [0, 1]</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="mi">255</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 黄→红：R 保持 255，G 从 255 减到 0</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">priority</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># [0, 1]</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">255</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">t</span><span class="p">))</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">return</span> <span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mi">255</span><span class="p">]</span>  <span class="c1"># RGBA255 格式</span>
+    
+<div class="viewcode-block" id="STINTaskScenario.mark_task_completed">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.mark_task_completed">[docs]</a>
+    <span class="nd">@vizard</span><span class="o">.</span><span class="n">visualize</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mark_task_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">vizSupport</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vizInstance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;将任务标记为已完成（颜色变为蓝色）。</span>
+<span class="sd">        </span>
+<span class="sd">        任务完成后调用此方法，会在 Vizard 中将该任务的标记颜色更新为蓝色。</span>
+<span class="sd">        </span>
+<span class="sd">        注意：Vizard 的 addLocation 不支持直接更新颜色，</span>
+<span class="sd">        但可以通过 liveSettings 或重新添加 location 来实现更新。</span>
+<span class="sd">        这里我们使用 createTargetLine 从任务连接到地心来表示&quot;已完成&quot;状态。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            task: 已完成的 ComputationTask 对象</span>
+<span class="sd">            vizSupport: Vizard 支持模块（由装饰器注入）</span>
+<span class="sd">            vizInstance: Vizard 实例（由装饰器注入）</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># 方法 1: 用 createTargetLine 画一条蓝色目标线表示完成</span>
+            <span class="c1"># 由于 addLocation 不能动态更新颜色，我们用目标线覆盖显示完成状态</span>
+            <span class="n">vizSupport</span><span class="o">.</span><span class="n">createTargetLine</span><span class="p">(</span>
+                <span class="n">vizInstance</span><span class="p">,</span>
+                <span class="n">toBodyName</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>      <span class="c1"># 目标：任务 location</span>
+                <span class="n">lineColor</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>          <span class="c1"># 蓝色表示已完成</span>
+                <span class="n">fromBodyName</span><span class="o">=</span><span class="s2">&quot;earth&quot;</span><span class="p">,</span>      <span class="c1"># 从地心（或可用其他参考点）</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># 静默失败，不影响仿真</span>
+            <span class="k">pass</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_regenerate_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;生成均匀分布的计算任务。</span>
+<span class="sd">        </span>
+<span class="sd">        可以在子类中重写此方法以实现其他分布（如城市分布）。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># 计算截断正态分布的标准化边界 (论文公式 3) 12-26 改动</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_range</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_std</span>
+        <span class="c1"># ✅ 防止除零：sigma 至少为 1.0</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">a_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>  <span class="c1"># 标准化下界</span>
+        <span class="n">b_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>  <span class="c1"># 标准化上界</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span><span class="p">):</span>
+            <span class="c1"># 均匀分布的地理位置（基准位置）</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            
+            <span class="c1"># 位置模糊化：添加高斯扰动模拟 GPS 误差/用户移动</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_location_uncertainty</span><span class="p">:</span>
+                <span class="c1"># 在切平面内添加扰动（保持在地球表面）</span>
+                <span class="n">perturbation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">location_uncertainty_radius</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">perturbation</span>
+                <span class="n">x</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># 投影回地球表面</span>
+            
+            <span class="c1"># 截断正态分布采样数据量 (论文公式 3)</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="n">truncnorm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">a_std</span><span class="p">,</span> <span class="n">b_std</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data_size</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># 确保在范围内</span>
+            
+            <span class="c1"># 其他属性仍用均匀分布</span>
+            <span class="n">workload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">workload_range</span><span class="p">)</span>
+            <span class="n">max_delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_delay_range</span><span class="p">)</span>
+            
+            <span class="n">task</span> <span class="o">=</span> <span class="n">ComputationTask</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;task-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">r_LP_P</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">data_size</span><span class="o">=</span><span class="n">data_size</span><span class="p">,</span>
+                <span class="n">workload</span><span class="o">=</span><span class="n">workload</span><span class="p">,</span>
+                <span class="n">max_delay</span><span class="o">=</span><span class="n">max_delay</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priority_distribution</span><span class="p">(),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+<div class="viewcode-block" id="STINTaskScenario.sample_task">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.sample_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ComputationTask</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;根据优先级加权采样一个任务。</span>
+<span class="sd">        </span>
+<span class="sd">        **当前状态**: 已实现但未被调用（保留接口）。</span>
+<span class="sd">        </span>
+<span class="sd">        **设计用途**: </span>
+<span class="sd">            实现优先级驱动的任务选择，高优先级任务被选中的概率更高。</span>
+<span class="sd">        </span>
+<span class="sd">        **启用方法**:</span>
+<span class="sd">            在 process_task_arrivals() 中使用此方法替代随机选择::</span>
+<span class="sd">            </span>
+<span class="sd">                # 当前代码（随机选择）:</span>
+<span class="sd">                arrived_indices = np.random.choice(len(self.task_pool), ...)</span>
+<span class="sd">                </span>
+<span class="sd">                # 改为优先级驱动:</span>
+<span class="sd">                for _ in range(actual_arrivals):</span>
+<span class="sd">                    task = self.sample_task_from_pool()  # 需要实现此变体</span>
+<span class="sd">                    ...</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            采样的任务，如果没有任务则返回 None。</span>
+<span class="sd">            </span>
+<span class="sd">        Note:</span>
+<span class="sd">            采样概率 P(task_i) = priority_i / sum(priorities)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="c1"># 按优先级加权采样</span>
+        <span class="n">priorities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t</span><span class="o">.</span><span class="n">priority</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">])</span>
+        <span class="n">probabilities</span> <span class="o">=</span> <span class="n">priorities</span> <span class="o">/</span> <span class="n">priorities</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">probabilities</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="STINTaskScenario.process_task_arrivals">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.process_task_arrivals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_task_arrivals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; 改</span>
+<span class="sd">        处理当前步的任务到达（泊松过程）。</span>
+<span class="sd">        </span>
+<span class="sd">        根据task_arrival_rate和step_duration，使用泊松分布采样本步到达的任务数，</span>
+<span class="sd">        并将任务从task_pool移到arrived_tasks，同时注册到卫星的access checking。</span>
+<span class="sd">        目前实现：</span>
+<span class="sd">        1.任务到达优先级 高优先级任务更可能先从 task_pool 进入 arrived_tasks</span>
+<span class="sd">        2.任务分配优先级 高优先级任务更可能先从 arrived_tasks 分配给卫星（已经设置了一个计算分数的函数）</span>
+<span class="sd">        3.未实现：卫星处理任务的优先级队列，在任务上传的阶段设置了优先级</span>
+<span class="sd">        Args:</span>
+<span class="sd">            step_duration: 当前步的时长(秒)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            本步到达的任务数</span>
+
+<span class="sd">        Note: </span>
+<span class="sd">            如果lambda是静态的，稳态流量；如果是动态的，存在高峰低谷模式（增加了系统性的事变趋势）；</span>
+
+<span class="sd">            纯泊松（static）:</span>
+<span class="sd">            rate (恒定 1.4)</span>
+<span class="sd">            </span>
+<span class="sd">            正弦波动（sinusoidal）:</span>
+<span class="sd">            rate (在 1.0-1.8 之间波动)</span>
+<span class="sd">            </span>
+<span class="sd">            分时段（time_of_day）:</span>
+<span class="sd">            rate (早晚高峰)</span>
+
+<span class="sd">            纯泊松：已经有随机性，适合稳态场景</span>
+<span class="sd">            动态到达率：增加系统性的时变趋势（如早晚高峰）</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="c1"># 获取当前仿真时间（从任意卫星的 simulator 获取）</span>
+        <span class="n">current_sim_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;simulator&#39;</span><span class="p">):</span>
+            <span class="n">current_sim_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+        
+        <span class="c1"># 计算期望到达数：λ = task_arrival_rate (tasks/s) × step_duration (s)</span>
+        <span class="n">current_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_arrival_rate</span><span class="p">(</span><span class="n">current_sim_time</span><span class="p">)</span>
+        <span class="n">expected_arrivals</span> <span class="o">=</span> <span class="n">current_rate</span> <span class="o">*</span> <span class="n">step_duration</span>
+        
+        <span class="c1"># 泊松采样实际到达数</span>
+        <span class="n">actual_arrivals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">expected_arrivals</span><span class="p">)</span>
+        <span class="c1"># 不能超过任务池剩余数量</span>
+        <span class="n">actual_arrivals</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">actual_arrivals</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">))</span>
+        
+        <span class="c1"># 从任务池中按优先级加权选择到达的任务 (创新点: 优先级驱动)</span>
+        <span class="k">if</span> <span class="n">actual_arrivals</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># 按优先级加权采样（高优先级任务更可能先到达）</span>
+            <span class="n">priorities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t</span><span class="o">.</span><span class="n">priority</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">])</span>
+            <span class="n">probabilities</span> <span class="o">=</span> <span class="n">priorities</span> <span class="o">/</span> <span class="n">priorities</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">arrived_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">),</span> 
+                <span class="n">size</span><span class="o">=</span><span class="n">actual_arrivals</span><span class="p">,</span> 
+                <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">p</span><span class="o">=</span><span class="n">probabilities</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># 从后往前删除，避免索引变化</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">arrived_indices</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                
+                <span class="c1"># 注册任务到所有卫星的access checking</span>
+                <span class="k">for</span> <span class="n">satellite</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">satellite</span><span class="p">,</span> <span class="s2">&quot;add_location_for_access_checking&quot;</span><span class="p">):</span>
+                        <span class="n">min_elev</span> <span class="o">=</span> <span class="n">satellite</span><span class="o">.</span><span class="n">sat_args_generator</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                            <span class="s2">&quot;taskMinimumElevation&quot;</span><span class="p">,</span>
+                            <span class="n">satellite</span><span class="o">.</span><span class="n">sat_args_generator</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                                <span class="s2">&quot;imageTargetMinimumElevation&quot;</span><span class="p">,</span> <span class="mf">0.0</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="n">satellite</span><span class="o">.</span><span class="n">add_location_for_access_checking</span><span class="p">(</span>
+                            <span class="nb">object</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                            <span class="n">r_LP_P</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">r_LP_P</span><span class="p">,</span>
+                            <span class="n">min_elev</span><span class="o">=</span><span class="n">min_elev</span><span class="p">,</span>
+                            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;task&quot;</span><span class="p">,</span>
+                        <span class="p">)</span>
+            
+            <span class="c1"># 🔍 调试信息：每500个任务或任务池&lt;500时输出</span>
+            <span class="k">if</span> <span class="n">actual_arrivals</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">)</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">):</span>
+                <span class="c1"># 计算实际到达率</span>
+                <span class="n">actual_rate</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[Poisson] +</span><span class="si">{</span><span class="n">actual_arrivals</span><span class="si">}</span><span class="s2"> tasks | &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Pool: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Arrived: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Config rate: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task_arrival_rate</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">/s | &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Actual rate: </span><span class="si">{</span><span class="n">actual_rate</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">/s&quot;</span>
+                <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">actual_arrivals</span></div>
+
+    
+<div class="viewcode-block" id="STINTaskScenario.assign_tasks_to_satellites">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.STINTaskScenario.assign_tasks_to_satellites">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">assign_tasks_to_satellites</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; 改</span>
+<span class="sd">        将任务分配给具有可见性的卫星（优先级驱动）。</span>
+<span class="sd">        </span>
+<span class="sd">        创新点：</span>
+<span class="sd">        1. 按优先级排序处理任务（高优先级任务优先分配）</span>
+<span class="sd">        2. 优先级感知的卫星选择（高优先级任务分配给资源更充足的卫星）</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+        
+        <span class="c1"># 统计本次分配</span>
+        <span class="n">assigned_count</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># 按优先级降序排列待分配任务（高优先级优先）</span>
+        <span class="n">pending_tasks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrived_tasks</span> 
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;_assigned&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">t</span><span class="o">.</span><span class="n">_assigned</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">pending_tasks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">pending_tasks</span><span class="p">:</span>
+            <span class="c1"># 从任务获取 UD 位置</span>
+            <span class="n">task_position</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;r_LP_P&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">task_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+                
+            <span class="c1"># 找到能看到这个任务的卫星列表</span>
+            <span class="n">visible_satellites</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">satellite</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">satellite</span><span class="p">,</span> <span class="s1">&#39;receive_task_from_scenario&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">satellite</span><span class="p">,</span> <span class="s1">&#39;_check_ud_visibility&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                    
+                <span class="c1"># 检查可见性</span>
+                <span class="k">if</span> <span class="n">satellite</span><span class="o">.</span><span class="n">_check_ud_visibility</span><span class="p">(</span><span class="n">task_position</span><span class="p">):</span>
+                    <span class="n">visible_satellites</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">satellite</span><span class="p">)</span>
+            
+            <span class="c1"># 如果有可见的卫星，根据优先级选择最优卫星</span>
+            <span class="k">if</span> <span class="n">visible_satellites</span><span class="p">:</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">_random_tiebreak</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">scores</span><span class="p">):</span>
+                    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                    <span class="n">min_score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+                    <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">min_score</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">idxs</span><span class="p">))]</span>
+
+                <span class="c1"># 高优先级任务：选择资源最充足的卫星（队列短 + 电量高）</span>
+                <span class="c1"># 低优先级任务：选择队列最短的卫星（简单负载均衡）</span>
+                <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">priority</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>  <span class="c1"># 高优先级阈值</span>
+                    <span class="c1"># 综合评分：队列越短越好，电量越高越好</span>
+                    <span class="k">def</span><span class="w"> </span><span class="nf">sat_score</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+                        <span class="n">queue_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">task_queue</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;task_queue&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+                        <span class="n">battery_ratio</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;battery_charge_ratio&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">queue_len</span> <span class="o">-</span> <span class="n">battery_ratio</span> <span class="o">*</span> <span class="mi">10</span>  <span class="c1"># 电量每10%抵消1个队列任务</span>
+                    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">sat_score</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">visible_satellites</span><span class="p">]</span>
+                    <span class="n">best_sat</span> <span class="o">=</span> <span class="n">_random_tiebreak</span><span class="p">(</span><span class="n">visible_satellites</span><span class="p">,</span> <span class="n">scores</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># 普通任务：简单负载均衡</span>
+                    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">task_queue</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;task_queue&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+                        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">visible_satellites</span>
+                    <span class="p">]</span>
+                    <span class="n">best_sat</span> <span class="o">=</span> <span class="n">_random_tiebreak</span><span class="p">(</span><span class="n">visible_satellites</span><span class="p">,</span> <span class="n">scores</span><span class="p">)</span>
+                <span class="n">best_sat</span><span class="o">.</span><span class="n">receive_task_from_scenario</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="n">task</span><span class="o">.</span><span class="n">_assigned</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">assigned_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="k">if</span> <span class="n">assigned_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[DIAG] ✓ Assigned </span><span class="si">{</span><span class="n">assigned_count</span><span class="si">}</span><span class="s2"> tasks (priority-driven) at t=</span><span class="si">{</span><span class="n">current_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span>
+            <span class="p">)</span></div>
+</div>
+
+
+
+
+<div class="viewcode-block" id="CityTaskScenario">
+<a class="viewcode-back" href="../../../api_reference/scene/stin_scenario.html#bsk_rl.scene.CityTaskScenario">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CityTaskScenario</span><span class="p">(</span><span class="n">STINTaskScenario</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;基于城市分布的 STIN 计算任务场景。</span>
+<span class="sd">    </span>
+<span class="sd">    任务来源于人口密集区域（城市），更符合实际的用户终端分布。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_tasks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_select_from</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># 从前 N 个最大城市中选择</span>
+        <span class="n">location_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50000</span><span class="p">,</span>  <span class="c1"># [m] 位置偏移</span>
+        <span class="n">city_task_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># 城市任务占比（其余为均匀分布）</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化城市分布的计算任务场景。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            n_tasks: 任务数量。</span>
+<span class="sd">            n_select_from: 从最大的 N 个城市中采样，None 表示全部。</span>
+<span class="sd">            location_offset: [m] 任务位置相对城市中心的随机偏移。</span>
+<span class="sd">            city_task_ratio: 城市任务占比（其余为均匀分布）。</span>
+<span class="sd">            **kwargs: 传递给 STINTaskScenario 的其他参数。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n_tasks</span><span class="o">=</span><span class="n">n_tasks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_select_from</span> <span class="o">=</span> <span class="n">n_select_from</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location_offset</span> <span class="o">=</span> <span class="n">location_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_task_ratio</span> <span class="o">=</span> <span class="n">city_task_ratio</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_regenerate_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;基于城市分布生成计算任务。&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># 加载城市数据库</span>
+        <span class="n">cities</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+            <span class="o">/</span> <span class="s2">&quot;_dat&quot;</span>
+            <span class="o">/</span> <span class="s2">&quot;simplemaps_worldcities&quot;</span>
+            <span class="o">/</span> <span class="s2">&quot;worldcities.csv&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        
+        <span class="n">n_select</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_select_from</span>
+        <span class="k">if</span> <span class="n">n_select</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">n_select</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cities</span><span class="p">):</span>
+            <span class="n">n_select</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cities</span><span class="p">)</span>
+        
+        <span class="c1"># 计算截断正态分布的标准化边界 (论文公式 3)</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_range</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_size_std</span>
+        <span class="c1"># ✅ 防止除零：sigma 至少为 1.0</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">a_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+        <span class="n">b_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+        
+        <span class="c1"># 任务分布：城市占比 + 均匀分布（海上等）</span>
+        <span class="n">city_ratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">city_task_ratio</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_task_ratio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">city_ratio</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">city_ratio</span><span class="p">))</span>
+        <span class="n">n_city</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="o">*</span> <span class="n">city_ratio</span><span class="p">))</span>
+        <span class="n">n_city</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">n_city</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span><span class="p">)</span>
+        <span class="n">n_uniform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tasks</span> <span class="o">-</span> <span class="n">n_city</span>
+
+        <span class="n">task_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_sample_task</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">name_prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">nonlocal</span> <span class="n">task_idx</span>
+            <span class="c1"># 添加随机偏移（城市内部的空间分布）</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="c1"># 位置模糊化：添加高斯扰动模拟 GPS 误差/用户移动</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_location_uncertainty</span><span class="p">:</span>
+                <span class="n">perturbation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">location_uncertainty_radius</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">loc</span> <span class="o">+</span> <span class="n">perturbation</span>
+                <span class="n">loc</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>  <span class="c1"># 投影回地球表面</span>
+
+            <span class="c1"># 截断正态分布采样数据量 (论文公式 3)</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="n">truncnorm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">a_std</span><span class="p">,</span> <span class="n">b_std</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data_size</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+            <span class="c1"># 其他属性仍用均匀分布</span>
+            <span class="n">workload</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">workload_range</span><span class="p">)</span>
+            <span class="n">max_delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_delay_range</span><span class="p">)</span>
+
+            <span class="n">task</span> <span class="o">=</span> <span class="n">ComputationTask</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_prefix</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">task_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">r_LP_P</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span>
+                <span class="n">data_size</span><span class="o">=</span><span class="n">data_size</span><span class="p">,</span>
+                <span class="n">workload</span><span class="o">=</span><span class="n">workload</span><span class="p">,</span>
+                <span class="n">max_delay</span><span class="o">=</span><span class="n">max_delay</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priority_distribution</span><span class="p">(),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="n">task_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># 城市任务：允许重复采样</span>
+        <span class="k">if</span> <span class="n">n_city</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">n_select</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n_select</span><span class="p">,</span> <span class="n">n_city</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">city</span> <span class="o">=</span> <span class="n">cities</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">location</span> <span class="o">=</span> <span class="n">lla2ecef</span><span class="p">(</span><span class="n">city</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">],</span> <span class="n">city</span><span class="p">[</span><span class="s2">&quot;lng&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+
+                <span class="c1"># 添加随机偏移（城市内部的空间分布）</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">location_offset</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+                    <span class="n">offset</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+                    <span class="n">offset</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">location_offset</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
+                    <span class="n">location</span> <span class="o">+=</span> <span class="n">offset</span>
+                    <span class="n">location</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+                    <span class="n">location</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span>
+
+                <span class="n">_sample_task</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">city</span><span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">city</span><span class="p">[</span><span class="s1">&#39;iso2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+
+        <span class="c1"># 均匀分布任务（海上等）</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_uniform</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">_sample_task</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="n">__doc_title__</span> <span class="o">=</span> <span class="s2">&quot;STIN Task Scenarios&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ComputationTask&quot;</span><span class="p">,</span> <span class="s2">&quot;STINTaskScenario&quot;</span><span class="p">,</span> <span class="s2">&quot;CityTaskScenario&quot;</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

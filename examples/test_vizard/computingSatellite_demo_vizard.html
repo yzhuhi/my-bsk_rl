@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>computingSatellite_demo_vizard &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">computingSatellite_demo_vizard</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/examples/test_vizard/computingSatellite_demo_vizard.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="computingsatellite-demo-vizard">
+<span id="examples-test-vizard-computingsatellite-demo-vizard"></span><h1>computingSatellite_demo_vizard<a class="headerlink" href="#computingsatellite-demo-vizard" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="vizard-visualization-demo-for-lite-computation-satellite">
+<span id="module-examples.test_vizard.computingSatellite_demo_vizard"></span><h2>Vizard Visualization Demo for Lite Computation Satellite<a class="headerlink" href="#vizard-visualization-demo-for-lite-computation-satellite" title="Link to this heading"></a></h2>
+<p>This script demonstrates the 3D visualization of a LiteComputationSatellite
+constellation using Basilisk’s Vizard tool.</p>
+<dl class="simple">
+<dt><strong>可视化规则（参考 Agile EOS 视频风格）：</strong></dt><dd><ul class="simple">
+<li><p>任务大小 (markerScale) → 表示数据量（数据越大，标记越大）</p></li>
+<li><p>任务颜色 (color) → 表示优先级（绿色=低，黄色=中，红色=高）</p></li>
+<li><p>任务完成后 → 颜色变蓝（通过 mark_task_completed 方法）</p></li>
+</ul>
+</dd>
+</dl>
+<p>Requirements:
+- Vizard must be downloaded and installed
+- Set VIZARD_PATH environment variable or modify the path below</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><p>python computingSatellite_demo_vizard.py</p>
+</dd>
+</dl>
+<p>After running, open the generated .bin file in Vizard to view the simulation.</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ISLVisualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viz_instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/examples/test_vizard/computingSatellite_demo_vizard.html#ISLVisualizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize with a vizInterface instance.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.COLORS">
+<span class="sig-name descname"><span class="pre">COLORS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'downlink':</span> <span class="pre">'green',</span> <span class="pre">'isl':</span> <span class="pre">'yellow'}</span></span><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.COLORS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.add_isl_link">
+<span class="sig-name descname"><span class="pre">add_isl_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">from_sat_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_sat_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'isl'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/examples/test_vizard/computingSatellite_demo_vizard.html#ISLVisualizer.add_isl_link"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.add_isl_link" title="Link to this definition"></a></dt>
+<dd><p>Draw an ISL link between two satellites.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>from_sat_name</strong> (<em>str</em>) – Name of the source satellite</p></li>
+<li><p><strong>to_sat_name</strong> (<em>str</em>) – Name of the target satellite</p></li>
+<li><p><strong>link_type</strong> (<em>str</em>) – Type of link (‘isl’, ‘downlink’, ‘uplink’)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.clear_all_links">
+<span class="sig-name descname"><span class="pre">clear_all_links</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/examples/test_vizard/computingSatellite_demo_vizard.html#ISLVisualizer.clear_all_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.clear_all_links" title="Link to this definition"></a></dt>
+<dd><p>Clear all visualization links.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.get_link_count">
+<span class="sig-name descname"><span class="pre">get_link_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/examples/test_vizard/computingSatellite_demo_vizard.html#ISLVisualizer.get_link_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.get_link_count" title="Link to this definition"></a></dt>
+<dd><p>Return number of active links.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.create_vizard_env">
+<span class="sig-name descname"><span class="pre">create_vizard_env</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/examples/test_vizard/computingSatellite_demo_vizard.html#create_vizard_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.create_vizard_env" title="Link to this definition"></a></dt>
+<dd><p>Create environment with Vizard enabled.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="examples.test_vizard.computingSatellite_demo_vizard.run_demo">
+<span class="sig-name descname"><span class="pre">run_demo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/examples/test_vizard/computingSatellite_demo_vizard.html#run_demo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#examples.test_vizard.computingSatellite_demo_vizard.run_demo" title="Link to this definition"></a></dt>
+<dd><p>Run the simulation for visualization.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

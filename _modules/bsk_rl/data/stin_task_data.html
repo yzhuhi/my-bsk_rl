@@ -1,0 +1,1010 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.data.stin_task_data &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bsk_rl.data.stin_task_data</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.data.stin_task_data</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Data system for STIN task offloading and completion tracking.</span>
+
+<span class="sd">This module defines the reward calculation for satellite-terrestrial integrated network (STIN) </span>
+<span class="sd">multi-agent reinforcement learning environments.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Data</span><span class="p">,</span> <span class="n">DataStore</span><span class="p">,</span> <span class="n">GlobalReward</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats.computation_satellite</span><span class="w"> </span><span class="kn">import</span> <span class="n">TaskSlice</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="STINTaskData">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STINTaskData</span><span class="p">(</span><span class="n">Data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data for STIN task completion tracking.</span>
+<span class="sd">    </span>
+<span class="sd">    记录任务完成情况、时延、能耗等**增量数据**。</span>
+<span class="sd">    </span>
+<span class="sd">    注意：本类只存储增量/累计数据，不存储瞬时状态。 存增量</span>
+<span class="sd">    瞬时状态（如电池电量、CPU利用率）应在需要时从卫星动态读取。</span>
+
+<span class="sd">    任务列表：像是写日记。旧日记 + 新日记，但如果本子太厚了，就撕掉最早的前几页，只留最近 100 页。</span>
+<span class="sd">    能耗/流量：像是存钱罐。旧的钱 + 新的钱 = 总钱数。</span>
+<span class="sd">    平均时延：像是算绩点 (GPA)。根据学分（任务数量）进行加权平均，更新当前的平均表现。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">completed_tasks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="s2">&quot;TaskSlice&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expired_tasks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="s2">&quot;TaskSlice&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">processed_data</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">offloaded_data</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">energy_consumed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">avg_latency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">battery_soc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># 电池 SOC，用于软约束</span>
+        <span class="n">raw_queue_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># 原始任务队列长度（用于排队惩罚）</span>
+        <span class="n">queue_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>      <span class="c1"># 切片任务队列长度（用于排队惩罚）</span>
+        <span class="n">slice_queue_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">queue_data_gbits</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">queue_data_delta_gbits</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">slice_queue_data_gbits</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">slice_queue_data_delta_gbits</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">energy_tx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># 🆕 [J] 发送能耗 E_tr = P_tr × t_tx</span>
+        <span class="n">energy_rx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># 🆕 [J] 接收能耗 E_re = P_re × t_rx</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;构建 STIN 任务数据单元。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            completed_tasks: 本步成功完成的任务切片列表。</span>
+<span class="sd">            expired_tasks: 本步超时失败的任务切片列表。</span>
+<span class="sd">            processed_data: [Gbits] 本步处理的数据量（增量）。</span>
+<span class="sd">            offloaded_data: [Gbits] 本步卸载的数据量（增量）。</span>
+<span class="sd">            energy_consumed: [J] 本步消耗的能量（增量）。</span>
+<span class="sd">            avg_latency: [s] 本步完成任务的平均时延。</span>
+<span class="sd">            battery_soc: 电池 SOC [0, 1]，用于软约束惩罚。</span>
+<span class="sd">            energy_tx: [J] 发送能耗（论文 E_tr）。</span>
+<span class="sd">            energy_rx: [J] 接收能耗（论文 E_re）。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_tasks</span> <span class="o">=</span> <span class="n">completed_tasks</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expired_tasks</span> <span class="o">=</span> <span class="n">expired_tasks</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span> <span class="o">=</span> <span class="n">processed_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offloaded_data</span> <span class="o">=</span> <span class="n">offloaded_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_consumed</span> <span class="o">=</span> <span class="n">energy_consumed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_latency</span> <span class="o">=</span> <span class="n">avg_latency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery_soc</span> <span class="o">=</span> <span class="n">battery_soc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_queue_len</span> <span class="o">=</span> <span class="n">raw_queue_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_len</span> <span class="o">=</span> <span class="n">queue_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_queue_len</span> <span class="o">=</span> <span class="n">slice_queue_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_data_gbits</span> <span class="o">=</span> <span class="n">queue_data_gbits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue_data_delta_gbits</span> <span class="o">=</span> <span class="n">queue_data_delta_gbits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_queue_data_gbits</span> <span class="o">=</span> <span class="n">slice_queue_data_gbits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_queue_data_delta_gbits</span> <span class="o">=</span> <span class="n">slice_queue_data_delta_gbits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_tx</span> <span class="o">=</span> <span class="n">energy_tx</span>  <span class="c1"># 🆕</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_rx</span> <span class="o">=</span> <span class="n">energy_rx</span>  <span class="c1"># 🆕</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;STINTaskData&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;STINTaskData&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;合并两个数据单元（增量累加）。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            other: 另一个数据单元。</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            合并后的数据单元。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 合并任务列表，但限制大小以防止内存泄漏</span>
+        <span class="n">MAX_BUFFER_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">all_completed</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completed_tasks</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">completed_tasks</span><span class="p">)[</span><span class="o">-</span><span class="n">MAX_BUFFER_SIZE</span><span class="p">:]</span>
+        <span class="n">all_expired</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expired_tasks</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">expired_tasks</span><span class="p">)[</span><span class="o">-</span><span class="n">MAX_BUFFER_SIZE</span><span class="p">:]</span>
+        
+        <span class="c1"># 计算平均时延（加权平均）</span>
+        <span class="n">total_completed</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completed_tasks</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">completed_tasks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">total_completed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completed_tasks</span><span class="p">)</span>
+            <span class="n">n2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">completed_tasks</span><span class="p">)</span>
+            <span class="n">avg_latency</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_latency</span> <span class="o">*</span> <span class="n">n1</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">avg_latency</span> <span class="o">*</span> <span class="n">n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_completed</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">avg_latency</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 增量累加（符合库设计）</span>
+        <span class="k">return</span> <span class="n">STINTaskData</span><span class="p">(</span>
+            <span class="n">completed_tasks</span><span class="o">=</span><span class="n">all_completed</span><span class="p">,</span>
+            <span class="n">expired_tasks</span><span class="o">=</span><span class="n">all_expired</span><span class="p">,</span>
+            <span class="n">processed_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">processed_data</span><span class="p">,</span>
+            <span class="n">offloaded_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">offloaded_data</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">offloaded_data</span><span class="p">,</span>
+            <span class="n">energy_consumed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_consumed</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">energy_consumed</span><span class="p">,</span>
+            <span class="n">avg_latency</span><span class="o">=</span><span class="n">avg_latency</span><span class="p">,</span>
+            <span class="n">raw_queue_len</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">raw_queue_len</span><span class="p">,</span>
+            <span class="n">queue_len</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">queue_len</span><span class="p">,</span>
+            <span class="n">slice_queue_len</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">slice_queue_len</span><span class="p">,</span>
+            <span class="n">queue_data_gbits</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">queue_data_gbits</span><span class="p">,</span>
+            <span class="n">queue_data_delta_gbits</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">queue_data_delta_gbits</span><span class="p">,</span>
+            <span class="n">slice_queue_data_gbits</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">slice_queue_data_gbits</span><span class="p">,</span>
+            <span class="n">slice_queue_data_delta_gbits</span><span class="o">=</span><span class="n">other</span><span class="o">.</span><span class="n">slice_queue_data_delta_gbits</span><span class="p">,</span>
+            <span class="n">energy_tx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_tx</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">energy_tx</span><span class="p">,</span>  <span class="c1"># 🆕</span>
+            <span class="n">energy_rx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_rx</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">energy_rx</span><span class="p">,</span>  <span class="c1"># 🆕</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="STINTaskStore">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskStore">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STINTaskStore</span><span class="p">(</span><span class="n">DataStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DataStore for STIN task completion tracking.&quot;&quot;&quot;</span>
+
+    <span class="n">data_type</span> <span class="o">=</span> <span class="n">STINTaskData</span>
+    
+    <span class="c1"># 警告去重标志（类级别）</span>
+    <span class="n">_battery_read_warning_issued</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化 STIN 任务数据存储。</span>
+<span class="sd">        </span>
+<span class="sd">        跟踪每个卫星的任务完成状态、资源使用情况。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_completed_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_expired_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_processed_data</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_offloaded_data</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_battery_level</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<div class="viewcode-block" id="STINTaskStore.get_log_state">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskStore.get_log_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_log_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;记录当前步骤结束时的状态（用于计算增量）。</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            包含任务统计和资源状态的字典。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;ComputationSatellite&quot;</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span>
+        
+        <span class="c1"># 读取电池电量（用于计算能耗增量）</span>
+        <span class="n">battery_level</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;dynamics&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;powerMonitor&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">battery_msg</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">powerMonitor</span><span class="o">.</span><span class="n">batPowerOutMsg</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">battery_level</span> <span class="o">=</span> <span class="n">battery_msg</span><span class="o">.</span><span class="n">storageLevel</span>  <span class="c1"># [W·s]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># 首次警告，后续调试级别（避免日志洪泛）</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">STINTaskStore</span><span class="o">.</span><span class="n">_battery_read_warning_issued</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot read battery level: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Future errors will be debug level.&quot;</span><span class="p">)</span>
+                    <span class="n">STINTaskStore</span><span class="o">.</span><span class="n">_battery_read_warning_issued</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot read battery level: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># 记录仿真时间</span>
+        <span class="n">sim_time</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+        
+        <span class="c1"># 记录各硬件当前的瞬时功耗 (W)</span>
+        <span class="n">total_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">cpu_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">tx_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">base_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 如果 powerMonitor 读取失败，回退到手动加总</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;cpuPowerSink&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpuPowerSink</span><span class="p">:</span>
+            <span class="n">raw_cpu</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpuPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span>
+            <span class="n">cpu_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">raw_cpu</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">raw_cpu</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">raw_cpu</span><span class="p">))</span> <span class="k">else</span> <span class="mf">0.0</span>
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;transmitterPowerSink&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">transmitterPowerSink</span><span class="p">:</span>
+            <span class="n">raw_tx</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">transmitterPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span>
+            <span class="n">tx_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">raw_tx</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">raw_tx</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">raw_tx</span><span class="p">))</span> <span class="k">else</span> <span class="mf">0.0</span>
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;basePowerSink&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">basePowerSink</span><span class="p">:</span>
+            <span class="n">raw_base</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">basePowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span>
+            <span class="n">base_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">raw_base</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">raw_base</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">raw_base</span><span class="p">))</span> <span class="k">else</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 🆕 接收机功耗（论文能耗模型 E_re）</span>
+        <span class="n">rx_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;rxPowerSink&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="p">:</span>
+            <span class="n">raw_rx</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span>
+            <span class="n">rx_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">raw_rx</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">raw_rx</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">raw_rx</span><span class="p">))</span> <span class="k">else</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># total_power = cpu_power + tx_power + base_power + rx_power</span>
+        <span class="n">total_power</span> <span class="o">=</span> <span class="n">cpu_power</span> <span class="o">+</span> <span class="n">base_power</span>
+
+    
+        <span class="c1"># 调试日志：每100步打印一次功耗详情</span>
+        <span class="c1"># if int(sim_time) % 100 == 0:</span>
+        <span class="c1">#     logger.info(f&quot;[POWER DEBUG] {sat.name} @ t={sim_time:.1f}s: CPU={cpu_power:.2f}W, TX={tx_power:.2f}W, Base={base_power:.2f}W, Total={total_power:.2f}W&quot;)</span>
+        
+        <span class="c1"># ⚠️ 安全检查：防止 inf/nan 传播</span>
+        <span class="n">processed_data</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">processed_data_total</span>
+        <span class="n">offloaded_data</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">offloaded_data_total</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">processed_data</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">processed_data</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[OVERFLOW SOURCE] </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> processed_data_total=</span><span class="si">{</span><span class="n">processed_data</span><span class="si">}</span><span class="s2">, resetting to 0&quot;</span><span class="p">)</span>
+            <span class="n">sat</span><span class="o">.</span><span class="n">processed_data_total</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">processed_data</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">offloaded_data</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">offloaded_data</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[OVERFLOW SOURCE] </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> offloaded_data_total=</span><span class="si">{</span><span class="n">offloaded_data</span><span class="si">}</span><span class="s2">, resetting to 0&quot;</span><span class="p">)</span>
+            <span class="n">sat</span><span class="o">.</span><span class="n">offloaded_data_total</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">offloaded_data</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;completed_count&quot;</span><span class="p">:</span> <span class="n">sat</span><span class="o">.</span><span class="n">completed_tasks_count</span><span class="p">,</span>
+            <span class="s2">&quot;expired_count&quot;</span><span class="p">:</span> <span class="n">sat</span><span class="o">.</span><span class="n">expired_tasks_count</span><span class="p">,</span>
+            <span class="s2">&quot;processed_data&quot;</span><span class="p">:</span> <span class="n">processed_data</span><span class="p">,</span>
+            <span class="s2">&quot;offloaded_data&quot;</span><span class="p">:</span> <span class="n">offloaded_data</span><span class="p">,</span>
+            <span class="s2">&quot;raw_data_received&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;raw_data_received&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># 从 UD 接收的原始数据</span>
+            <span class="s2">&quot;battery_level&quot;</span><span class="p">:</span> <span class="n">battery_level</span><span class="p">,</span>  <span class="c1"># 用于奖励计算中的电池安全检查</span>
+            <span class="s2">&quot;sim_time&quot;</span><span class="p">:</span> <span class="n">sim_time</span><span class="p">,</span>            <span class="c1"># 用于计算精细能耗</span>
+            <span class="s2">&quot;total_power&quot;</span><span class="p">:</span> <span class="n">total_power</span><span class="p">,</span>
+            <span class="c1"># 🆕 收发统计（用于论文能耗模型）</span>
+            <span class="s2">&quot;sent_data_this_step&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;sent_data_this_step&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="s2">&quot;received_data_this_step&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;received_data_this_step&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="s2">&quot;tx_time_this_step&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;tx_time_this_step&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="s2">&quot;rx_time_this_step&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;rx_time_this_step&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="s2">&quot;raw_task_queue&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;raw_task_queue&#39;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="s2">&quot;slice_queue&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;slice_queue&#39;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="s2">&quot;task_queue&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">task_queue</span><span class="p">),</span>
+            <span class="s2">&quot;result_queue&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">result_queue</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;result_queue&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="STINTaskStore.compare_log_states">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskStore.compare_log_states">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare_log_states</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">old_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">new_state</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">STINTaskData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;对比两个状态，生成增量数据。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            old_state: 上一步的状态。</span>
+<span class="sd">            new_state: 当前步的状态。</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            本步骤产生的增量数据（不含瞬时状态）。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 检测新完成的任务</span>
+        <span class="n">completed_delta</span> <span class="o">=</span> <span class="n">new_state</span><span class="p">[</span><span class="s2">&quot;completed_count&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">old_state</span><span class="p">[</span><span class="s2">&quot;completed_count&quot;</span><span class="p">]</span>
+        <span class="n">expired_delta</span> <span class="o">=</span> <span class="n">new_state</span><span class="p">[</span><span class="s2">&quot;expired_count&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">old_state</span><span class="p">[</span><span class="s2">&quot;expired_count&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># 数据增量（带保护）</span>
+        <span class="n">processed_delta</span> <span class="o">=</span> <span class="n">new_state</span><span class="p">[</span><span class="s2">&quot;processed_data&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">old_state</span><span class="p">[</span><span class="s2">&quot;processed_data&quot;</span><span class="p">]</span>
+        <span class="n">offloaded_delta</span> <span class="o">=</span> <span class="n">new_state</span><span class="p">[</span><span class="s2">&quot;offloaded_data&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">old_state</span><span class="p">[</span><span class="s2">&quot;offloaded_data&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># ⚠️ 安全检查：防止 inf/nan 传播</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">processed_delta</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">processed_delta</span><span class="p">)</span> <span class="ow">or</span> <span class="n">processed_delta</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">processed_delta</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">offloaded_delta</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">offloaded_delta</span><span class="p">)</span> <span class="ow">or</span> <span class="n">offloaded_delta</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">offloaded_delta</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 能耗计算：改为基于物理做功 (功耗 * 时间)，不再受太阳能充电干扰</span>
+        <span class="c1"># 这种方式精度更高，且能反映任务执行的真实代价 </span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">new_state</span><span class="p">[</span><span class="s2">&quot;sim_time&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">old_state</span><span class="p">[</span><span class="s2">&quot;sim_time&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">dt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># 使用功率均值 (假设本步内功率恒定，BSK-RL 中 agent 动作为步级恒定)</span>
+            <span class="n">total_power</span> <span class="o">=</span> <span class="n">old_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_power&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="c1"># 安全检查：防止 NaN 或 Infinity 传播</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">total_power</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">total_power</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid total_power: </span><span class="si">{</span><span class="n">total_power</span><span class="si">}</span><span class="s2">, using 0.0&quot;</span><span class="p">)</span>
+                <span class="n">total_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">energy_consumed</span> <span class="o">=</span> <span class="n">total_power</span> <span class="o">*</span> <span class="n">dt</span>
+            <span class="c1"># 防止能耗值异常</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">energy_consumed</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">energy_consumed</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid energy: power=</span><span class="si">{</span><span class="n">total_power</span><span class="si">}</span><span class="s2">, dt=</span><span class="si">{</span><span class="n">dt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">energy_consumed</span> <span class="o">=</span> <span class="mf">0.0</span>
+            
+            <span class="c1"># 🆕 论文能耗模型分项计算</span>
+            <span class="c1"># E_tr = P_tr × t_tx (发送能耗)</span>
+            <span class="c1"># E_re = P_re × t_rx (接收能耗)</span>
+            <span class="n">tx_time</span> <span class="o">=</span> <span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tx_time_this_step&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">rx_time</span> <span class="o">=</span> <span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rx_time_this_step&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            
+            <span class="c1"># 获取功率参数（从 dynamics 或使用默认值）</span>
+            <span class="n">sat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span>
+            <span class="n">p_tx</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;max_tx_power_draw&#39;</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;dynamics&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">15.0</span>
+            <span class="n">p_rx</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;rx_power_draw&#39;</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">))</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;dynamics&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">8.0</span>
+            
+            <span class="n">energy_tx</span> <span class="o">=</span> <span class="n">p_tx</span> <span class="o">*</span> <span class="n">tx_time</span>  <span class="c1"># [J] 发送能耗</span>
+            <span class="n">energy_rx</span> <span class="o">=</span> <span class="n">p_rx</span> <span class="o">*</span> <span class="n">rx_time</span>  <span class="c1"># [J] 接收能耗</span>
+            <span class="n">energy_consumed</span> <span class="o">+=</span> <span class="n">energy_tx</span> <span class="o">+</span> <span class="n">energy_rx</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">energy_consumed</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">energy_tx</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">energy_rx</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 从卫星的历史缓冲区提取完成和超时的任务</span>
+        <span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;ComputationSatellite&quot;</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span>
+        <span class="n">completed_tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">expired_tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;completed_tasks_buffer&#39;</span><span class="p">):</span>
+            <span class="c1"># 提取本 step 完成的任务 (复制引用，不清空)</span>
+            <span class="c1"># ⚠️ 不在这里清空 buffer！由 gym.py 的 _get_info() 统一管理</span>
+            <span class="n">completed_tasks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">completed_tasks_buffer</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;expired_tasks_buffer&#39;</span><span class="p">):</span>
+            <span class="c1"># 提取本 step 超时的任务 (复制引用，不清空)</span>
+            <span class="c1"># ⚠️ 不在这里清空 buffer！由 gym.py 的 _get_info() 统一管理</span>
+            <span class="n">expired_tasks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">expired_tasks_buffer</span><span class="p">)</span>
+        
+        <span class="c1"># 计算平均时延（从实际完成的任务中提取）</span>
+        <span class="c1"># ✅ 直接从任务对象计算时延: T_total = max(T_UD, T_SAT, T_CLOUD)</span>
+        <span class="n">latencies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">completed_tasks</span><span class="p">:</span>
+            <span class="n">t_ud</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;t_ud_path&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">t_sat</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;t_sat_path&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">t_cloud</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;t_cloud_path&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">latency</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">t_ud</span><span class="p">,</span> <span class="n">t_sat</span><span class="p">,</span> <span class="n">t_cloud</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">latency</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">latencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latency</span><span class="p">)</span>
+                
+        <span class="n">avg_latency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">latencies</span><span class="p">)</span> <span class="k">if</span> <span class="n">latencies</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_queue_data_gbits</span><span class="p">(</span><span class="n">queue</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;data_size&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">queue</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e9</span> <span class="k">if</span> <span class="n">queue</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+        <span class="n">queue_data_gbits</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raw_task_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="o">+</span> <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="o">+</span> <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slice_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="p">)</span>
+        <span class="n">prev_queue_data_gbits</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">old_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raw_task_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="o">+</span> <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">old_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="o">+</span> <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">old_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slice_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="p">)</span>
+        <span class="n">queue_data_delta_gbits</span> <span class="o">=</span> <span class="n">queue_data_gbits</span> <span class="o">-</span> <span class="n">prev_queue_data_gbits</span>
+        <span class="n">slice_queue_data_gbits</span> <span class="o">=</span> <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slice_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">prev_slice_queue_data_gbits</span> <span class="o">=</span> <span class="n">_queue_data_gbits</span><span class="p">(</span><span class="n">old_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slice_queue&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">slice_queue_data_delta_gbits</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">slice_queue_data_gbits</span> <span class="o">-</span> <span class="n">prev_slice_queue_data_gbits</span>
+        <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">STINTaskData</span><span class="p">(</span>
+            <span class="n">completed_tasks</span><span class="o">=</span><span class="n">completed_tasks</span><span class="p">,</span>
+            <span class="n">expired_tasks</span><span class="o">=</span><span class="n">expired_tasks</span><span class="p">,</span>
+            <span class="n">processed_data</span><span class="o">=</span><span class="n">processed_delta</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>  <span class="c1"># 转为 Gbits</span>
+            <span class="n">offloaded_data</span><span class="o">=</span><span class="n">offloaded_delta</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>  <span class="c1"># 转为 Gbits</span>
+            <span class="n">energy_consumed</span><span class="o">=</span><span class="n">energy_consumed</span><span class="p">,</span>
+            <span class="n">avg_latency</span><span class="o">=</span><span class="n">avg_latency</span><span class="p">,</span>
+            <span class="n">battery_soc</span><span class="o">=</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;battery_level&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>  <span class="c1"># 当前电池 SOC</span>
+            <span class="n">raw_queue_len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raw_task_queue&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">queue_len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">slice_queue_len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slice_queue&quot;</span><span class="p">,</span> <span class="p">[])),</span>
+            <span class="n">queue_data_gbits</span><span class="o">=</span><span class="n">queue_data_gbits</span><span class="p">,</span>
+            <span class="n">queue_data_delta_gbits</span><span class="o">=</span><span class="n">queue_data_delta_gbits</span><span class="p">,</span>
+            <span class="n">slice_queue_data_gbits</span><span class="o">=</span><span class="n">slice_queue_data_gbits</span><span class="p">,</span>
+            <span class="n">slice_queue_data_delta_gbits</span><span class="o">=</span><span class="n">slice_queue_data_delta_gbits</span><span class="p">,</span>
+            <span class="n">energy_tx</span><span class="o">=</span><span class="n">energy_tx</span><span class="p">,</span>  <span class="c1"># 🆕 发送能耗</span>
+            <span class="n">energy_rx</span><span class="o">=</span><span class="n">energy_rx</span><span class="p">,</span>  <span class="c1"># 🆕 接收能耗</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="STINTaskReward">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskReward">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STINTaskReward</span><span class="p">(</span><span class="n">GlobalReward</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GlobalReward for STIN task offloading environments.</span>
+
+<span class="sd">    目标：最大化完成率，最小化时延与能耗。</span>
+<span class="sd">    可选 shaping：进度、队列、利用率、PBRS（由配置开关控制）。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data_store_type</span> <span class="o">=</span> <span class="n">STINTaskStore</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">w_progress</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>      <span class="c1"># 面包屑：默认关闭，避免刷分</span>
+        <span class="n">w_complete</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>     <span class="c1"># 主奖励：任务完成基础奖励</span>
+        <span class="n">w_expired</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.0</span><span class="p">,</span>      <span class="c1"># 超时惩罚系数</span>
+        <span class="n">w_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.000003</span><span class="p">,</span>   <span class="c1"># 能耗成本（每焦耳扣分）</span>
+        <span class="n">w_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>         <span class="c1"># 延迟惩罚系数</span>
+        <span class="n">w_queue_penalty</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="c1"># 排队惩罚：每个排队任务的罚分（鼓励清队）</span>
+        <span class="n">w_slice_drain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>   <span class="c1"># 切片队列净下降奖励（轻量 shaping）</span>
+        <span class="n">max_queue_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>     <span class="c1"># 队列长度归一化上限</span>
+        <span class="n">progress_norm_gbits</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">global_reward_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>  <span class="c1"># 全局结果奖励占比 [0, 1]</span>
+        <span class="n">w_utilization</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>       <span class="c1"># 资源利用率奖励：高负载时高资源利用=好</span>
+        <span class="n">w_pbrs_queue</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>        <span class="c1"># PBRS队列势函数系数（状态改善奖励）</span>
+        <span class="n">pbrs_gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>         <span class="c1"># PBRS折扣因子</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化 STIN 任务奖励计算器。</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            w_progress: 面包屑奖励，每处理 1 Gbits 数据的奖励。</span>
+<span class="sd">            w_complete: 任务完成基础奖励（会乘以时延折扣和优先级）。</span>
+<span class="sd">            w_expired: 超时惩罚系数（惩罚 = w_expired × priority）。</span>
+<span class="sd">            w_energy: 能耗成本（每焦耳扣分）。</span>
+<span class="sd">            w_delay: 时延敏感度 [0, 1]。</span>
+<span class="sd">            w_queue_penalty: 队列长度惩罚系数。</span>
+<span class="sd">            max_queue_size: 队列长度归一化上限。</span>
+<span class="sd">            progress_norm_gbits: 面包屑奖励归一化尺度。</span>
+<span class="sd">            global_reward_ratio: 全局结果奖励混合比例 [0, 1]。</span>
+<span class="sd">            w_utilization: 资源利用率奖励系数。</span>
+<span class="sd">            w_pbrs_queue: PBRS 队列势函数系数。</span>
+<span class="sd">            pbrs_gamma: PBRS 折扣因子。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_progress</span> <span class="o">=</span> <span class="n">w_progress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_complete</span> <span class="o">=</span> <span class="n">w_complete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_expired</span> <span class="o">=</span> <span class="n">w_expired</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_energy</span> <span class="o">=</span> <span class="n">w_energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_delay</span> <span class="o">=</span> <span class="n">w_delay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_queue_penalty</span> <span class="o">=</span> <span class="n">w_queue_penalty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_slice_drain</span> <span class="o">=</span> <span class="n">w_slice_drain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_queue_size</span> <span class="o">=</span> <span class="n">max_queue_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progress_norm_gbits</span> <span class="o">=</span> <span class="n">progress_norm_gbits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_reward_ratio</span> <span class="o">=</span> <span class="n">global_reward_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_utilization</span> <span class="o">=</span> <span class="n">w_utilization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_pbrs_queue</span> <span class="o">=</span> <span class="n">w_pbrs_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbrs_gamma</span> <span class="o">=</span> <span class="n">pbrs_gamma</span>
+
+        <span class="c1"># PBRS 状态追踪（每个卫星的上一步势函数值）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_potential</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;[Reward Config] w_progress=</span><span class="si">%s</span><span class="s2"> w_complete=</span><span class="si">%s</span><span class="s2"> w_expired=</span><span class="si">%s</span><span class="s2"> w_energy=</span><span class="si">%s</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;w_delay=</span><span class="si">%s</span><span class="s2"> w_queue_penalty=</span><span class="si">%s</span><span class="s2"> w_slice_drain=</span><span class="si">%s</span><span class="s2"> max_queue_size=</span><span class="si">%s</span><span class="s2"> progress_norm_gbits=</span><span class="si">%s</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;global_reward_ratio=</span><span class="si">%s</span><span class="s2"> w_utilization=</span><span class="si">%s</span><span class="s2"> w_pbrs_queue=</span><span class="si">%s</span><span class="s2"> pbrs_gamma=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_progress</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_complete</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_expired</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_energy</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_delay</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_queue_penalty</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_slice_drain</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_queue_size</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">progress_norm_gbits</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_reward_ratio</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_utilization</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w_pbrs_queue</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pbrs_gamma</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_satellite_cache</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># 缓存卫星名称到对象的映射</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_reward_components</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rewarded_task_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalized_task_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_satellite_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sat_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;根据名称获取卫星对象（带缓存）。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            sat_name: 卫星名称。</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            卫星对象，如果找不到返回 None。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 使用缓存避免重复查找</span>
+        <span class="k">if</span> <span class="n">sat_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_satellite_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_satellite_cache</span><span class="p">[</span><span class="n">sat_name</span><span class="p">]</span>
+        
+        <span class="c1"># 遍历卫星列表查找</span>
+        <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sat</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">sat_name</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_satellite_cache</span><span class="p">[</span><span class="n">sat_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">sat</span>
+                <span class="k">return</span> <span class="n">sat</span>
+        
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="STINTaskReward.reset_overwrite_previous">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskReward.reset_overwrite_previous">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_overwrite_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;重置时清空卫星缓存和任务ID记录（防止跨 Episode 状态泄漏）。&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset_overwrite_previous</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_satellite_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># 清空任务 ID 记录，防止跨 Episode 状态泄漏</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rewarded_task_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_penalized_task_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># 重置 PBRS 状态</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_potential</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+    <span class="c1"># ========================================================================</span>
+    <span class="c1"># 奖励计算辅助方法</span>
+    <span class="c1"># ========================================================================</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_pressure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算PBRS势函数 Φ(s) = -α × queue_pressure。</span>
+<span class="sd">        </span>
+<span class="sd">        队列压力越大，势函数值越负，状态越&quot;差&quot;。</span>
+<span class="sd">        当状态改善（队列压力降低）时，F = γΦ(s&#39;) - Φ(s) &gt; 0，获得正奖励。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            queue_pressure: 归一化队列压力 [0, 1]</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            势函数值</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">w_pbrs_queue</span> <span class="o">*</span> <span class="n">queue_pressure</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_pbrs_shaping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sat_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_queue_pressure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算PBRS奖励整形 F = γΦ(s&#39;) - Φ(s)。</span>
+<span class="sd">        </span>
+<span class="sd">        理论保证：PBRS 不改变最优策略，只加速学习。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            sat_id: 卫星ID</span>
+<span class="sd">            current_queue_pressure: 当前队列压力</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            PBRS整形奖励</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_pbrs_queue</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        
+        <span class="n">current_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_potential</span><span class="p">(</span><span class="n">current_queue_pressure</span><span class="p">)</span>
+        <span class="n">prev_potential</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_potential</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sat_id</span><span class="p">,</span> <span class="n">current_potential</span><span class="p">)</span>
+        
+        <span class="c1"># F = γΦ(s&#39;) - Φ(s)</span>
+        <span class="n">pbrs_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbrs_gamma</span> <span class="o">*</span> <span class="n">current_potential</span> <span class="o">-</span> <span class="n">prev_potential</span>
+        
+        <span class="c1"># 更新状态</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_potential</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_potential</span>
+        
+        <span class="k">return</span> <span class="n">pbrs_reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_progress_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">processed_data</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算面包屑奖励（处理数据量，单位已是 Gbits）。&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">processed_data</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_progress</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_norm_gbits</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_norm_gbits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">scaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">processed_data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_norm_gbits</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_progress</span> <span class="o">*</span> <span class="n">scaled</span>
+        <span class="k">return</span> <span class="n">processed_data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_progress</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_completion_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">total_delay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算任务完成奖励（乘法耦合版）。</span>
+<span class="sd">        </span>
+<span class="sd">        奖励公式 = w_complete × delay_factor × priority</span>
+<span class="sd">        </span>
+<span class="sd">        能效因子设计：</span>
+<span class="sd">        - 使用任务对象中记录的实际时延信息估算能耗</span>
+<span class="sd">        - 计算能耗基于实际处理时间</span>
+<span class="sd">        - 通信能耗基于 ISL 时延记录</span>
+<span class="sd">        - 归一化到 [0.5, 1.5] 区间</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (reward, origin_satellite) 元组</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ✅ 防止除零：max_delay 至少为 1.0 秒</span>
+        <span class="n">max_delay</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">max_delay</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">total_delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">total_delay</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">get_elapsed_time</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;compute_end_time&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+        <span class="n">time_ratio</span> <span class="o">=</span> <span class="n">total_delay</span> <span class="o">/</span> <span class="n">max_delay</span>
+        <span class="n">delay_factor</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_delay</span> <span class="o">*</span> <span class="n">time_ratio</span><span class="p">)</span>
+        <span class="n">priority</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;priority&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="c1"># 乘法耦合：所有因子相乘</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_complete</span> <span class="o">*</span> <span class="n">delay_factor</span> <span class="o">*</span> <span class="n">priority</span> 
+        <span class="n">origin_sat</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;origin_satellite&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">origin_sat</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_expired_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算超时惩罚。&quot;&quot;&quot;</span>
+        <span class="n">priority</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s1">&#39;priority&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_expired</span> <span class="o">*</span> <span class="n">priority</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calc_energy_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_consumed</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算能耗成本。&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">energy_consumed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">energy_consumed</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_energy</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_task_completion_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;判断任务级完成（含回传）与总时延。&quot;&quot;&quot;</span>
+        <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">task_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">access_sat_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;access_satellite&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;origin_satellite&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">access_sat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_satellite_by_name</span><span class="p">(</span><span class="n">access_sat_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">access_sat_name</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">access_sat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">access_sat</span><span class="p">,</span> <span class="s2">&quot;slice_registry&quot;</span><span class="p">):</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">access_sat</span><span class="o">.</span><span class="n">slice_registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">access_sat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">access_sat</span><span class="p">,</span> <span class="s2">&quot;get_task_total_delay&quot;</span><span class="p">):</span>
+            <span class="n">total_delay</span> <span class="o">=</span> <span class="n">access_sat</span><span class="o">.</span><span class="n">get_task_total_delay</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_delay</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;t_ud_path&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;t_sat_path&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;t_cloud_path&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="n">expired</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">access_sat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">access_sat</span><span class="p">,</span> <span class="s2">&quot;expired_task_ids&quot;</span><span class="p">):</span>
+            <span class="n">expired</span> <span class="o">=</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="n">access_sat</span><span class="o">.</span><span class="n">expired_task_ids</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="p">,</span> <span class="s2">&quot;satellites&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;expired_task_ids&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="n">sat</span><span class="o">.</span><span class="n">expired_task_ids</span><span class="p">:</span>
+                    <span class="n">expired</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+
+        <span class="n">is_complete</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">task_max_delay</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;max_delay&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">completed</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;completed&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">total</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">is_complete</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">expired</span><span class="p">)</span> <span class="ow">and</span> <span class="n">total_delay</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">total_delay</span> <span class="o">&lt;=</span> <span class="n">task_max_delay</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">is_complete</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">expired</span><span class="p">)</span> <span class="ow">and</span> <span class="n">completed</span> <span class="o">&gt;=</span> <span class="n">total</span> <span class="ow">and</span> <span class="n">total_delay</span> <span class="o">&lt;=</span> <span class="n">task_max_delay</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">is_complete</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">expired</span><span class="p">)</span> <span class="ow">and</span> <span class="n">total_delay</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">total_delay</span> <span class="o">&lt;=</span> <span class="n">task_max_delay</span>
+
+        <span class="k">return</span> <span class="n">is_complete</span><span class="p">,</span> <span class="n">total_delay</span><span class="p">,</span> <span class="n">access_sat_name</span>
+
+    <span class="c1"># ========================================================================</span>
+    <span class="c1"># 主奖励计算方法</span>
+    <span class="c1"># ========================================================================</span>
+
+<div class="viewcode-block" id="STINTaskReward.calculate_reward">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskReward.calculate_reward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_data_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">STINTaskData</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算每个卫星的奖励。</span>
+
+<span class="sd">        奖励由三类构成：</span>
+<span class="sd">        1) 结果项：完成奖励 / 超时惩罚</span>
+<span class="sd">        2) 成本项：能耗成本</span>
+<span class="sd">        3) 轻量 shaping：队列惩罚、进度、利用率、PBRS（可配置开关）</span>
+
+<span class="sd">        结果项可按 global_reward_ratio 进行全局混合，促进系统级协同。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="p">{</span><span class="n">sat_id</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">sat_id</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+        <span class="n">outcome_reward</span> <span class="o">=</span> <span class="p">{</span><span class="n">sat_id</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">sat_id</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+        <span class="n">reward_components</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">sat_id</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;completion_reward&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;expired_penalty&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;energy_cost&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;queue_penalty&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;slice_drain_reward&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;progress_reward&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;utilization_reward&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;pbrs_reward&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;total_reward&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">sat_id</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_rewarded_task_ids&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rewarded_task_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_penalized_task_ids&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_penalized_task_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">sat_id</span><span class="p">,</span> <span class="n">new_data</span> <span class="ow">in</span> <span class="n">new_data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">max_queue_size</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;max_queue_size&quot;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="p">,</span> <span class="s2">&quot;max_task_queue_size&quot;</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">total_queue_len</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="s2">&quot;raw_queue_len&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="n">new_data</span><span class="p">,</span> <span class="s2">&quot;queue_len&quot;</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="p">)</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="s2">&quot;slice_queue_len&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># 1) 轻量 shaping（队列/进度）</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_queue_penalty</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">max_queue_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ratio</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">total_queue_len</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_queue_size</span> <span class="o">*</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+                <span class="n">queue_penalty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_queue_penalty</span> <span class="o">*</span> <span class="n">ratio</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">-=</span> <span class="n">queue_penalty</span>
+                <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;queue_penalty&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue_penalty</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_slice_drain</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">slice_drain</span> <span class="o">=</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="s2">&quot;slice_queue_data_delta_gbits&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">slice_drain</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">slice_drain_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_slice_drain</span> <span class="o">*</span> <span class="n">slice_drain</span>
+                    <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">slice_drain_reward</span>
+                    <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;slice_drain_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">slice_drain_reward</span>
+
+            <span class="n">progress_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_progress_reward</span><span class="p">(</span><span class="n">new_data</span><span class="o">.</span><span class="n">processed_data</span><span class="p">)</span>
+            <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">progress_reward</span>
+            <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;progress_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">progress_reward</span>
+
+            <span class="c1"># 2) 结果项：完成与超时</span>
+            <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">new_data</span><span class="o">.</span><span class="n">completed_tasks</span><span class="p">:</span>
+                <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">task_id</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewarded_task_ids</span> <span class="ow">or</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalized_task_ids</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">is_complete</span><span class="p">,</span> <span class="n">total_delay</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_task_completion_state</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">is_complete</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">task_reward</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_completion_reward</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">total_delay</span><span class="o">=</span><span class="n">total_delay</span><span class="p">)</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">task_reward</span>
+                <span class="n">outcome_reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">task_reward</span>
+                <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;completion_reward&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">task_reward</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_rewarded_task_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">new_data</span><span class="o">.</span><span class="n">expired_tasks</span><span class="p">:</span>
+                <span class="n">task_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;task_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">task_id</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_penalized_task_ids</span> <span class="ow">or</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewarded_task_ids</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">penalty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_expired_penalty</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">-=</span> <span class="n">penalty</span>
+                <span class="n">outcome_reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">-=</span> <span class="n">penalty</span>
+                <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;expired_penalty&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">penalty</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_penalized_task_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+
+            <span class="c1"># 3) 成本项（能耗）</span>
+            <span class="n">energy_cost</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_energy_cost</span><span class="p">(</span><span class="n">new_data</span><span class="o">.</span><span class="n">energy_consumed</span><span class="p">)</span>
+            <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">-=</span> <span class="n">energy_cost</span>
+            <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;energy_cost&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy_cost</span>
+
+            <span class="c1"># 4) 资源利用率 shaping</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_utilization</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_queue</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_queue_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">queue_pressure</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">total_queue_len</span> <span class="o">/</span> <span class="n">max_queue</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_data</span><span class="o">.</span><span class="n">processed_data</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">queue_pressure</span> <span class="o">&gt;</span> <span class="mf">0.3</span><span class="p">:</span>
+                    <span class="n">processed_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_data</span><span class="o">.</span><span class="n">processed_data</span><span class="p">)</span>
+                    <span class="n">util_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_utilization</span> <span class="o">*</span> <span class="n">queue_pressure</span> <span class="o">*</span> <span class="n">processed_factor</span>
+                    <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">util_reward</span>
+                    <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;utilization_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">util_reward</span>
+
+            <span class="c1"># 5) PBRS shaping</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_pbrs_queue</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">max_queue_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">queue_pressure</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">total_queue_len</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_queue_size</span> <span class="o">*</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+                <span class="n">pbrs_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_pbrs_shaping</span><span class="p">(</span><span class="n">sat_id</span><span class="p">,</span> <span class="n">queue_pressure</span><span class="p">)</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pbrs_reward</span>
+                <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;pbrs_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pbrs_reward</span>
+
+        <span class="c1"># 6) 安全检查</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">reward</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Reward Error] </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> reward is </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">, resetting to -10.0&quot;</span><span class="p">)</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.0</span>
+
+        <span class="c1"># 7) 全局混合（仅结果项）</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_reward_ratio</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">global_outcome</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">outcome_reward</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">outcome_reward</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sat_id</span> <span class="ow">in</span> <span class="n">reward</span><span class="p">:</span>
+                <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_reward_ratio</span> <span class="o">*</span> <span class="p">(</span><span class="n">global_outcome</span> <span class="o">-</span> <span class="n">outcome_reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">])</span>
+                <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">sat_id</span> <span class="ow">in</span> <span class="n">reward</span><span class="p">:</span>
+            <span class="n">reward_components</span><span class="p">[</span><span class="n">sat_id</span><span class="p">][</span><span class="s2">&quot;total_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward</span><span class="p">[</span><span class="n">sat_id</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_reward_components</span> <span class="o">=</span> <span class="n">reward_components</span>
+        <span class="k">return</span> <span class="n">reward</span></div>
+
+
+
+<div class="viewcode-block" id="STINTaskReward.is_truncated">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskReward.is_truncated">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_truncated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;检查是否应该截断 episode（资源耗尽或其他软约束违反）。</span>
+<span class="sd">        </span>
+<span class="sd">        ✅ 多星协作逻辑：</span>
+<span class="sd">        - 单颗卫星违反 DoD 约束：只标记警告，不截断（其他卫星继续运行）</span>
+<span class="sd">        - 所有卫星都违反 DoD 约束：截断 episode</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            satellite: 卫星对象。</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            True 如果应该截断 episode。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 🆕 使用 battery_dod_valid() 软约束</span>
+        <span class="c1"># 注意：这里只检查单颗卫星，环境层应该检查所有卫星</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">satellite</span><span class="p">,</span> <span class="s1">&#39;dynamics&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;battery_dod_valid&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">battery_dod_valid</span><span class="p">():</span>
+                <span class="c1"># DoD 约束违反：记录警告，但不直接返回 True</span>
+                <span class="c1"># 截断决策应由环境层检查所有卫星后决定</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">satellite</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> battery below DoD threshold, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;SOC=</span><span class="si">{</span><span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">battery_charge_fraction</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="c1"># 返回 True 表示这颗卫星建议截断</span>
+                <span class="c1"># 环境层会聚合所有卫星的结果来做最终决策</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="STINTaskReward.is_terminated">
+<a class="viewcode-back" href="../../../api_reference/data/stin_task_data.html#bsk_rl.data.STINTaskReward.is_terminated">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_terminated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;检查是否应该终止 episode（任务完成）。</span>
+<span class="sd">        </span>
+<span class="sd">        ✅ 修正逻辑(2026-01-05):</span>
+<span class="sd">        只有当任务池空了 **且** 所有已到达任务都处理完时才终止。</span>
+<span class="sd">        </span>
+<span class="sd">        ⚠️ 注意：使用任务ID集合统计，避免因slice分割导致重复计数。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="p">,</span> <span class="s1">&#39;task_pool&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="c1"># 获取当前仿真时间</span>
+        <span class="n">sim_time</span> <span class="o">=</span> <span class="n">satellite</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">satellite</span><span class="p">,</span> <span class="s1">&#39;simulator&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        
+        <span class="c1"># 检查任务池剩余</span>
+        <span class="n">pool_remaining</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">task_pool</span><span class="p">)</span>
+        
+        <span class="c1"># 获取已到达的任务数</span>
+        <span class="n">total_arrived</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">arrived_tasks</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="p">,</span> <span class="s1">&#39;arrived_tasks&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        
+        <span class="c1"># ✅ 使用任务ID集合统计唯一任务数（避免slice重复计数）</span>
+        <span class="n">all_completed_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">all_expired_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;completed_task_ids&#39;</span><span class="p">):</span>
+                <span class="n">all_completed_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">completed_task_ids</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;expired_task_ids&#39;</span><span class="p">):</span>
+                <span class="n">all_expired_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">expired_task_ids</span><span class="p">)</span>
+        
+        <span class="c1"># 任务失败判定：任意切片过期即任务失败</span>
+        <span class="n">expired_ids</span> <span class="o">=</span> <span class="n">all_expired_ids</span>
+        <span class="n">completed_ids</span> <span class="o">=</span> <span class="n">all_completed_ids</span> <span class="o">-</span> <span class="n">expired_ids</span>
+        
+        <span class="n">completed</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">completed_ids</span><span class="p">)</span>
+        <span class="n">expired</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expired_ids</span><span class="p">)</span>
+        <span class="n">all_processed_ids</span> <span class="o">=</span> <span class="n">all_completed_ids</span> <span class="o">|</span> <span class="n">all_expired_ids</span>  <span class="c1"># 所有已处理的任务</span>
+        <span class="n">processed</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_processed_ids</span><span class="p">)</span>
+        <span class="n">pending</span> <span class="o">=</span> <span class="n">total_arrived</span> <span class="o">-</span> <span class="n">processed</span>
+        
+        <span class="c1"># 仅在回合结束时打印一次状态（避免频繁刷屏）</span>
+        <span class="n">first_sat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">satellites</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">is_first_sat</span> <span class="o">=</span> <span class="p">(</span><span class="n">satellite</span> <span class="o">==</span> <span class="n">first_sat</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">is_first_sat</span> <span class="ow">and</span> <span class="n">sim_time</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">sim_time</span><span class="p">)</span> <span class="o">%</span> <span class="mi">7000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">reason_summary</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">reason_counts</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">total_reason</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+                <span class="n">counts</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;expired_reason_counts&quot;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="k">for</span> <span class="n">reason</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">reason_counts</span><span class="p">[</span><span class="n">reason</span><span class="p">]</span> <span class="o">=</span> <span class="n">reason_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reason</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">count</span>
+                    <span class="n">total_reason</span> <span class="o">+=</span> <span class="n">count</span>
+            <span class="k">if</span> <span class="n">total_reason</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sorted_reasons</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="n">reason_counts</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+                <span class="n">top_parts</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">reason</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">sorted_reasons</span><span class="p">[:</span><span class="mi">4</span><span class="p">]:</span>
+                    <span class="n">pct</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">count</span> <span class="o">/</span> <span class="n">total_reason</span>
+                    <span class="n">top_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">pct</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">top_parts</span><span class="p">:</span>
+                    <span class="n">reason_summary</span> <span class="o">=</span> <span class="s2">&quot; | Expired reasons: &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">top_parts</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[TASK STATUS @ </span><span class="si">{</span><span class="n">sim_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s] &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Pool: </span><span class="si">{</span><span class="n">pool_remaining</span><span class="si">}</span><span class="s2"> | Arrived: </span><span class="si">{</span><span class="n">total_arrived</span><span class="si">}</span><span class="s2"> | &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Processed: </span><span class="si">{</span><span class="n">processed</span><span class="si">}</span><span class="s2"> (C:</span><span class="si">{</span><span class="n">completed</span><span class="si">}</span><span class="s2"> E:</span><span class="si">{</span><span class="n">expired</span><span class="si">}</span><span class="s2">) | &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Pending: </span><span class="si">{</span><span class="n">pending</span><span class="si">}{</span><span class="n">reason_summary</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># 任务池还有剩余，不能终止</span>
+        <span class="k">if</span> <span class="n">pool_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="c1"># 任务池已空，检查已到达的任务是否都处理完</span>
+        <span class="c1"># 使用 processed（唯一任务ID的并集）而不是 completed + expired</span>
+        <span class="k">if</span> <span class="n">processed</span> <span class="o">&gt;=</span> <span class="n">total_arrived</span> <span class="ow">and</span> <span class="n">total_arrived</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_first_sat</span><span class="p">:</span>  <span class="c1"># 只打印一次</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[TERMINATED @ </span><span class="si">{</span><span class="n">sim_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s] All tasks processed: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">completed</span><span class="si">}</span><span class="s2"> completed, </span><span class="si">{</span><span class="n">expired</span><span class="si">}</span><span class="s2"> expired out of </span><span class="si">{</span><span class="n">total_arrived</span><span class="si">}</span><span class="s2"> arrived.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 任务池空了但还有未处理的任务（在卫星队列中）</span>
+            <span class="k">pass</span>  <span class="c1"># 静默等待</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<span class="n">__doc_title__</span> <span class="o">=</span> <span class="s2">&quot;STIN Task Data&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;STINTaskReward&quot;</span><span class="p">,</span> <span class="s2">&quot;STINTaskStore&quot;</span><span class="p">,</span> <span class="s2">&quot;STINTaskData&quot;</span><span class="p">]</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

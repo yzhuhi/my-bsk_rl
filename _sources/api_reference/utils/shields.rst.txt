@@ -1,0 +1,13 @@
+.. _bsk_rl.utils.shields:
+.. currentmodule:: bsk_rl.utils.shields
+
+shields
+=======
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: bsk_rl.utils.shields
+   :members:
+   :show-inheritance:
+

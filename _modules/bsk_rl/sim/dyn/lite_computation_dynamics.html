@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.sim.dyn.lite_computation_dynamics &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../dyn.html">bsk_rl.sim.dyn</a></li>
+      <li class="breadcrumb-item active">bsk_rl.sim.dyn.lite_computation_dynamics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.sim.dyn.lite_computation_dynamics</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;STIN 轻量级动力学模型。</span>
+
+<span class="sd">保留能量系统（太阳能板、电池、日食检测），</span>
+<span class="sd">移除姿态控制相关模块（反作用轮、推进器、大气阻力）。</span>
+
+<span class="sd">预期性能提升：30-50%</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">simplePowerSink</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">orbitalMotion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim.dyn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicDynamicsModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim.dyn.relative_motion</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOSCommDynModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.functional</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_args</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">Satellite</span>
+
+
+<div class="viewcode-block" id="LiteBasicDynamicsModel">
+<a class="viewcode-back" href="../../../../api_reference/sim/dyn/index.html#bsk_rl.sim.dyn.LiteBasicDynamicsModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiteBasicDynamicsModel</span><span class="p">(</span><span class="n">BasicDynamicsModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;轻量级基础动力学模型。</span>
+<span class="sd">    </span>
+<span class="sd">    继承自 BasicDynamicsModel，但跳过姿态控制相关模块：</span>
+<span class="sd">    - ❌ 反作用轮动力学</span>
+<span class="sd">    - ❌ 推进器动力学  </span>
+<span class="sd">    - ❌ 大气阻力</span>
+<span class="sd">    - ❌ 反作用轮功耗</span>
+<span class="sd">    - ❌ 推进器功耗</span>
+<span class="sd">    </span>
+<span class="sd">    保留：</span>
+<span class="sd">    - ✅ 轨道传播（用于 ISL 可见性）</span>
+<span class="sd">    - ✅ 太阳能板（能量输入）</span>
+<span class="sd">    - ✅ 电池（能量存储）</span>
+<span class="sd">    - ✅ 日食检测（影响充电）</span>
+<span class="sd">    - ✅ 基础功耗</span>
+<span class="sd">    - ✅ 导航模块</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_dynamics_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;设置动力学对象 - 跳过姿态控制模块。&quot;&quot;&quot;</span>
+        <span class="c1"># ✅ 轨道传播和物理属性（必须）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_spacecraft_hub</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># ✅ 导航模块（用于状态读取）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_simple_nav_object</span><span class="p">()</span>
+        
+        <span class="c1"># ✅ 能量系统（用户要求保留）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_eclipse_object</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_solar_panel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_battery</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_power_sink</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># ❌ 跳过姿态控制相关模块</span>
+        <span class="c1"># self.setup_drag_effector(**kwargs)</span>
+        <span class="c1"># self.setup_reaction_wheel_dyn_effector(**kwargs)</span>
+        <span class="c1"># self.setup_thruster_dyn_effector()</span>
+        <span class="c1"># self.setup_reaction_wheel_power(**kwargs)</span>
+        <span class="c1"># self.setup_thruster_power(**kwargs)</span>
+    
+    <span class="c1"># 提供假的 wheel_speeds 属性以兼容现有代码</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wheel_speeds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;假的轮速（轻量级模式无反作用轮）。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wheel_speeds_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;假的轮速比例。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="LiteBasicDynamicsModel.rw_speeds_valid">
+<a class="viewcode-back" href="../../../../api_reference/sim/dyn/index.html#bsk_rl.sim.dyn.LiteBasicDynamicsModel.rw_speeds_valid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rw_speeds_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;轻量级模式始终返回 True。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LiteLOSCommDynModel">
+<a class="viewcode-back" href="../../../../api_reference/sim/dyn/index.html#bsk_rl.sim.dyn.LiteLOSCommDynModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiteLOSCommDynModel</span><span class="p">(</span><span class="n">LiteBasicDynamicsModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;轻量级 LOS 通信动力学模型。</span>
+<span class="sd">    </span>
+<span class="sd">    继承 LiteBasicDynamicsModel，添加 LOS 通信功能。</span>
+<span class="sd">    注意：这个类用于内部继承，不直接使用。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_dynamics_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;设置动力学对象。&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup_dynamics_objects</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+        <span class="c1"># LOS 通信会在 LiteComputationDynModel 中设置</span>
+
+
+<div class="viewcode-block" id="LiteComputationDynModel">
+<a class="viewcode-back" href="../../../../api_reference/sim/dyn/index.html#bsk_rl.sim.dyn.LiteComputationDynModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiteComputationDynModel</span><span class="p">(</span><span class="n">LOSCommDynModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;轻量级计算卸载动力学模型。</span>
+<span class="sd">    </span>
+<span class="sd">    继承自 LOSCommDynModel（必须，用于通过类型检查）。</span>
+<span class="sd">    重写 _setup_dynamics_objects 来跳过姿态控制模块。</span>
+<span class="sd">    </span>
+<span class="sd">    优化策略：</span>
+<span class="sd">    - ❌ 移除：反作用轮、推进器、大气阻力及其功耗</span>
+<span class="sd">    - ✅ 保留：轨道传播、能量系统、LOS 通信</span>
+<span class="sd">    </span>
+<span class="sd">    预期性能提升：30-50%</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_dynamics_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;设置动力学对象 - 轻量级版本。&quot;&quot;&quot;</span>
+        <span class="c1"># ✅ 轨道传播和物理属性（必须）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_spacecraft_hub</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># ✅ 导航模块（用于状态读取）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_simple_nav_object</span><span class="p">()</span>
+        
+        <span class="c1"># ✅ 能量系统（用户要求保留）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_eclipse_object</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_solar_panel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_battery</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_power_sink</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># ✅ LOS 通信（继承自 LOSCommDynModel）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_los_comms</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># ✅ CPU 参数</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_cpu_parameters</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># ❌ 跳过姿态控制相关模块</span>
+        <span class="c1"># self.setup_drag_effector(**kwargs)</span>
+        <span class="c1"># self.setup_reaction_wheel_dyn_effector(**kwargs)</span>
+        <span class="c1"># self.setup_thruster_dyn_effector()</span>
+        <span class="c1"># self.setup_reaction_wheel_power(**kwargs)</span>
+        <span class="c1"># self.setup_thruster_power(**kwargs)</span>
+    
+    <span class="nd">@default_args</span><span class="p">(</span>
+        <span class="c1"># CPU 参数</span>
+        <span class="n">cpuMinFrequency</span><span class="o">=</span><span class="mf">0.1e9</span><span class="p">,</span>
+        <span class="n">cpuMaxFrequency</span><span class="o">=</span><span class="mf">1.0e9</span><span class="p">,</span>
+        <span class="n">cpuWorkload</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
+        <span class="n">cpuPowerDraw</span><span class="o">=-</span><span class="mf">20.0</span><span class="p">,</span>
+        <span class="n">basePowerDraw</span><span class="o">=-</span><span class="mf">50.0</span><span class="p">,</span>  <span class="c1"># 平台基础功耗</span>
+        <span class="n">taskMinimumElevation</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">transmitterBaudRate</span><span class="o">=-</span><span class="mf">50e6</span><span class="p">,</span>
+        <span class="n">transmitterPowerDraw</span><span class="o">=-</span><span class="mf">15.0</span><span class="p">,</span>
+        <span class="n">dataStorageCapacity</span><span class="o">=</span><span class="mf">8e12</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_cpu_parameters</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cpuMinFrequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">cpuMaxFrequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">cpuWorkload</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">cpuPowerDraw</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">basePowerDraw</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">taskMinimumElevation</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">transmitterBaudRate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">transmitterPowerDraw</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">dataStorageCapacity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;设置 CPU 相关参数。&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_min_frequency</span> <span class="o">=</span> <span class="n">cpuMinFrequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_max_frequency</span> <span class="o">=</span> <span class="n">cpuMaxFrequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_workload</span> <span class="o">=</span> <span class="n">cpuWorkload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_power_draw</span> <span class="o">=</span> <span class="n">cpuPowerDraw</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_power_draw</span> <span class="o">=</span> <span class="n">basePowerDraw</span>  <span class="c1"># 添加这个属性</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_minimum_elevation</span> <span class="o">=</span> <span class="n">taskMinimumElevation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transmitter_baud_rate</span> <span class="o">=</span> <span class="n">transmitterBaudRate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_tx_power_draw</span> <span class="o">=</span> <span class="n">transmitterPowerDraw</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_storage_capacity</span> <span class="o">=</span> <span class="n">dataStorageCapacity</span>
+        
+        <span class="c1"># 设置 CPU 功耗节点</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpuPowerSink</span> <span class="o">=</span> <span class="n">simplePowerSink</span><span class="o">.</span><span class="n">SimplePowerSink</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpuPowerSink</span><span class="o">.</span><span class="n">ModelTag</span> <span class="o">=</span> <span class="s2">&quot;cpuPowerSink&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpuPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">AddModelToTask</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpuPowerSink</span><span class="p">,</span> <span class="n">ModelPriority</span><span class="o">=</span><span class="mi">896</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">powerMonitor</span><span class="o">.</span><span class="n">addPowerNodeToModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpuPowerSink</span><span class="o">.</span><span class="n">nodePowerOutMsg</span><span class="p">)</span>
+        
+        <span class="c1"># 设置发射机功耗节点（动态，根据 Agent 决策）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txPowerSink</span> <span class="o">=</span> <span class="n">simplePowerSink</span><span class="o">.</span><span class="n">SimplePowerSink</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txPowerSink</span><span class="o">.</span><span class="n">ModelTag</span> <span class="o">=</span> <span class="s2">&quot;txPowerSink&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># 动态设置</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">AddModelToTask</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">txPowerSink</span><span class="p">,</span> <span class="n">ModelPriority</span><span class="o">=</span><span class="mi">895</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">powerMonitor</span><span class="o">.</span><span class="n">addPowerNodeToModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txPowerSink</span><span class="o">.</span><span class="n">nodePowerOutMsg</span><span class="p">)</span>
+        
+        <span class="c1"># 🆕 设置接收机功耗节点（静态，论文 LEO=8W）</span>
+        <span class="c1"># 接收功率主要由 LNA 放大器决定，与数据量无关</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span> <span class="o">=</span> <span class="n">simplePowerSink</span><span class="o">.</span><span class="n">SimplePowerSink</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="o">.</span><span class="n">ModelTag</span> <span class="o">=</span> <span class="s2">&quot;rxPowerSink&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># 初始关闭，有邻居时开启</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rx_power_draw</span> <span class="o">=</span> <span class="o">-</span><span class="mf">8.0</span>  <span class="c1"># [W] 静态接收功率（论文 LEO=8W）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">AddModelToTask</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="p">,</span> <span class="n">ModelPriority</span><span class="o">=</span><span class="mi">894</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">powerMonitor</span><span class="o">.</span><span class="n">addPowerNodeToModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="o">.</span><span class="n">nodePowerOutMsg</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cpu_process_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算处理速率 (bits/s) = F_max / c_t。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_max_frequency</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_workload</span>
+    
+<div class="viewcode-block" id="LiteComputationDynModel.set_rx_power">
+<a class="viewcode-back" href="../../../../api_reference/sim/dyn/index.html#bsk_rl.sim.dyn.LiteComputationDynModel.set_rx_power">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_rx_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;开关接收机功耗。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: True 开启接收功耗，False 关闭。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;rxPowerSink&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rxPowerSink</span><span class="o">.</span><span class="n">nodePowerOut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rx_power_draw</span> <span class="k">if</span> <span class="n">enabled</span> <span class="k">else</span> <span class="mf">0.0</span></div>
+
+    
+    <span class="c1"># 提供假的 storage 属性以兼容观察规格</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">storage_level</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;存储级别（轻量级模式返回 0）。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">storage_level_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;存储使用率（轻量级模式返回 0）。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    
+    <span class="c1"># 提供假的 wheel_speeds 属性以兼容现有代码</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wheel_speeds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;假的轮速（轻量级模式无反作用轮）。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wheel_speeds_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;假的轮速比例。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="LiteComputationDynModel.rw_speeds_valid">
+<a class="viewcode-back" href="../../../../api_reference/sim/dyn/index.html#bsk_rl.sim.dyn.LiteComputationDynModel.rw_speeds_valid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rw_speeds_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;轻量级模式始终返回 True。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

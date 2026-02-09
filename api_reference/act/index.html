@@ -1,0 +1,951 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Actions &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Backend" href="actions.html" />
+    <link rel="prev" title="STIN Relative Observations" href="../obs/stin_relative_observations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking"><code class="docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.SatelliteTasking"><code class="docutils literal notranslate"><span class="pre">SatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.ConstellationTasking"><code class="docutils literal notranslate"><span class="pre">ConstellationTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sats/index.html">Satellites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../obs/index.html">Observations</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Actions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#discrete-actions">Discrete Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuous-actions">Continuous Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Action"><code class="docutils literal notranslate"><span class="pre">Action</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.Action.set_action"><code class="docutils literal notranslate"><span class="pre">Action.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.DiscreteAction"><code class="docutils literal notranslate"><span class="pre">DiscreteAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.DiscreteAction.set_action"><code class="docutils literal notranslate"><span class="pre">DiscreteAction.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction"><code class="docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction.set_action"><code class="docutils literal notranslate"><span class="pre">DiscreteFSWAction.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Charge"><code class="docutils literal notranslate"><span class="pre">Charge</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Drift"><code class="docutils literal notranslate"><span class="pre">Drift</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Desat"><code class="docutils literal notranslate"><span class="pre">Desat</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Downlink"><code class="docutils literal notranslate"><span class="pre">Downlink</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Image"><code class="docutils literal notranslate"><span class="pre">Image</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.Image.set_action"><code class="docutils literal notranslate"><span class="pre">Image.set_action()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.Image.set_action_override"><code class="docutils literal notranslate"><span class="pre">Image.set_action_override()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Scan"><code class="docutils literal notranslate"><span class="pre">Scan</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.Broadcast"><code class="docutils literal notranslate"><span class="pre">Broadcast</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.Broadcast.reset_post_sim_init"><code class="docutils literal notranslate"><span class="pre">Broadcast.reset_post_sim_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.Broadcast.set_action"><code class="docutils literal notranslate"><span class="pre">Broadcast.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.ContinuousAction"><code class="docutils literal notranslate"><span class="pre">ContinuousAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ContinuousAction.space"><code class="docutils literal notranslate"><span class="pre">ContinuousAction.space</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ContinuousAction.action_description"><code class="docutils literal notranslate"><span class="pre">ContinuousAction.action_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ContinuousAction.set_action"><code class="docutils literal notranslate"><span class="pre">ContinuousAction.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust.space"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust.space</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust.action_description"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust.action_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust.set_action"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrustHill"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrustHill</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrustHill.set_action"><code class="docutils literal notranslate"><span class="pre">ImpulsiveThrustHill.set_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.REQUIRED_ACTION_DIMS"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.REQUIRED_ACTION_DIMS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.link_satellite"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.link_satellite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.space"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.space</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.action_description"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.action_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.set_action"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.set_action()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.reset_overwrite_previous"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.reset_overwrite_previous()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINContinuousAction.add_neighbor"><code class="docutils literal notranslate"><span class="pre">STINContinuousAction.add_neighbor()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.link_satellite"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.link_satellite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.space"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.space</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.flat_space"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.flat_space</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.action_description"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.action_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.action_description_dict"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.action_description_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.set_action"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.set_action()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.reset_overwrite_previous"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.reset_overwrite_previous()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.act.STINHierarchicalHybridAction.add_neighbor"><code class="docutils literal notranslate"><span class="pre">STINHierarchicalHybridAction.add_neighbor()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="actions.html">Backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="discrete_actions.html">Discrete Backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stin_hier_hybrid_actions.html">STIN Hierarchical Hybrid Actions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../scene/index.html">Scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">Data &amp; Reward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm/index.html">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sim/index.html">Simulation (BSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Actions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api_reference/act/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-bsk_rl.act">
+<span id="actions"></span><span id="bsk-rl-act"></span><h1>Actions<a class="headerlink" href="#module-bsk_rl.act" title="Link to this heading"></a></h1>
+<p>Actions <code class="docutils literal notranslate"><span class="pre">bsk_rl.act</span></code> can be used to add actions to an agent.</p>
+<p>To configure the observation, set the <code class="docutils literal notranslate"><span class="pre">action_spec</span></code> attribute of a <a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><code class="xref py py-class docutils literal notranslate"><span class="pre">Satellite</span></code></a>
+subclass. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyActionSatellite</span><span class="p">(</span><span class="n">Satellite</span><span class="p">):</span>
+    <span class="n">action_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Charge</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">),</span>
+        <span class="n">Desat</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">30.0</span><span class="p">),</span>
+        <span class="n">Downlink</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">),</span>
+        <span class="n">Image</span><span class="p">(</span><span class="n">n_ahead_image</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>Actions in an <code class="docutils literal notranslate"><span class="pre">action_spec</span></code> should all be of the same subclass of <a class="reference internal" href="#bsk_rl.act.Action" title="bsk_rl.act.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a>. The
+following actions are currently available:</p>
+<section id="discrete-actions">
+<h2>Discrete Actions<a class="headerlink" href="#discrete-actions" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="#bsk_rl.act.DiscreteAction" title="bsk_rl.act.DiscreteAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteAction</span></code></a> for integer-indexable, discrete actions.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Action</strong></p></td>
+<td><p><strong>Count</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction" title="bsk_rl.act.DiscreteFSWAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></p></td>
+<td><p>1</p></td>
+<td><p>Call an arbitrary <code class="docutils literal notranslate"><span class="pre">&#64;action</span></code> decorated function in the <a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.FSWModel" title="bsk_rl.sim.fsw.FSWModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSWModel</span></code></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bsk_rl.act.Charge" title="bsk_rl.act.Charge"><code class="xref py py-class docutils literal notranslate"><span class="pre">Charge</span></code></a></p></td>
+<td><p>1</p></td>
+<td><p>Point the solar panels at the sun.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bsk_rl.act.Drift" title="bsk_rl.act.Drift"><code class="xref py py-class docutils literal notranslate"><span class="pre">Drift</span></code></a></p></td>
+<td><p>1</p></td>
+<td><p>Do nothing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bsk_rl.act.Desat" title="bsk_rl.act.Desat"><code class="xref py py-class docutils literal notranslate"><span class="pre">Desat</span></code></a></p></td>
+<td><p>1</p></td>
+<td><p>Desaturate the reaction wheels with RCS thrusters. Needs to be called multiple times.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bsk_rl.act.Downlink" title="bsk_rl.act.Downlink"><code class="xref py py-class docutils literal notranslate"><span class="pre">Downlink</span></code></a></p></td>
+<td><p>1</p></td>
+<td><p>Downlink data to any ground station that is in range.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bsk_rl.act.Image" title="bsk_rl.act.Image"><code class="xref py py-class docutils literal notranslate"><span class="pre">Image</span></code></a></p></td>
+<td><p>≥1</p></td>
+<td><p>Image one of the next <code class="docutils literal notranslate"><span class="pre">N</span></code> upcoming, unimaged targets once in range.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bsk_rl.act.Scan" title="bsk_rl.act.Scan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scan</span></code></a></p></td>
+<td><p>1</p></td>
+<td><p>Scan nadir, collecting data when pointing within a threshold.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="continuous-actions">
+<h2>Continuous Actions<a class="headerlink" href="#continuous-actions" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="#bsk_rl.act.ContinuousAction" title="bsk_rl.act.ContinuousAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousAction</span></code></a> for actions with a continuous action space. Currently, satellites
+can only have a single continuous action in their <code class="docutils literal notranslate"><span class="pre">action_spec</span></code>.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>Action</strong></p></td>
+<td><p><strong>Dimension</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust" title="bsk_rl.act.ImpulsiveThrust"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code></a></p></td>
+<td><p>4</p></td>
+<td><p>Instantaneously change the satellite’s velocity, and drift for some duration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bsk_rl.act.ImpulsiveThrustHill" title="bsk_rl.act.ImpulsiveThrustHill"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImpulsiveThrustHill</span></code></a></p></td>
+<td><p>4</p></td>
+<td><p>Like <a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust" title="bsk_rl.act.ImpulsiveThrust"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code></a>, but specified in the Hill frame of another satellite.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Action">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'act'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/actions.html#Action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Action" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code>, <a class="reference internal" href="../utils/functional.html#bsk_rl.utils.functional.Resetable" title="bsk_rl.utils.functional.Resetable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resetable</span></code></a></p>
+<p>Base class for all actions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Name of the action.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.Action.set_action">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/actions.html#Action.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Action.set_action" title="Link to this definition"></a></dt>
+<dd><p>Execute code to perform an action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>Any</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.DiscreteAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">DiscreteAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'discrete_act'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_actions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#DiscreteAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.DiscreteAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.Action" title="bsk_rl.act.actions.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
+<p>Base class for discrete, integer-indexable actions.</p>
+<p>A discrete action may represent multiple indexed actions of the same type.</p>
+<p>Optionally, discrete actions may have a <code class="docutils literal notranslate"><span class="pre">set_action_override</span></code> function defined.
+If the action passed to the satellite is not an integer, the satellite will iterate
+over the <code class="docutils literal notranslate"><span class="pre">action_spec</span></code> and attempt to call <code class="docutils literal notranslate"><span class="pre">set_action_override</span></code> on each action
+until one is successful.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the action.</p></li>
+<li><p><strong>n_actions</strong> (<em>int</em>) – Number of actions available.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.DiscreteAction.set_action">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_action_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#DiscreteAction.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.DiscreteAction.set_action" title="Link to this definition"></a></dt>
+<dd><p>Activate an action by local index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>int</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.DiscreteFSWAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">DiscreteFSWAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fsw_action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#DiscreteFSWAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.DiscreteFSWAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteAction" title="bsk_rl.act.discrete_actions.DiscreteAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteAction</span></code></a></p>
+<p>Discrete action to task a flight software action function.</p>
+<p>This action executes a function of a <a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.FSWModel" title="bsk_rl.sim.fsw.FSWModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FSWModel</span></code></a>
+instance that takes no arguments, typically decorated with <code class="docutils literal notranslate"><span class="pre">&#64;action</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fsw_action</strong> – Name of the flight software function to task.</p></li>
+<li><p><strong>name</strong> – Name of the action. If not specified, defaults to the <code class="docutils literal notranslate"><span class="pre">fsw_action</span></code> name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – Duration of the action in seconds. Defaults to a large value so that
+the <a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking" title="bsk_rl.GeneralSatelliteTasking"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a> <code class="docutils literal notranslate"><span class="pre">max_step_duration</span></code>
+controls step length.</p></li>
+<li><p><strong>reset_task</strong> (<em>bool</em>) – If true, reset the action if the previous action was the same.
+Generally, this parameter should be false to ensure realistic, continuous
+operation of satellite modes; however, some Basilisk modules may require
+frequent resetting for normal operation.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.DiscreteFSWAction.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_action_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#DiscreteFSWAction.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.DiscreteFSWAction.set_action" title="Link to this definition"></a></dt>
+<dd><p>Activate the <code class="docutils literal notranslate"><span class="pre">fsw_action</span></code> function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>int</em>) – Should always be <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>prev_action_key</strong> – Previous action key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The name of the activated action.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Charge">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Charge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Charge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Charge" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction" title="bsk_rl.act.discrete_actions.DiscreteFSWAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></p>
+<p>Action to enter a sun-pointing charging mode (<a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.BasicFSWModel.action_charge" title="bsk_rl.sim.fsw.BasicFSWModel.action_charge"><code class="xref py py-class docutils literal notranslate"><span class="pre">action_charge</span></code></a>).</p>
+<p>Charging will only occur if the satellite is in sunlight.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Action name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – Time to task action, in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Drift">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Drift" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction" title="bsk_rl.act.discrete_actions.DiscreteFSWAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></p>
+<p>Action to disable all FSW tasks (<a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.BasicFSWModel.action_drift" title="bsk_rl.sim.fsw.BasicFSWModel.action_drift"><code class="xref py py-class docutils literal notranslate"><span class="pre">action_drift</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Action name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – Time to task action, in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Desat">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Desat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Desat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Desat" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction" title="bsk_rl.act.discrete_actions.DiscreteFSWAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></p>
+<p>Action to desaturate reaction wheels (<a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.BasicFSWModel.action_desat" title="bsk_rl.sim.fsw.BasicFSWModel.action_desat"><code class="xref py py-class docutils literal notranslate"><span class="pre">action_desat</span></code></a>).</p>
+<p>This action must be called repeatedly to fully desaturate the reaction wheels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Action name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – Time to task action, in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Downlink">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Downlink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Downlink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Downlink" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction" title="bsk_rl.act.discrete_actions.DiscreteFSWAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></p>
+<p>Action to transmit data from the data buffer (<a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.ImagingFSWModel.action_downlink" title="bsk_rl.sim.fsw.ImagingFSWModel.action_downlink"><code class="xref py py-class docutils literal notranslate"><span class="pre">action_downlink</span></code></a>).</p>
+<p>If not in range of a ground station (defined in
+<a class="reference internal" href="../sim/world.html#bsk_rl.sim.world.GroundStationWorldModel" title="bsk_rl.sim.world.GroundStationWorldModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundStationWorldModel</span></code></a>), no data will
+be downlinked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Action name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – Time to task action, in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Image">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_ahead_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'action_image'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Image" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteAction" title="bsk_rl.act.discrete_actions.DiscreteAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteAction</span></code></a></p>
+<p>Actions to image upcoming target (<a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.ImagingFSWModel.action_image" title="bsk_rl.sim.fsw.ImagingFSWModel.action_image"><code class="xref py py-class docutils literal notranslate"><span class="pre">action_image</span></code></a>).</p>
+<p>Adds <code class="docutils literal notranslate"><span class="pre">n_ahead_image</span></code> actions to the action space, corresponding to the next
+<code class="docutils literal notranslate"><span class="pre">n_ahead_image</span></code> unimaged targets. The action may be unsuccessful if the target
+exits the satellite’s field of regard before the satellite settles on the target
+and takes an image. The action with stop as soon as the image is successfully
+taken, or when the the target exits the field of regard.</p>
+<p>This action implements a <code class="docutils literal notranslate"><span class="pre">set_action_override</span></code> that allows a target to be tasked
+based on the target’s ID string or the Target object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_ahead_image</strong> (<em>int</em>) – Number of unimaged, along-track targets to consider.</p></li>
+<li><p><strong>max_duration</strong> (<em>float</em><em> | </em><em>None</em>) – Maximum time to task the action, in seconds. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, tasks until
+the end of the next opportunity.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Action name.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.Image.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_action_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Image.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Image.set_action" title="Link to this definition"></a></dt>
+<dd><p>Image a target by local index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>int</em>) – Index of the target to image.</p></li>
+<li><p><strong>prev_action_key</strong> (<em>str</em><em> | </em><em>None</em>) – Previous action key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Meta_private<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.Image.set_action_override">
+<span class="sig-name descname"><span class="pre">set_action_override</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../scene/targets.html#bsk_rl.scene.targets.Target" title="bsk_rl.scene.targets.Target"><span class="pre">Target</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_action_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Image.set_action_override"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Image.set_action_override" title="Link to this definition"></a></dt>
+<dd><p>Image a target by target index, Target, or ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<a class="reference internal" href="../scene/targets.html#bsk_rl.scene.targets.Target" title="bsk_rl.scene.targets.Target"><em>Target</em></a><em> | </em><em>str</em>) – Target to image in the form of a Target object, target ID, or target index.</p></li>
+<li><p><strong>prev_action_key</strong> (<em>str</em><em> | </em><em>None</em>) – Previous action key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Meta_private<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Scan">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Scan" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteFSWAction" title="bsk_rl.act.discrete_actions.DiscreteFSWAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteFSWAction</span></code></a></p>
+<p>Action to collect data from a <a class="reference internal" href="../scene/index.html#bsk_rl.scene.UniformNadirScanning" title="bsk_rl.scene.UniformNadirScanning"><code class="xref py py-class docutils literal notranslate"><span class="pre">UniformNadirScanning</span></code></a> (<a class="reference internal" href="../sim/fsw/index.html#bsk_rl.sim.fsw.ContinuousImagingFSWModel.action_nadir_scan" title="bsk_rl.sim.fsw.ContinuousImagingFSWModel.action_nadir_scan"><code class="xref py py-class docutils literal notranslate"><span class="pre">action_nadir_scan</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Action name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – Time to task action, in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.Broadcast">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Broadcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'action_broadcast'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Broadcast" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.DiscreteAction" title="bsk_rl.act.discrete_actions.DiscreteAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiscreteAction</span></code></a></p>
+<p>Action to broadcast data to all satellites in the simulation.</p>
+<p>Should be used with a <a class="reference internal" href="../comm/index.html#bsk_rl.comm.BroadcastCommunication" title="bsk_rl.comm.BroadcastCommunication"><code class="xref py py-class docutils literal notranslate"><span class="pre">BroadcastCommunication</span></code></a>-derived
+communication method to limit communication to broadcasting satellites.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Action name.</p></li>
+<li><p><strong>duration</strong> (<em>float</em><em> | </em><em>None</em>) – [s] Time to idle before communicating.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.Broadcast.reset_post_sim_init">
+<span class="sig-name descname"><span class="pre">reset_post_sim_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Broadcast.reset_post_sim_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Broadcast.reset_post_sim_init" title="Link to this definition"></a></dt>
+<dd><p>Log previous action key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.Broadcast.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_action_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/discrete_actions.html#Broadcast.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.Broadcast.set_action" title="Link to this definition"></a></dt>
+<dd><p>Activate an action by local index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>int</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.ContinuousAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ContinuousAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'discrete_act'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/continuous_actions.html#ContinuousAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.ContinuousAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.Action" title="bsk_rl.act.actions.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
+<p>Base class for actions with a continuous action space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Name of the action.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.ContinuousAction.space">
+<span class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Box</span></span><a class="headerlink" href="#bsk_rl.act.ContinuousAction.space" title="Link to this definition"></a></dt>
+<dd><p>Return the action space. Action.space 是“局部、原子、语义级”的动作空间定义</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.ContinuousAction.action_description">
+<span class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.ContinuousAction.action_description" title="Link to this definition"></a></dt>
+<dd><p>Return a description of the action space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.ContinuousAction.set_action">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/continuous_actions.html#ContinuousAction.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.ContinuousAction.set_action" title="Link to this definition"></a></dt>
+<dd><p>Activate an action by a continuous value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>ndarray</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.ImpulsiveThrust">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ImpulsiveThrust</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'thrust_act'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_drift_duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsw_action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/continuous_actions.html#ImpulsiveThrust"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.ImpulsiveThrust" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.ContinuousAction" title="bsk_rl.act.continuous_actions.ContinuousAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousAction</span></code></a></p>
+<p>Perform an impulsive thrust and drift for some duration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the action.</p></li>
+<li><p><strong>max_dv</strong> (<em>float</em>) – Maximum delta-V that can be applied. [m/s]</p></li>
+<li><p><strong>max_drift_duration</strong> (<em>float</em>) – Maximum duration to drift after applying the delta-V. [s]</p></li>
+<li><p><strong>fsw_action</strong> (<em>str</em><em> | </em><em>None</em>) – Name of the FSW action to activate during the drift period.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.ImpulsiveThrust.space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Box</span></span><a class="headerlink" href="#bsk_rl.act.ImpulsiveThrust.space" title="Link to this definition"></a></dt>
+<dd><p>Return the action space.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.ImpulsiveThrust.action_description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.ImpulsiveThrust.action_description" title="Link to this definition"></a></dt>
+<dd><p>Description of the continuous action space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.ImpulsiveThrust.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/continuous_actions.html#ImpulsiveThrust.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.ImpulsiveThrust.set_action" title="Link to this definition"></a></dt>
+<dd><p>Thrust the satellite with a given inertial delta-V and drift for some duration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>ndarray</em>) – vector of [dV_N_x, dV_N_y, dV_N_z, duration] in [m/s] and [s]</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.ImpulsiveThrustHill">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ImpulsiveThrustHill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chief_name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/continuous_actions.html#ImpulsiveThrustHill"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.ImpulsiveThrustHill" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.ImpulsiveThrust" title="bsk_rl.act.continuous_actions.ImpulsiveThrust"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code></a></p>
+<p>Impulsive thrusts in the Hill frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chief_name</strong> – Chief to use for Hill frame.</p></li>
+<li><p><strong>*args</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> – Passed to <code class="docutils literal notranslate"><span class="pre">ImpulsiveThrust</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.ImpulsiveThrustHill.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/continuous_actions.html#ImpulsiveThrustHill.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.ImpulsiveThrustHill.set_action" title="Link to this definition"></a></dt>
+<dd><p>Activate the action by setting the continuous value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>ndarray</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINContinuousAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stin_continuous_act'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_shield</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">battery_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_continuous_actions.html#STINContinuousAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINContinuousAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.ContinuousAction" title="bsk_rl.act.continuous_actions.ContinuousAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousAction</span></code></a></p>
+<p>初始化动作类。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – 动作名称。</p></li>
+<li><p><strong>enable_shield</strong> (<em>bool</em>) – 是否启用安全屏蔽（硬约束）。</p></li>
+<li><p><strong>battery_threshold</strong> (<em>float</em>) – 触发电池保护的 SOC 阈值。</p></li>
+<li><p><strong>max_neighbors</strong> (<em>int</em>) – 最大邻居数量，用于协作卸载决策。默认 4。</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.REQUIRED_ACTION_DIMS">
+<span class="sig-name descname"><span class="pre">REQUIRED_ACTION_DIMS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></span><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.REQUIRED_ACTION_DIMS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.link_satellite">
+<span class="sig-name descname"><span class="pre">link_satellite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satellite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><span class="pre">Satellite</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_continuous_actions.html#STINContinuousAction.link_satellite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.link_satellite" title="Link to this definition"></a></dt>
+<dd><p>Link the action to a satellite and load Shield configuration.</p>
+<dl class="simple">
+<dt>Shield 配置从 satellite.shield_config 读取，支持以下参数：</dt><dd><ul class="simple">
+<li><p>enable_shield: 是否启用安全屏蔽（默认 True）</p></li>
+<li><p>battery_threshold: 触发电池保护的 SOC 阈值（默认 0.15）</p></li>
+<li><p>low_battery_cpu_cap: 低电量时 CPU 功率上限（默认 0.3）</p></li>
+<li><p>low_battery_tx_cap: 低电量时发射功率上限（默认 0.2）</p></li>
+<li><p>max_queue_size: 触发队列保护的阈值（默认 50）</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>satellite</strong> (<a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><em>Satellite</em></a>) – Satellite to link to</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Box</span></span><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.space" title="Link to this definition"></a></dt>
+<dd><p>返回动作空间。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>实现 ContinuousAction 的抽象方法</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.action_description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.action_description" title="Link to this definition"></a></dt>
+<dd><p>返回描述。</p>
+<dl class="simple">
+<dt><strong>动作维度定义 (16D - 基于优先级的差异化切分)</strong>:</dt><dd><p>[0-2]: 资源分配 (CPU 频率、发射功率、平台功耗)
+[3-4]: 一级任务切分 (UD 本地、云端偏好) - 统一应用
+[5]: 优先级阈值 (高/低优先级任务的分界线)
+[6-10]: 高优先级任务的卫星间切分 (自身 + 4 个邻居)
+[11-15]: 低优先级任务的卫星间切分 (自身 + 4 个邻居)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>实现 ContinuousAction 的抽象方法</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_continuous_actions.html#STINContinuousAction.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.set_action" title="Link to this definition"></a></dt>
+<dd><p>实现 ContinuousAction 的抽象方法: 解析连续动作并触发卫星逻辑。</p>
+<dl class="simple">
+<dt><strong>安全屏蔽流程</strong>：</dt><dd><ol class="arabic simple">
+<li><p>如果启用 shield，先对原始动作进行安全检查和修正</p></li>
+<li><p>解析修正后的动作分量</p></li>
+<li><p>执行资源分配和协作调度</p></li>
+</ol>
+</dd>
+<dt><strong>动作向量解析</strong>:</dt><dd><p>action[0:3]: 资源分配参数
+action[3:5]: 一级切分参数 (层次化)
+action[5:10]: 二级切分参数 (卫星间协作)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>ndarray</em>) – 10D 动作向量，范围 [0, 1]</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.reset_overwrite_previous">
+<span class="sig-name descname"><span class="pre">reset_overwrite_previous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_continuous_actions.html#STINContinuousAction.reset_overwrite_previous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.reset_overwrite_previous" title="Link to this definition"></a></dt>
+<dd><p>重置动作状态，清除邻居缓存和屏蔽统计。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINContinuousAction.add_neighbor">
+<span class="sig-name descname"><span class="pre">add_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><span class="pre">Satellite</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_continuous_actions.html#STINContinuousAction.add_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINContinuousAction.add_neighbor" title="Link to this definition"></a></dt>
+<dd><p>供环境在 reset 时调用，以填充当前卫星的协作邻居列表。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>neighbor</strong> (<a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><em>Satellite</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINHierarchicalHybridAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stin_hier_continuous_act'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_shield</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">battery_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level1_norm_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ratio_normalize'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_execution_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'delayed'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.act.Action" title="bsk_rl.act.actions.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
+<p>Initialize the action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Action name.</p></li>
+<li><p><strong>enable_shield</strong> (<em>bool</em>) – Whether to enable safety shielding.</p></li>
+<li><p><strong>battery_threshold</strong> (<em>float</em>) – Battery SOC threshold.</p></li>
+<li><p><strong>max_neighbors</strong> (<em>int</em>) – Maximum neighbors for routing.</p></li>
+<li><p><strong>level1_norm_mode</strong> (<em>str</em>) – Level-1 归一化模式，可选：
+- “grouped_softmax”: 分组 softmax + 门控
+- “softmax_all”: 全量 softmax（单头切分）
+- “ratio_normalize”: 非负线性归一化（不做 softmax/门控）</p></li>
+<li><p><strong>routing_execution_mode</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.link_satellite">
+<span class="sig-name descname"><span class="pre">link_satellite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satellite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><span class="pre">Satellite</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.link_satellite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.link_satellite" title="Link to this definition"></a></dt>
+<dd><p>Link the action to a satellite and load Shield configuration.</p>
+<dl class="simple">
+<dt>Shield 配置从 satellite.shield_config 读取，支持以下参数：</dt><dd><ul class="simple">
+<li><p>enable_shield: 是否启用安全屏蔽（默认 True）</p></li>
+<li><p>battery_threshold: 触发电池保护的 SOC 阈值（默认 0.15）</p></li>
+<li><p>low_battery_cpu_cap: 低电量时 CPU 功率上限（默认 0.3）</p></li>
+<li><p>low_battery_tx_cap: 低电量时发射功率上限（默认 0.2）</p></li>
+<li><p>max_queue_size: 触发队列保护的阈值（默认 50）</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>satellite</strong> (<a class="reference internal" href="../sats/index.html#bsk_rl.sats.Satellite" title="bsk_rl.sats.Satellite"><em>Satellite</em></a>) – Satellite to link to</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></span><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.space" title="Link to this definition"></a></dt>
+<dd><p>分层连续动作空间（统一路由版）：
+- level1: Box(4,) -&gt; [alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]
+- level2: {“continuous”: [cpu, tx, routing_probs…(含 self)]}</p>
+<p>其中 routing_probs 维度为 (K + 1)，K=max_neighbors。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.flat_space">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">flat_space</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></span><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.flat_space" title="Link to this definition"></a></dt>
+<dd><p>扁平化动作空间（用于 BenchMARL 兼容）：
+- [0:4]: level1 (alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload)
+- [4:6]: level2 资源 (cpu, tx)
+- [6:6+K+1]: level2 unified routing (K+1 维，含 self)</p>
+<p>总维度: 4 + 2 + (K+1) = K + 7
+K=4 时: 11</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.action_description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.action_description" title="Link to this definition"></a></dt>
+<dd><p>动作描述（扁平化列表形式，与 flat_space 对齐）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>按动作维度顺序排列的动作名称列表。</dt><dd><p>长度为 K + 7 (K = max_neighbors)。</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.action_description_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_description_dict</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.action_description_dict" title="Link to this definition"></a></dt>
+<dd><p>动作描述（分层字典形式）。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.set_action">
+<span class="sig-name descname"><span class="pre">set_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.set_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.set_action" title="Link to this definition"></a></dt>
+<dd><p>解析并执行分层连续动作（统一路由版）。</p>
+<p>支持以下输入格式：
+1. Dict: {“level1”: array(4,), “level2”: {“continuous”: array(2+K+1,)}}
+2. Flat array: [level1…, cpu, tx, routing_split…]</p>
+<p>处理流程：
+1. 资源分配 (cpu, tx)
+2. Level-1 任务切分: 对 raw 任务队列按 alpha 比例切分，生成切片
+3. Level-2 切片路由: 对切片队列按统一路由分布进行处理</p>
+<dl class="simple">
+<dt>安全屏蔽流程：</dt><dd><ol class="arabic simple">
+<li><p>如果启用 shield，先对原始动作进行安全检查和修正</p></li>
+<li><p>解析修正后的动作分量</p></li>
+<li><p>执行资源分配和协作调度</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>Any</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.reset_overwrite_previous">
+<span class="sig-name descname"><span class="pre">reset_overwrite_previous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.reset_overwrite_previous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.reset_overwrite_previous" title="Link to this definition"></a></dt>
+<dd><p>Overwrite attributes from previous episode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.act.STINHierarchicalHybridAction.add_neighbor">
+<span class="sig-name descname"><span class="pre">add_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../sats/hier_computation_satellite.html#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><span class="pre">HierComputationSatellite</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/act/stin_hier_hybrid_actions.html#STINHierarchicalHybridAction.add_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.act.STINHierarchicalHybridAction.add_neighbor" title="Link to this definition"></a></dt>
+<dd><p>添加邻居卫星（通信模块调用）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>neighbor</strong> (<a class="reference internal" href="../sats/hier_computation_satellite.html#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><em>HierComputationSatellite</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../obs/stin_relative_observations.html" class="btn btn-neutral float-left" title="STIN Relative Observations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="actions.html" class="btn btn-neutral float-right" title="Backend" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

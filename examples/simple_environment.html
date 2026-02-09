@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Satellite Configuration" href="satellite_configuration.html" />
+    <link rel="prev" title="Examples" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#environments">Environments</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Load-Modules">Load Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Configure-the-Satellite">Configure the Satellite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Making-the-Environment">Making the Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interacting-with-the-Environment">Interacting with the Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="satellite_configuration.html">Satellite Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multiagent_envs.html">Multi-Agent Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fault_environment.html">Fault Environment Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fault_environment.html#Configure-Satellite-Pareameters">Configure Satellite Pareameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="communication_action.html">Broadcast Communication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cloud_environment.html">Cloud Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#earth-observation">Earth Observation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#rso-inspection">RSO Inspection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#training">Training</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/simple_environment.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Getting-Started">
+<h1>Getting Started<a class="headerlink" href="#Getting-Started" title="Link to this heading"></a></h1>
+<p>This tutorial demonstrates the configuration and use of a simple BSK-RL environment. BSK-RL and dependencies should already be installed at this point (see <a class="reference internal" href="../install.html"><span class="doc">Installation</span></a> if you haven’t installed the package yet).</p>
+<section id="Load-Modules">
+<h2>Load Modules<a class="headerlink" href="#Load-Modules" title="Link to this heading"></a></h2>
+<p>In this tutorial, the environment will be created with <code class="docutils literal notranslate"><span class="pre">gym.make</span></code>, so it is necessary to import the top-level <code class="docutils literal notranslate"><span class="pre">bsk_rl</span></code> module as well as <code class="docutils literal notranslate"><span class="pre">gym</span></code> and <code class="docutils literal notranslate"><span class="pre">bsk_rl</span></code> components.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gymnasium</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gym</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">act</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">sats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">dyn</span><span class="p">,</span> <span class="n">fsw</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.architecture</span><span class="w"> </span><span class="kn">import</span> <span class="n">bskLogging</span>
+<span class="n">bskLogging</span><span class="o">.</span><span class="n">setDefaultLogLevel</span><span class="p">(</span><span class="n">bskLogging</span><span class="o">.</span><span class="n">BSK_WARNING</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<p>If no errors were raised, you have a functional installation of <code class="docutils literal notranslate"><span class="pre">bsk_rl</span></code>.</p>
+</section>
+<section id="Configure-the-Satellite">
+<h2>Configure the Satellite<a class="headerlink" href="#Configure-the-Satellite" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="../api_reference/sats/index.html"><span class="doc">Satellites</span></a> are configurable agents in the environment. To make a new environment, start by specifying the <a class="reference internal" href="../api_reference/obs/index.html"><span class="doc">observations</span></a> and <a class="reference internal" href="../api_reference/act/index.html"><span class="doc">actions</span></a> of a satellite type, as well as the underlying Basilisk <a class="reference internal" href="../api_reference/sim/index.html"><span class="doc">simulation</span></a> models used by the satellite.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyScanningSatellite</span><span class="p">(</span><span class="n">sats</span><span class="o">.</span><span class="n">AccessSatellite</span><span class="p">):</span>
+    <span class="n">observation_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">SatProperties</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;storage_level_fraction&quot;</span><span class="p">),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s2">&quot;battery_charge_fraction&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">obs</span><span class="o">.</span><span class="n">Eclipse</span><span class="p">(),</span>
+    <span class="p">]</span>
+    <span class="n">action_spec</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Scan</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">),</span>  <span class="c1"># Scan for 1 minute</span>
+        <span class="n">act</span><span class="o">.</span><span class="n">Charge</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">600.0</span><span class="p">),</span>  <span class="c1"># Charge for 10 minutes</span>
+    <span class="p">]</span>
+    <span class="n">dyn_type</span> <span class="o">=</span> <span class="n">dyn</span><span class="o">.</span><span class="n">ContinuousImagingDynModel</span>
+    <span class="n">fsw_type</span> <span class="o">=</span> <span class="n">fsw</span><span class="o">.</span><span class="n">ContinuousImagingFSWModel</span>
+</pre></div>
+</div>
+</div>
+<p>Based on this class specification, a list of configurable parameters for the satellite can be generated.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">MyScanningSatellite</span><span class="o">.</span><span class="n">default_sat_args</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>When instantiating a satellite, these parameters can be overriden with a constant or rerandomized every time the environment is reset using the <code class="docutils literal notranslate"><span class="pre">sat_args</span></code> dictionary.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sat_args</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Set some parameters as constants</span>
+<span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;imageAttErrorRequirement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;dataStorageCapacity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e10</span>
+<span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;instrumentBaudRate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e7</span>
+<span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;storedCharge_Init&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">50000.0</span>
+
+<span class="c1"># Randomize the initial storage level on every reset</span>
+<span class="n">sat_args</span><span class="p">[</span><span class="s2">&quot;storageInit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e10</span>
+
+<span class="c1"># Make the satellite</span>
+<span class="n">sat</span> <span class="o">=</span> <span class="n">MyScanningSatellite</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;EO1&quot;</span><span class="p">,</span> <span class="n">sat_args</span><span class="o">=</span><span class="n">sat_args</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Making-the-Environment">
+<h2>Making the Environment<a class="headerlink" href="#Making-the-Environment" title="Link to this heading"></a></h2>
+<p>For this example, we will be using the single-agent <a class="reference internal" href="../api_reference/index.html"><span class="doc">SatelliteTasking</span></a> environment. Along with passing the satellite that we configured, the environment takes a <a class="reference internal" href="../api_reference/scene/index.html"><span class="doc">scenario</span></a>, which defines the environment the satellite is acting in, and a <a class="reference internal" href="../api_reference/data/index.html"><span class="doc">rewarder</span></a>, which defines how data collected from the scenario is rewarded.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
+    <span class="s2">&quot;SatelliteTasking-v1&quot;</span><span class="p">,</span>
+    <span class="n">satellite</span><span class="o">=</span><span class="n">sat</span><span class="p">,</span>
+    <span class="n">scenario</span><span class="o">=</span><span class="n">scene</span><span class="o">.</span><span class="n">UniformNadirScanning</span><span class="p">(),</span>
+    <span class="n">rewarder</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">ScanningTimeReward</span><span class="p">(),</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mf">5700.0</span><span class="p">,</span>  <span class="c1"># approximately 1 orbit</span>
+    <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Interacting-with-the-Environment">
+<h2>Interacting with the Environment<a class="headerlink" href="#Interacting-with-the-Environment" title="Link to this heading"></a></h2>
+<p>First, the environment is reset.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">observation</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Next, we take the scan action (<code class="docutils literal notranslate"><span class="pre">action=0</span></code>) a few times. This allows for the satellite to settle its attitude in the nadir pointing mode to satisfy imaging conditions. Note that the logs show little or no data accumulated in the first two steps as it settles, but achieves 60 reward (corresponding to 60 seconds of imaging) by the third step.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initial data level:&quot;</span><span class="p">,</span> <span class="n">observation</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;(randomized by sat_args)&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Final data level:&quot;</span><span class="p">,</span> <span class="n">observation</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>The observation reflects the increase in stored data. The first element, corresponding to <code class="docutils literal notranslate"><span class="pre">storage_level_fraction</span></code>, starts at a random value set by the <code class="docutils literal notranslate"><span class="pre">storageInit</span></code> function in <code class="docutils literal notranslate"><span class="pre">sat_args</span></code> and increases based on the time spent imaging.</p>
+<p>Finally, the charging mode is tasked repeatedly in 10-minute increments until the environment time limit is reached.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="ow">not</span> <span class="n">truncated</span><span class="p">:</span>
+    <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Charge level: </span><span class="si">{</span><span class="n">observation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">unwrapped</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> seconds)</span><span class="se">\n\t</span><span class="s2">Eclipse: start: </span><span class="si">{</span><span class="n">observation</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> end: </span><span class="si">{</span><span class="n">observation</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>It is observed that the battery decrease while the satellite is in eclipse, but once the satellite is out of eclipse, the battery quickly increases to full charge.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="satellite_configuration.html" class="btn btn-neutral float-right" title="Satellite Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

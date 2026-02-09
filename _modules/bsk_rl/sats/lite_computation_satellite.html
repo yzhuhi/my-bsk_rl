@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.sats.lite_computation_satellite &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bsk_rl.sats.lite_computation_satellite</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.sats.lite_computation_satellite</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;STIN 轻量级计算卫星类。</span>
+
+<span class="sd">该类专为计算卸载和资源调度任务设计，简化了仿真复杂度以提升性能。</span>
+
+<span class="sd">使用方法：</span>
+<span class="sd">    在 BenchMARL 配置中使用 `lite_mode: true` 来启用轻量级模式。</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">weakref</span><span class="w"> </span><span class="kn">import</span> <span class="n">proxy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats.computation_satellite</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ComputationSatellite</span><span class="p">,</span>
+    <span class="n">TaskSlice</span><span class="p">,</span>
+    <span class="n">TaskStatus</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim.dyn.lite_computation_dynamics</span><span class="w"> </span><span class="kn">import</span> <span class="n">LiteComputationDynModel</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.act.actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Action</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NoOpFSWModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;空操作 FSW 模型，用于轻量级卫星。</span>
+<span class="sd">    </span>
+<span class="sd">    不执行任何姿态控制，只提供必要的接口兼容性。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">,</span> <span class="n">fsw_rate</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化空操作 FSW。&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span> <span class="o">=</span> <span class="n">satellite</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsw_rate</span> <span class="o">=</span> <span class="n">fsw_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;LiteFSW_</span><span class="si">{</span><span class="n">satellite</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_fsw_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;设置 FSW 对象（空操作）。&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_for_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;重置 FSW 状态（空操作）。&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_failure</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;始终返回存活。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="LiteComputationSatellite">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiteComputationSatellite</span><span class="p">(</span><span class="n">ComputationSatellite</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;轻量级 STIN 计算卫星。</span>
+<span class="sd">    </span>
+<span class="sd">    继承自 ComputationSatellite，使用轻量级动力学模型。</span>
+<span class="sd">    </span>
+<span class="sd">    优化策略：</span>
+<span class="sd">    - ❌ 移除：反作用轮动力学、推进器动力学、大气阻力</span>
+<span class="sd">    - ✅ 保留：轨道传播、太阳能板、电池、日食检测</span>
+<span class="sd">    - ✅ 保留：ISL 通信可见性检测</span>
+<span class="sd">    </span>
+<span class="sd">    预期性能提升：30-50%</span>
+<span class="sd">    </span>
+<span class="sd">    保留功能：</span>
+<span class="sd">    - 任务队列管理</span>
+<span class="sd">    - 计算调度</span>
+<span class="sd">    - ISL 通信</span>
+<span class="sd">    - 能量约束（BSK 电池模型）</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># 使用轻量级动力学模型</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sim.dyn.lite_computation_dynamics</span><span class="w"> </span><span class="kn">import</span> <span class="n">LiteComputationDynModel</span>
+    <span class="n">dyn_type</span> <span class="o">=</span> <span class="n">LiteComputationDynModel</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化轻量级计算卫星。&quot;&quot;&quot;</span>
+        <span class="c1"># 标记为轻量级模式</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lite_mode</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[LITE] Created lightweight satellite: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="LiteComputationSatellite.set_fsw">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite.set_fsw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_fsw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fsw_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;创建轻量级 FSW 模型。</span>
+<span class="sd">        </span>
+<span class="sd">        重写父类方法，使用 NoOpFSWModel 替代完整 FSW。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fsw</span> <span class="o">=</span> <span class="n">NoOpFSWModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fsw_rate</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sat_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsw</span> <span class="o">=</span> <span class="n">proxy</span><span class="p">(</span><span class="n">fsw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fsw</span></div>
+
+    
+<div class="viewcode-block" id="LiteComputationSatellite.reset_overwrite_previous">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite.reset_overwrite_previous">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_overwrite_previous</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;重置卫星状态。</span>
+<span class="sd">        </span>
+<span class="sd">        轻量级版本直接调用父类方法。</span>
+<span class="sd">        电池状态由完整版动力学模型自动处理。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset_overwrite_previous</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="LiteComputationSatellite.set_resource_allocation">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite.set_resource_allocation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_resource_allocation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">cpu_ratio</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+        <span class="n">tx_power_ratio</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">platform_power_ratio</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;设置资源分配（轻量级版本，含电池安全裁剪）。&quot;&quot;&quot;</span>
+        <span class="c1"># 注意：电池安全硬约束已通过 STINActionShield 在动作空间层实现</span>
+        <span class="c1"># 无需在此处再次裁剪，避免双重保护导致的策略学习困难</span>
+        
+        <span class="c1"># === 轻量级资源分配 ===</span>
+        <span class="c1"># 保存分配比例</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_cpu_ratio</span> <span class="o">=</span> <span class="n">cpu_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_tx_power_ratio</span> <span class="o">=</span> <span class="n">tx_power_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_platform_power_ratio</span> <span class="o">=</span> <span class="n">platform_power_ratio</span>
+        
+        <span class="c1"># 计算 CPU 频率</span>
+        <span class="n">cpu_freq_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpu_max_frequency</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpu_min_frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_cpu_freq</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpu_min_frequency</span> <span class="o">+</span> <span class="n">cpu_ratio</span> <span class="o">*</span> <span class="n">cpu_freq_range</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># 计算功耗 (使用简化模型)</span>
+        <span class="n">cpu_power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpu_power_draw</span> <span class="o">*</span> <span class="n">cpu_ratio</span>
+        <span class="n">tx_power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">max_tx_power_draw</span> <span class="o">*</span> <span class="n">tx_power_ratio</span>
+        
+        <span class="c1"># 更新动力学模型的功耗设置</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">current_cpu_power</span> <span class="o">=</span> <span class="n">cpu_power</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">current_tx_power</span> <span class="o">=</span> <span class="n">tx_power</span>
+        
+        <span class="c1"># 记录当前功耗</span>
+        <span class="n">payload_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cpu_power</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tx_power</span><span class="p">)</span>
+        <span class="n">platform_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">base_power_draw</span><span class="p">)</span> <span class="o">*</span> <span class="n">platform_power_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_power_draw</span> <span class="o">=</span> <span class="n">payload_power</span> <span class="o">+</span> <span class="n">platform_power</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_base_power_draw</span> <span class="o">=</span> <span class="n">platform_power</span></div>
+
+    
+<div class="viewcode-block" id="LiteComputationSatellite.execute_local_compute">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite.execute_local_compute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_local_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;执行本地计算（轻量级版本）。</span>
+<span class="sd">        </span>
+<span class="sd">        与完整版相同的任务处理逻辑，但使用简化的能量更新。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 获取当前时间</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+        
+        <span class="c1"># 更新能量状态</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;update_power&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">update_power</span><span class="p">(</span>
+                <span class="n">duration</span><span class="p">,</span>
+                <span class="n">cpu_ratio</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;current_cpu_ratio&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                <span class="n">tx_ratio</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;current_tx_power_ratio&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># 调用父类的计算逻辑</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute_local_compute</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="LiteComputationSatellite.get_cpu_freq">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite.get_cpu_freq">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cpu_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取当前 CPU 频率。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;current_cpu_freq&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cpu_min_frequency</span><span class="p">)</span></div>
+
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">battery_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;检查电池是否有效（轻量级版本）。&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;battery_soc&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">battery_soc</span> <span class="o">&gt;</span> <span class="mf">0.01</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    
+<div class="viewcode-block" id="LiteComputationSatellite.get_lite_log_state">
+<a class="viewcode-back" href="../../../api_reference/sats/index.html#bsk_rl.sats.LiteComputationSatellite.get_lite_log_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_lite_log_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取轻量级日志状态。&quot;&quot;&quot;</span>
+        <span class="n">base_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_log_state</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;get_log_state&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+        
+        <span class="c1"># 添加轻量级特有信息</span>
+        <span class="n">base_state</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;lite_mode&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;battery_soc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">battery_soc</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;battery_soc&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">&quot;energy_consumed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">energy_consumed</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;energy_consumed&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">})</span>
+        
+        <span class="k">return</span> <span class="n">base_state</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_lite_satellite_factory</span><span class="p">(</span><span class="n">full_satellite_class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;创建轻量级卫星工厂函数。</span>
+<span class="sd">    </span>
+<span class="sd">    将任何继承自 ComputationSatellite 的类转换为轻量级版本。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        full_satellite_class: 完整版卫星类</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        轻量级卫星类</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">class</span><span class="w"> </span><span class="nc">LiteWrapper</span><span class="p">(</span><span class="n">full_satellite_class</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;动态生成的轻量级包装类。&quot;&quot;&quot;</span>
+        
+        <span class="n">dyn_type</span> <span class="o">=</span> <span class="n">LiteComputationDynModel</span>
+        <span class="n">fsw_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">_lite_mode</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[LITE] Created lightweight wrapper for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="n">LiteWrapper</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Lite</span><span class="si">{</span><span class="n">full_satellite_class</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">LiteWrapper</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

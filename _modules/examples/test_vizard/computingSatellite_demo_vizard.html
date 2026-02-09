@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>examples.test_vizard.computingSatellite_demo_vizard &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">examples.test_vizard.computingSatellite_demo_vizard</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for examples.test_vizard.computingSatellite_demo_vizard</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Vizard Visualization Demo for Lite Computation Satellite</span>
+<span class="sd">=========================================================</span>
+
+<span class="sd">This script demonstrates the 3D visualization of a LiteComputationSatellite </span>
+<span class="sd">constellation using Basilisk&#39;s Vizard tool.</span>
+
+<span class="sd">**可视化规则（参考 Agile EOS 视频风格）：**</span>
+<span class="sd">    - 任务大小 (markerScale) → 表示数据量（数据越大，标记越大）</span>
+<span class="sd">    - 任务颜色 (color) → 表示优先级（绿色=低，黄色=中，红色=高）</span>
+<span class="sd">    - 任务完成后 → 颜色变蓝（通过 mark_task_completed 方法）</span>
+
+<span class="sd">Requirements:</span>
+<span class="sd">- Vizard must be downloaded and installed</span>
+<span class="sd">- Set VIZARD_PATH environment variable or modify the path below</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    python computingSatellite_demo_vizard.py</span>
+<span class="sd">    </span>
+<span class="sd">After running, open the generated .bin file in Vizard to view the simulation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">LiteComputationSatellite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.comm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOSMultiCommunication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoReward</span>  <span class="c1"># Use built-in NoReward instead of custom class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">CityTaskScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="c1"># Import TaskVizController if available</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.ExternalModules</span><span class="w"> </span><span class="kn">import</span> <span class="n">taskVizController</span>
+    <span class="n">TASK_VIZ_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">TASK_VIZ_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: TaskVizController not available, visualization will be limited&quot;</span><span class="p">)</span>
+
+<span class="c1"># Import vizSupport for ISL visualization</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">Basilisk.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">vizSupport</span>
+    <span class="n">VIZ_SUPPORT_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">VIZ_SUPPORT_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: vizSupport not available, ISL visualization disabled&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ISLVisualizer">
+<a class="viewcode-back" href="../../../examples/test_vizard/computingSatellite_demo_vizard.html#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ISLVisualizer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper class for visualizing Inter-Satellite Links (ISL) in Vizard.</span>
+<span class="sd">    </span>
+<span class="sd">    Uses createTargetLine to draw dynamic lines between communicating satellites.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Color definitions for different link types</span>
+    <span class="c1"># Note: Uplink is NOT included - Vizard&#39;s showLocationCommLines already shows sat-to-task visibility</span>
+    <span class="n">COLORS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;isl&#39;</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span>           <span class="c1"># ISL offload link (satellite to satellite)</span>
+        <span class="s1">&#39;downlink&#39;</span><span class="p">:</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span>       <span class="c1"># Downlink to ground (result transmission)</span>
+    <span class="p">}</span>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viz_instance</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with a vizInterface instance.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz</span> <span class="o">=</span> <span class="n">viz_instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_links</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Track active links: (from, to) -&gt; color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_counter</span> <span class="o">=</span> <span class="mi">0</span>
+    
+<div class="viewcode-block" id="ISLVisualizer.add_isl_link">
+<a class="viewcode-back" href="../../../examples/test_vizard/computingSatellite_demo_vizard.html#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.add_isl_link">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_isl_link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_sat_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_sat_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">link_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;isl&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw an ISL link between two satellites.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            from_sat_name: Name of the source satellite</span>
+<span class="sd">            to_sat_name: Name of the target satellite  </span>
+<span class="sd">            link_type: Type of link (&#39;isl&#39;, &#39;downlink&#39;, &#39;uplink&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">VIZ_SUPPORT_AVAILABLE</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="n">link_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">from_sat_name</span><span class="p">,</span> <span class="n">to_sat_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">link_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_links</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># Link already exists</span>
+        
+        <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">COLORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">link_type</span><span class="p">,</span> <span class="s1">&#39;white&#39;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">vizSupport</span><span class="o">.</span><span class="n">createTargetLine</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="p">,</span>
+                <span class="n">toBodyName</span><span class="o">=</span><span class="n">to_sat_name</span><span class="p">,</span>
+                <span class="n">lineColor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">fromBodyName</span><span class="o">=</span><span class="n">from_sat_name</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_links</span><span class="p">[</span><span class="n">link_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">color</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_link_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_counter</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># Only print first 5</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[ISL_VIZ] Drew </span><span class="si">{</span><span class="n">link_type</span><span class="si">}</span><span class="s2"> link: </span><span class="si">{</span><span class="n">from_sat_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">to_sat_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[ISL_VIZ] Error creating link: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ISLVisualizer.clear_all_links">
+<a class="viewcode-back" href="../../../examples/test_vizard/computingSatellite_demo_vizard.html#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.clear_all_links">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_all_links</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear all visualization links.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">VIZ_SUPPORT_AVAILABLE</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">vizSupport</span><span class="o">.</span><span class="n">targetLineList</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="n">vizSupport</span><span class="o">.</span><span class="n">updateTargetLineList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viz</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_links</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[ISL_VIZ] Error clearing links: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ISLVisualizer.get_link_count">
+<a class="viewcode-back" href="../../../examples/test_vizard/computingSatellite_demo_vizard.html#examples.test_vizard.computingSatellite_demo_vizard.ISLVisualizer.get_link_count">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_link_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of active links.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_links</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># ============================================================</span>
+<span class="c1"># Configuration</span>
+<span class="c1"># ============================================================</span>
+
+<span class="c1"># Vizard output directory - change this to your preferred location</span>
+<span class="n">VIZARD_OUTPUT_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;./vizard_output&quot;</span><span class="p">)</span>
+
+<span class="c1"># Satellite parameters (same as lite mode)</span>
+<span class="n">sat_args</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;cpuMaxFrequency&quot;</span><span class="p">:</span> <span class="mf">4.8e9</span><span class="p">,</span>
+    <span class="s2">&quot;cpuMinFrequency&quot;</span><span class="p">:</span> <span class="mf">2.0e9</span><span class="p">,</span>
+    <span class="s2">&quot;cpuWorkload&quot;</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
+    <span class="s2">&quot;cpuPowerDraw&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">40.0</span><span class="p">,</span>
+    <span class="s2">&quot;transmitterBaudRate&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">100e6</span><span class="p">,</span>
+    <span class="s2">&quot;transmitterPowerDraw&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">,</span>
+    <span class="s2">&quot;basePowerDraw&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">,</span>
+    <span class="s2">&quot;batteryStorageCapacity&quot;</span><span class="p">:</span> <span class="mf">2.7e6</span><span class="p">,</span>
+    <span class="s2">&quot;storedCharge_Init&quot;</span><span class="p">:</span> <span class="mf">2.16e6</span><span class="p">,</span>
+    <span class="s2">&quot;panelArea&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;taskMinimumElevation&quot;</span><span class="p">:</span> <span class="mf">0.26</span><span class="p">,</span>
+    <span class="s2">&quot;dataStorageCapacity&quot;</span><span class="p">:</span> <span class="mf">4e12</span><span class="p">,</span>
+    <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="mf">680.0</span><span class="p">,</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mf">1.8</span><span class="p">,</span>
+    <span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Walker Delta constellation configuration  </span>
+<span class="c1"># Note: Number of satellites is determined by the satellites list, not this config</span>
+<span class="n">constellation_args</span> <span class="o">=</span> <span class="n">walker_delta_args</span><span class="p">(</span>
+    <span class="n">n_planes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>            <span class="c1"># 4 orbital planes</span>
+    <span class="n">altitude</span><span class="o">=</span><span class="mi">781</span><span class="p">,</span>          <span class="c1"># km</span>
+    <span class="n">inc</span><span class="o">=</span><span class="mf">86.4</span><span class="p">,</span>              <span class="c1"># deg (near-polar)</span>
+    <span class="n">rel_phasing</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>       <span class="c1"># Relative phasing between planes</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_vizard_env">
+<a class="viewcode-back" href="../../../examples/test_vizard/computingSatellite_demo_vizard.html#examples.test_vizard.computingSatellite_demo_vizard.create_vizard_env">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_vizard_env</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create environment with Vizard enabled.&quot;&quot;&quot;</span>
+    
+    <span class="c1"># Task scenario</span>
+    <span class="n">task_scenario</span> <span class="o">=</span> <span class="n">CityTaskScenario</span><span class="p">(</span>
+        <span class="n">n_tasks</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+        <span class="n">n_select_from</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+        <span class="n">data_size_range</span><span class="o">=</span><span class="p">(</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">50e6</span><span class="p">),</span>
+        <span class="n">workload_range</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1500</span><span class="p">),</span>
+        <span class="n">max_delay_range</span><span class="o">=</span><span class="p">(</span><span class="mf">60.0</span><span class="p">,</span> <span class="mf">600.0</span><span class="p">),</span>
+        <span class="n">task_arrival_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Create environment with Vizard enabled</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+        <span class="n">satellites</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">LiteComputationSatellite</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;sat-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">sat_args</span><span class="o">=</span><span class="n">sat_args</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">sat_arg_randomizer</span><span class="o">=</span><span class="n">constellation_args</span><span class="p">,</span>
+        <span class="n">scenario</span><span class="o">=</span><span class="n">task_scenario</span><span class="p">,</span>
+        <span class="n">rewarder</span><span class="o">=</span><span class="n">NoReward</span><span class="p">(),</span>
+        <span class="n">communicator</span><span class="o">=</span><span class="n">LOSMultiCommunication</span><span class="p">(),</span>
+        <span class="n">time_limit</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span>  <span class="c1"># 1 hour simulation</span>
+        <span class="n">max_step_duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>  <span class="c1"># 60s per step</span>
+        <span class="c1"># Enable Vizard visualization</span>
+        <span class="n">vizard_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">VIZARD_OUTPUT_DIR</span><span class="p">),</span>
+        <span class="n">vizard_settings</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;openBrowserOnRun&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Don&#39;t auto-open browser</span>
+            <span class="s2">&quot;showSpaceCraftLabels&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Show satellite labels</span>
+            <span class="s2">&quot;showBodyLabels&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;orbitLineOn&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Show orbit lines</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">env</span></div>
+
+
+
+<div class="viewcode-block" id="run_demo">
+<a class="viewcode-back" href="../../../examples/test_vizard/computingSatellite_demo_vizard.html#examples.test_vizard.computingSatellite_demo_vizard.run_demo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_demo</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the simulation for visualization.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resetting environment...&quot;</span><span class="p">)</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    
+    <span class="c1"># DEBUG: Diagnostic dump</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: TASK_VIZ_AVAILABLE = </span><span class="si">{</span><span class="n">TASK_VIZ_AVAILABLE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: env.simulator has vizInstance? </span><span class="si">{</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;vizInstance&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Force enable satellite-to-task communication lines in Vizard</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="p">,</span> <span class="s1">&#39;vizInstance&#39;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: vizInstance.settings.showLocationCommLines before = </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCommLines</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCommLines</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEBUG: vizInstance.settings.showLocationCommLines after = </span><span class="si">{</span><span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCommLines</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ Enabled showLocationCommLines for task visualization&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Add TaskVizController after simulator is created</span>
+    <span class="k">if</span> <span class="n">TASK_VIZ_AVAILABLE</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">task_viz</span> <span class="o">=</span> <span class="n">taskVizController</span><span class="o">.</span><span class="n">TaskVizController</span><span class="p">()</span>
+            <span class="n">task_viz</span><span class="o">.</span><span class="n">ModelTag</span> <span class="o">=</span> <span class="s2">&quot;taskVizController&quot;</span>
+            <span class="n">task_viz</span><span class="o">.</span><span class="n">enableLogging</span> <span class="o">=</span> <span class="kc">True</span>
+            
+            <span class="c1"># Connect to all satellites</span>
+            <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;task_event_writer&#39;</span><span class="p">):</span>
+                    <span class="n">task_viz</span><span class="o">.</span><span class="n">taskEventInMsg</span><span class="o">.</span><span class="n">subscribeTo</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">task_event_writer</span><span class="p">)</span>
+            
+            <span class="c1"># Add to simulation</span>
+            <span class="c1"># Use task name from the first satellite&#39;s dynamics model</span>
+            <span class="n">task_name</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">task_name</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">AddModelToTask</span><span class="p">(</span><span class="n">task_name</span><span class="p">,</span> <span class="n">task_viz</span><span class="p">)</span>
+            
+            <span class="c1"># Connect to vizInterface.liveSettings for dynamic line visualization</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="p">,</span> <span class="s1">&#39;vizInstance&#39;</span><span class="p">):</span>
+                <span class="n">task_viz</span><span class="o">.</span><span class="n">vizLiveSettings</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">vizInstance</span><span class="o">.</span><span class="n">liveSettings</span>
+                <span class="n">task_viz</span><span class="o">.</span><span class="n">enableDynamicLines</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ TaskVizController connected to vizInterface.liveSettings&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Count connected satellites</span>
+            <span class="n">connected_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s1">&#39;task_event_writer&#39;</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ TaskVizController enabled with </span><span class="si">{</span><span class="n">connected_count</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">)</span><span class="si">}</span><span class="s2"> satellites connected&quot;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR initializing TaskVizController: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✗ TaskVizController not available&quot;</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Running simulation for </span><span class="si">{</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Running simulation for </span><span class="si">{</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps...&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># 1. Force Enable Task Lines (Green)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="p">,</span> <span class="s1">&#39;vizInstance&#39;</span><span class="p">):</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">vizInstance</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">showLocationCommLines</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[OK] Task Lines Enabled (Green) [showLocationCommLines=1]&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: vizInstance not found, task lines may not show&quot;</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_forcing_action</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate actions that force high ISL offloading to visualize lines.&quot;&quot;&quot;</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">satellites</span><span class="p">:</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="c1"># Full Power</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="c1"># Force Offload: alpha_local=0.1 (low), alpha_cloud=0.1 (low) =&gt; alpha_sat=0.8 (high)</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># alpha_local </span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># alpha_cloud preference</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># priority threshold</span>
+            
+            <span class="c1"># High ISL Weights to neighbors (not self)</span>
+            <span class="c1"># action[6] = self, action[7:11] = neighbors</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span>   <span class="c1"># Low self ratio</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]</span>  <span class="c1"># High neighbor ratios</span>
+            <span class="c1"># Low Priority same pattern</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span>
+            <span class="n">action</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]</span>
+            
+            <span class="n">actions</span><span class="p">[</span><span class="n">sat</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="k">return</span> <span class="n">actions</span>
+    
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+        <span class="c1"># Force high offloading for ISL visualization</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">make_forcing_action</span><span class="p">()</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time_mins</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span> <span class="o">/</span> <span class="mf">60.0</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, Sim time: </span><span class="si">{</span><span class="n">time_mins</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> mins&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">terminated</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">truncated</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Episode ended early&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Simulation complete!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vizard output saved to: </span><span class="si">{</span><span class="n">VIZARD_OUTPUT_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Open the .bin file in Vizard to visualize the constellation.&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Vizard Demo for LiteComputationSatellite Constellation&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    
+    <span class="c1"># Create output directory</span>
+    <span class="n">VIZARD_OUTPUT_DIR</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># Create environment</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Creating environment with 24 satellites...&quot;</span><span class="p">)</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">create_vizard_env</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [OK] Environment created&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [OK] Vizard output: </span><span class="si">{</span><span class="n">VIZARD_OUTPUT_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Run demo</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="n">run_demo</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>  <span class="c1"># 60 steps = 1 hour at 60s/step</span>
+    
+    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Done!&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

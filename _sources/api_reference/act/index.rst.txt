@@ -1,0 +1,26 @@
+.. _bsk_rl.act:
+.. currentmodule:: bsk_rl.act
+
+Actions
+=======
+
+
+
+.. automodule:: bsk_rl.act
+   :members:
+   :show-inheritance:
+
+
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   actions
+   discrete_actions
+   stin_hier_hybrid_actions
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+

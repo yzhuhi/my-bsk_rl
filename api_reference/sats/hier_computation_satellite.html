@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hierarchical Computation Satellite &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Observations" href="../obs/index.html" />
+    <link rel="prev" title="Satellites" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking"><code class="docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.SatelliteTasking"><code class="docutils literal notranslate"><span class="pre">SatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.ConstellationTasking"><code class="docutils literal notranslate"><span class="pre">ConstellationTasking</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Satellites</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#configuring-a-satellite">Configuring a Satellite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#setting-satellite-parameters">Setting Satellite Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#helpful-methods-for-debugging">Helpful Methods for Debugging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#helpful-methods-for-extending">Helpful Methods for Extending</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#satellite-varieties">Satellite Varieties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.sats.Satellite"><code class="docutils literal notranslate"><span class="pre">Satellite</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.sats.AccessSatellite"><code class="docutils literal notranslate"><span class="pre">AccessSatellite</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.sats.ImagingSatellite"><code class="docutils literal notranslate"><span class="pre">ImagingSatellite</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.sats.ComputationSatellite"><code class="docutils literal notranslate"><span class="pre">ComputationSatellite</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.sats.LiteComputationSatellite"><code class="docutils literal notranslate"><span class="pre">LiteComputationSatellite</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.sats.HierComputationSatellite"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Hierarchical Computation Satellite</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.dyn_type"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.dyn_type</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.fsw_type"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.fsw_type</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.action_spec"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.action_spec</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.observation_spec"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.observation_spec</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.schedule_collaboration_action_hier"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.schedule_collaboration_action_hier()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.process_incoming_slice"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.process_incoming_slice()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.process_slice_queue_hier"><code class="docutils literal notranslate"><span class="pre">HierComputationSatellite.process_slice_queue_hier()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../obs/index.html">Observations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../act/index.html">Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scene/index.html">Scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">Data &amp; Reward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm/index.html">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sim/index.html">Simulation (BSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Satellites</a></li>
+      <li class="breadcrumb-item active">Hierarchical Computation Satellite</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api_reference/sats/hier_computation_satellite.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hierarchical-computation-satellite">
+<span id="bsk-rl-sats-hier-computation-satellite"></span><h1>Hierarchical Computation Satellite<a class="headerlink" href="#hierarchical-computation-satellite" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p id="module-bsk_rl.sats.hier_computation_satellite">HierComputationSatellite: 分层连续路由方案实现。</p>
+<p>该类继承自 ComputationSatellite，提供分层 RL 专用的动作空间和观测空间配置。
+自有路由方法 <code class="docutils literal notranslate"><span class="pre">process_slice_queue_hier</span></code> 和 <code class="docutils literal notranslate"><span class="pre">schedule_collaboration_action_hier</span></code>
+均定义在本子类中，支持分层任务切分与切片路由。</p>
+<dl class="simple">
+<dt>设计说明：</dt><dd><ul class="simple">
+<li><p>Level-1（任务切分）：对 raw_task_queue 执行，生成切片加入 slice_queue</p></li>
+<li><p>Level-2（切片路由）：对 slice_queue 执行概率采样路由</p></li>
+<li><p>支持两种执行语义：
+* delayed: Level-1 新切片下一个 step 再参与 Level-2
+* immediate: Level-1 新切片本 step 即可参与 Level-2</p></li>
+</ul>
+</dd>
+<dt>动作空间（与旧版差异）：</dt><dd><ul class="simple">
+<li><p>旧版 STINContinuousAction: 16D</p></li>
+<li><p>新版 STINHierarchicalHybridAction: K + 7 (K=4 时 11D，L2 含 self)</p></li>
+<li><p>Level-1 任务切分: 4D（UD/Cloud/本地/路由）</p></li>
+</ul>
+</dd>
+<dt>观测空间（与旧版差异）：</dt><dd><ul class="simple">
+<li><p>旧版 ComputationSatellite.observation_spec: ~40D (SatProperties + STINRelativeObservations)</p></li>
+<li><p>新版 STINHierarchicalObservations: (F+1)K (F=8, K=4 时 36D)</p></li>
+<li><p>使用统一扁平向量，支持可配置属性</p></li>
+<li><p>新增邻居可达性掩码 (K维)</p></li>
+</ul>
+</dd>
+</dl>
+<p>队列流程:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>raw_task_queue → [Level-1 切分] → slice_queue → [Level-2 路由判断]
+                                                      ├→ 本地: task_queue → [计算] → result_queue
+                                                      └→ 邻居: pop 并转发到邻居的 slice_queue
+</pre></div>
+</div>
+<dl class="simple">
+<dt>主要方法:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">schedule_collaboration_action_hier</span></code>: Level-1 任务切分</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">process_slice_queue_hier</span></code>: Level-2 切片路由（概率采样/argmax）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_mask_and_normalize_routing_probs</span></code>: 路由概率 mask + 归一化</p></li>
+</ul>
+</dd>
+</dl>
+<p>注意: 本类方法不在父类 ComputationSatellite 中定义，仅供 HierComputationSatellite 使用。</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">HierComputationSatellite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/sats/hier_computation_satellite.html#HierComputationSatellite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="index.html#bsk_rl.sats.ComputationSatellite" title="bsk_rl.sats.computation_satellite.ComputationSatellite"><code class="xref py py-class docutils literal notranslate"><span class="pre">ComputationSatellite</span></code></a></p>
+<p>初始化计算卫星。</p>
+<p>sat_args 中的参数会自动通过 collect_default_args 从 dyn_type 和
+fsw_type 中收集。用户可通过 sat_args 覆盖默认值。</p>
+<dl class="simple">
+<dt>Args (via kwargs):</dt><dd><p>training_mode: 训练模式（默认 False）。启用后禁用日志和可视化以提升性能。
+shield_config: Action Shield 配置字典（可选）。
+ud_config: UD 处理能力配置字典（可选）。</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.dyn_type">
+<span class="sig-name descname"><span class="pre">dyn_type</span></span><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.dyn_type" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="../sim/dyn/index.html#bsk_rl.sim.dyn.LoSComputationDynaModel" title="bsk_rl.sim.dyn.computation_dynamics.LoSComputationDynaModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoSComputationDynaModel</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.fsw_type">
+<span class="sig-name descname"><span class="pre">fsw_type</span></span><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.fsw_type" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="../sim/fsw/ground_imaging.html#bsk_rl.sim.fsw.ground_imaging.SteeringImagerFSWModel" title="bsk_rl.sim.fsw.ground_imaging.SteeringImagerFSWModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SteeringImagerFSWModel</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.action_spec">
+<span class="sig-name descname"><span class="pre">action_spec</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../act/index.html#bsk_rl.act.Action" title="bsk_rl.act.Action"><span class="pre">Action</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;bsk_rl.act.stin_hier_hybrid_actions.STINHierarchicalHybridAction</span> <span class="pre">object&gt;]</span></span><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.action_spec" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.observation_spec">
+<span class="sig-name descname"><span class="pre">observation_spec</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;bsk_rl.obs.observations.SatProperties</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;bsk_rl.obs.observations.SatProperties</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;bsk_rl.obs.observations.SatProperties</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;bsk_rl.obs.stin_hier_observations.STINHierarchicalObservations</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;bsk_rl.obs.observations.Time</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;bsk_rl.obs.observations.Eclipse</span> <span class="pre">object&gt;]</span></span><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.observation_spec" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.schedule_collaboration_action_hier">
+<span class="sig-name descname"><span class="pre">schedule_collaboration_action_hier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_split_ratios</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbor_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="index.html#bsk_rl.sats.ComputationSatellite" title="bsk_rl.sats.computation_satellite.ComputationSatellite"><span class="pre">ComputationSatellite</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/sats/hier_computation_satellite.html#HierComputationSatellite.schedule_collaboration_action_hier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.schedule_collaboration_action_hier" title="Link to this definition"></a></dt>
+<dd><p>Level-1 任务切分（分层 RL 专用）。</p>
+<p>对 raw_task_queue 中的每个任务，按 task_split_ratios 比例切分：
+- [0] alpha_ud: UD 本地处理
+- [1] alpha_cloud: 云端处理
+- [2] alpha_sat_local: 接入卫星本地计算队列
+- [3] alpha_sat_offload: 接入卫星切片队列（Level-2 决定路由邻居）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task_split_ratios</strong> (<em>ndarray</em>) – 切分比例 [alpha_ud, alpha_cloud, alpha_sat_local, alpha_sat_offload]
+已归一化，sum = 1</p></li>
+<li><p><strong>neighbor_satellites</strong> (<em>List</em><em>[</em><a class="reference internal" href="index.html#bsk_rl.sats.ComputationSatellite" title="bsk_rl.sats.computation_satellite.ComputationSatellite"><em>ComputationSatellite</em></a><em>]</em>) – 邻居卫星列表（长度 K）</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.process_incoming_slice">
+<span class="sig-name descname"><span class="pre">process_incoming_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TaskSlice</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/sats/hier_computation_satellite.html#HierComputationSatellite.process_incoming_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.process_incoming_slice" title="Link to this definition"></a></dt>
+<dd><p>接收切片后进入切片队列，允许继续路由决策。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>task_slice</strong> (<em>TaskSlice</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.process_slice_queue_hier">
+<span class="sig-name descname"><span class="pre">process_slice_queue_hier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">high_split_ratios</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_split_ratios</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbor_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="index.html#bsk_rl.sats.ComputationSatellite" title="bsk_rl.sats.computation_satellite.ComputationSatellite"><span class="pre">ComputationSatellite</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_slices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_argmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/sats/hier_computation_satellite.html#HierComputationSatellite.process_slice_queue_hier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.sats.hier_computation_satellite.HierComputationSatellite.process_slice_queue_hier" title="Link to this definition"></a></dt>
+<dd><p>Level-2 切片路由（分层连续路由版）。</p>
+<p>路由逻辑：
+- 根据切片优先级选择 high/low 路由分布
+- mask 不可达邻居后归一化
+- 路由模式：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>sample: 对每个切片按分布采样</p></li>
+<li><p>sample_batch: 对当前 step 的切片做一次批量分配（低方差、近似确定性）</p></li>
+<li><p>flow: 确定性按比例分配（加权轮询）</p></li>
+<li><p>argmax: 始终选择最大概率邻居</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>high_split_ratios</strong> (<em>ndarray</em>) – 高优先级切片路由比例 [n0, n1, …, nK-1, self]</p></li>
+<li><p><strong>low_split_ratios</strong> (<em>ndarray</em>) – 低优先级切片路由比例 [n0, n1, …, nK-1, self]</p></li>
+<li><p><strong>priority_threshold</strong> (<em>float</em>) – 高/低优先级分界阈值 [0, 1]</p></li>
+<li><p><strong>neighbor_satellites</strong> (<em>List</em><em>[</em><a class="reference internal" href="index.html#bsk_rl.sats.ComputationSatellite" title="bsk_rl.sats.computation_satellite.ComputationSatellite"><em>ComputationSatellite</em></a><em>]</em>) – 邻居卫星列表</p></li>
+<li><p><strong>max_slices</strong> (<em>int</em>) – 最多处理的切片数量（轮询预算）</p></li>
+<li><p><strong>use_argmax</strong> (<em>bool</em>) – 是否使用 argmax 路由（True=确定性，False=按 routing_mode）</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>本步实际处理的切片数（包括本地处理与转发）。</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Satellites" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../obs/index.html" class="btn btn-neutral float-right" title="Observations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

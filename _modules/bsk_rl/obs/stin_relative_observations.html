@@ -1,0 +1,584 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.obs.stin_relative_observations &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bsk_rl.obs.stin_relative_observations</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.obs.stin_relative_observations</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">STINRelativeObservations: 针对 STIN 场景定制的相对观测。</span>
+
+<span class="sd">获取当前卫星相对于其 N 个最近邻居的状态，以支持 MARL 决策。</span>
+<span class="sd">支持灵活配置观测属性和归一化参数。</span>
+
+<span class="sd">设计说明:</span>
+<span class="sd">    - 继承自 Observation 基类（而非 RelativeProperties）</span>
+<span class="sd">    - RelativeProperties 设计用于 1 对 1 (deputy vs chief) 场景</span>
+<span class="sd">    - STINRelativeObservations 设计用于 1 对 N (self vs N neighbors) 场景</span>
+<span class="sd">    - 复用 relative_observations 模块中的辅助函数 (如 r_DC_N, v_DC_N) 计算相对状态</span>
+
+<span class="sd">使用示例::</span>
+
+<span class="sd">    obs.STINRelativeObservations(</span>
+<span class="sd">        dict(prop=&quot;r_DC_N&quot;, norm=1e7),           # 相对位置 [m]</span>
+<span class="sd">        dict(prop=&quot;v_DC_N&quot;, norm=1e4),           # 相对速度 [m/s]</span>
+<span class="sd">        dict(prop=&quot;battery_fraction&quot;),            # 电池电量分数</span>
+<span class="sd">        dict(prop=&quot;task_queue_size&quot;, norm=20.0),  # 任务队列负载</span>
+<span class="sd">        max_neighbors=4,</span>
+<span class="sd">    )</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gymnasium</span><span class="w"> </span><span class="kn">import</span> <span class="n">spaces</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.obs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Observation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.obs.relative_observations</span><span class="w"> </span><span class="kn">import</span> <span class="n">r_DC_N</span><span class="p">,</span> <span class="n">v_DC_N</span>  <span class="c1"># 复用框架提供的相对状态计算</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats.computation_satellite</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.act.stin_continuous_actions</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINContinuousAction</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># 预定义的邻居属性获取函数</span>
+<div class="viewcode-block" id="get_battery_fraction">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_battery_fraction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_battery_fraction</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取邻居的电池电量分数（兼容 simpleBattery 和 powerMonitor）。&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;simpleBattery&#39;</span><span class="p">):</span>
+            <span class="n">battery</span> <span class="o">=</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">simpleBattery</span>
+            <span class="k">return</span> <span class="n">battery</span><span class="o">.</span><span class="n">storageLevel</span> <span class="o">/</span> <span class="n">battery</span><span class="o">.</span><span class="n">storageCapacity</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;powerMonitor&#39;</span><span class="p">):</span>
+            <span class="c1"># LoSComputationDynaModel 使用 powerMonitor</span>
+            <span class="n">battery_msg</span> <span class="o">=</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">powerMonitor</span><span class="o">.</span><span class="n">batPowerOutMsg</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">capacity</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;battery_capacity&#39;</span><span class="p">,</span> <span class="mf">2700000.0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">battery_msg</span><span class="o">.</span><span class="n">storageLevel</span> <span class="o">/</span> <span class="n">capacity</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="mf">0.5</span>  <span class="c1"># 默认中等电量</span></div>
+
+
+
+<div class="viewcode-block" id="get_storage_fraction">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_storage_fraction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_storage_fraction</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取邻居的存储空间分数（兼容不同动力学模型）。&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="p">,</span> <span class="s1">&#39;storageUnit&#39;</span><span class="p">):</span>
+            <span class="n">storage</span> <span class="o">=</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">storageUnit</span>
+            <span class="k">return</span> <span class="n">storage</span><span class="o">.</span><span class="n">storageLevel</span> <span class="o">/</span> <span class="n">storage</span><span class="o">.</span><span class="n">storageCapacity</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="mf">0.5</span>  <span class="c1"># 默认中等存储</span></div>
+
+
+
+<div class="viewcode-block" id="get_task_queue_size">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_task_queue_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_task_queue_size</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取邻居的任务队列长度。&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])))</span></div>
+
+
+
+<div class="viewcode-block" id="get_queue_workload">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_queue_workload">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_queue_workload</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取邻居的队列总工作量 [cycles]。&quot;&quot;&quot;</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="c1"># TaskSlice 使用 data_size * workload 计算总工作量</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;data_size&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;workload&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> 
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_queue</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_cpu_freq">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_cpu_freq">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cpu_freq</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取邻居的当前 CPU 频率 [Hz]。&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="s2">&quot;current_cpu_freq&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_isl_distance">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_isl_distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_isl_distance</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取到邻居的 ISL 距离 [m]。&quot;&quot;&quot;</span>
+    <span class="n">r_rel</span> <span class="o">=</span> <span class="n">r_DC_N</span><span class="p">(</span><span class="n">deputy</span><span class="o">=</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">chief</span><span class="o">=</span><span class="n">self_sat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_rel</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_current_task_priority">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_current_task_priority">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_current_task_priority</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取邻居当前任务的优先级 [0, 1]。</span>
+<span class="sd">    </span>
+<span class="sd">    ✅ 已启用: TaskSlice 现已包含 priority 属性。</span>
+<span class="sd">    可用于邻居观测空间：</span>
+<span class="sd">        dict(prop=&quot;get_current_task_priority&quot;, norm=1.0)</span>
+<span class="sd">    </span>
+<span class="sd">    🔮 Future Work 扩展方向：</span>
+<span class="sd">        1. 将邻居优先级加入 STINRelativeObservations（增加 4D）</span>
+<span class="sd">        2. 添加动作空间维度：&quot;优先处理高优先级任务&quot;开关 (11D 动作)</span>
+<span class="sd">        3. Agent 可根据自身和邻居的任务优先级分布，决定卸载策略</span>
+<span class="sd">           （高优先级任务不卸载，低优先级任务卸载给有空闲的邻居）</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        当前队列首任务的优先级，无任务时返回 0.0。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="c1"># 尝试从 TaskSlice 获取优先级（如果继承自 ComputationTask）</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task_queue</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;priority&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">0.0</span></div>
+
+
+
+<span class="c1"># ============================================================</span>
+<span class="c1"># 🆕 观测空间增强：任务队列统计 + 邻居信道质量</span>
+<span class="c1"># ============================================================</span>
+
+<div class="viewcode-block" id="get_min_remaining_deadline">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_min_remaining_deadline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_min_remaining_deadline</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取任务队列中最紧急任务的剩余时延 [s]。</span>
+<span class="sd">    </span>
+<span class="sd">    用于观测空间，让 Agent 知道&quot;接下来有没有急件&quot;。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星（可以是自身或邻居）</span>
+<span class="sd">        self_sat: 当前卫星（用于获取仿真时间）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        最小剩余时延 [s]，无任务时返回大值 (1000.0)。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1000.0</span>  <span class="c1"># 无任务，返回大值表示&quot;不紧急&quot;</span>
+    
+    <span class="c1"># 获取当前仿真时间</span>
+    <span class="n">sim_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;simulator&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sat</span><span class="o">.</span><span class="n">simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sim_time</span> <span class="o">=</span> <span class="n">sat</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span>
+    
+    <span class="n">min_remaining</span> <span class="o">=</span> <span class="mf">1000.0</span>
+    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="c1"># TaskSlice 有 deadline 属性（绝对时间）</span>
+        <span class="n">deadline</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="s2">&quot;deadline&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">deadline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">remaining</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">deadline</span> <span class="o">-</span> <span class="n">sim_time</span><span class="p">)</span>
+            <span class="n">min_remaining</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_remaining</span><span class="p">,</span> <span class="n">remaining</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">min_remaining</span></div>
+
+
+
+<div class="viewcode-block" id="get_avg_task_priority">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_avg_task_priority">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_avg_task_priority</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取任务队列的平均优先级 [0, 1]。</span>
+<span class="sd">    </span>
+<span class="sd">    用于观测空间，让 Agent 知道&quot;手头任务整体优先级&quot;。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        sat: 目标卫星（可以是自身或邻居）</span>
+<span class="sd">        self_sat: 当前卫星（未使用，保持接口一致）</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        平均优先级，无任务时返回 0.0。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_queue</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="s2">&quot;task_queue&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">task_queue</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    
+    <span class="n">priorities</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;priority&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">task_queue</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">priorities</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">priorities</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_isl_channel_quality">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.get_isl_channel_quality">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_isl_channel_quality</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;获取到邻居的 ISL 信道质量评分 [0, 1]。</span>
+<span class="sd">    </span>
+<span class="sd">    基于 constants.calculate_isl_rate() 的 ISL 信道质量评分：</span>
+<span class="sd">        R_I = B_I × log₂(1 + SNR)</span>
+<span class="sd">        SNR = (p_I × g_I^tr × g_I^rc) / (L_I × N₀ × B_I)</span>
+<span class="sd">    </span>
+<span class="sd">    质量越高，传输速度越快、丢包率越低。</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        neighbor: 邻居卫星</span>
+<span class="sd">        self_sat: 当前卫星</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        信道质量 [0, 1]，1.0 表示最佳，0.0 表示边缘可见。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.constants</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">calculate_isl_rate</span><span class="p">,</span>
+        <span class="n">ISL_MAX_DISTANCE</span><span class="p">,</span>
+        <span class="n">ISL_BANDWIDTH</span><span class="p">,</span>  <span class="c1"># 用于计算理论最大速率</span>
+    <span class="p">)</span>
+    
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">get_isl_distance</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="n">self_sat</span><span class="p">)</span>
+    
+    <span class="c1"># 支持从卫星属性/ sat_args 覆盖最大 ISL 距离（km -&gt; m）</span>
+    <span class="n">max_distance_m</span> <span class="o">=</span> <span class="n">ISL_MAX_DISTANCE</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">max_km</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">self_sat</span><span class="p">,</span> <span class="s2">&quot;isl_max_distance_km&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_km</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_km</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">max_distance_m</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_km</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="n">max_distance_m</span> <span class="o">==</span> <span class="n">ISL_MAX_DISTANCE</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sat_args</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">self_sat</span><span class="p">,</span> <span class="s2">&quot;sat_args&quot;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="n">max_km</span> <span class="o">=</span> <span class="n">sat_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;isl_max_distance_km&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_km</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_km</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">max_distance_m</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_km</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e3</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="c1"># 超出最大距离时返回 0</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="n">max_distance_m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    
+    <span class="c1"># 获取当前发射功率（优先从卫星属性获取，否则从 sat_args 获取默认值）</span>
+    <span class="n">tx_power</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">self_sat</span><span class="p">,</span> <span class="s1">&#39;current_tx_power&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tx_power</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># 回退到 sat_args 中的默认值（与 computation_satellite.py L781 一致）</span>
+        <span class="n">default_power</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">self_sat</span><span class="p">,</span> <span class="s1">&#39;sat_args&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;transmitterPowerDraw&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">15.0</span><span class="p">))</span>
+        <span class="n">tx_power</span> <span class="o">=</span> <span class="n">default_power</span>
+    
+    <span class="c1"># 使用物理模型计算 ISL 速率 [bps]</span>
+    <span class="n">isl_rate</span> <span class="o">=</span> <span class="n">calculate_isl_rate</span><span class="p">(</span><span class="n">tx_power</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="n">max_distance_m</span><span class="p">)</span>
+    
+    <span class="c1"># 归一化到 [0, 1]</span>
+    <span class="c1"># 理论最大速率 ≈ bandwidth × log2(1 + 高SNR) ≈ 1 Gbps</span>
+    <span class="c1"># 使用 500 Mbps 作为&quot;优秀&quot;基准（实际工程上的高速链路）</span>
+    <span class="n">max_expected_rate</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">ISL_BANDWIDTH</span>  <span class="c1"># 500 Mbps = 5 × 100e6</span>
+    <span class="n">quality</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">isl_rate</span> <span class="o">/</span> <span class="n">max_expected_rate</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">quality</span></div>
+
+
+
+
+<div class="viewcode-block" id="STINRelativeObservations">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.STINRelativeObservations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STINRelativeObservations</span><span class="p">(</span><span class="n">Observation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    STIN 相对观测类：为每颗卫星提供其 N 个最近邻居的可配置状态信息。</span>
+
+<span class="sd">    该类直接继承自 Observation 基类，用于获取多个邻居的状态。</span>
+<span class="sd">    支持灵活配置观测属性、归一化参数和邻居数量。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="o">*</span><span class="n">neighbor_properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">max_neighbors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;neighbor_obs&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化相对观测。</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            neighbor_properties: 邻居属性规范。每个属性是一个字典，包含：</span>
+<span class="sd">                * ``prop``: 属性名称（框架函数名或自定义函数）</span>
+<span class="sd">                * ``norm`` `optional`: 归一化因子。默认 1.0。</span>
+<span class="sd">                * ``name`` `optional`: 观测元素名称。默认为 ``prop`` 的值。</span>
+<span class="sd">                * ``fn`` `optional`: 自定义函数 fn(neighbor, self_sat) -&gt; value。</span>
+<span class="sd">            max_neighbors: 最大邻居数量。</span>
+<span class="sd">            name: 观测名称。</span>
+
+<span class="sd">        示例::</span>
+
+<span class="sd">            STINRelativeObservations(</span>
+<span class="sd">                dict(prop=&quot;r_DC_N&quot;, norm=1e7),           # 相对位置</span>
+<span class="sd">                dict(prop=&quot;v_DC_N&quot;, norm=1e4),           # 相对速度</span>
+<span class="sd">                dict(prop=&quot;battery_fraction&quot;),            # 电池</span>
+<span class="sd">                dict(prop=&quot;task_queue_size&quot;, norm=20.0),  # 队列</span>
+<span class="sd">                max_neighbors=4,</span>
+<span class="sd">            )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span> <span class="o">=</span> <span class="n">max_neighbors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;STINContinuousAction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># 处理属性规范（与 RelativeProperties 风格一致）</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">prop_spec</span> <span class="ow">in</span> <span class="n">neighbor_properties</span><span class="p">:</span>
+            <span class="n">processed_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_property_spec</span><span class="p">(</span><span class="n">prop_spec</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processed_spec</span><span class="p">)</span>
+        
+        <span class="c1"># 计算观测维度</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">prop</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_total_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_property_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop_spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;处理属性规范，与 RelativeProperties 风格一致。</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            prop_spec: 原始属性规范字典。</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            处理后的属性规范，包含 fn, norm, name, shape。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 验证键</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prop&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;fn&quot;</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid property key: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">processed</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># 1. 处理函数</span>
+        <span class="k">if</span> <span class="s2">&quot;fn&quot;</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 尝试从全局命名空间或预定义函数中获取</span>
+            <span class="n">prop_name</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prop&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prop_name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide either &#39;fn&#39; or &#39;prop&#39;&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># 首先尝试从 relative_observations 模块获取（如 r_DC_N, v_DC_N）</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">bsk_rl.obs.relative_observations</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rel_obs_module</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rel_obs_module</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">):</span>
+                <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">rel_obs_module</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">)</span>
+            <span class="c1"># 然后尝试本模块的预定义函数（如 get_battery_fraction）</span>
+            <span class="k">elif</span> <span class="n">prop_name</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+                <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">prop_name</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Property prop=&#39;</span><span class="si">{</span><span class="n">prop_name</span><span class="si">}</span><span class="s2">&#39; not found. &quot;</span>
+                    <span class="s2">&quot;Provide a custom &#39;fn&#39; or use predefined properties.&quot;</span>
+                <span class="p">)</span>
+        
+        <span class="c1"># 2. 处理归一化</span>
+        <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        
+        <span class="c1"># 3. 处理名称</span>
+        <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prop&quot;</span><span class="p">,</span> <span class="s2">&quot;custom&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;_normd&quot;</span>
+        
+        <span class="c1"># 4. 推断形状（调用一次函数来获取输出形状）</span>
+        <span class="k">if</span> <span class="s2">&quot;shape&quot;</span> <span class="ow">in</span> <span class="n">prop_spec</span><span class="p">:</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 默认假设标量输出</span>
+            <span class="n">processed</span><span class="p">[</span><span class="s2">&quot;shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+        
+        <span class="k">return</span> <span class="n">processed</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;定义观测空间：N_neighbors * N_features 的一维向量。&quot;&quot;&quot;</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span> <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">return</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span>
+            <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_total_obs</span><span class="p">,),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="STINRelativeObservations.get_obs">
+<a class="viewcode-back" href="../../../api_reference/obs/stin_relative_observations.html#bsk_rl.obs.STINRelativeObservations.get_obs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        构造卫星的相对观测向量。</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: 形状为 (num_total_obs,) 的观测向量</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 1. 获取邻居列表 (从动作实例中获取)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># 第一次调用时绑定动作实例</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="o">.</span><span class="n">action_builder</span><span class="o">.</span><span class="n">_action</span>
+
+        <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_instance</span><span class="p">,</span> <span class="s2">&quot;neighbor_satellites&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="n">obs_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># 2. 遍历邻居，构造相对状态</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">):</span>
+                <span class="n">neighbor</span> <span class="o">=</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                
+                <span class="c1"># 获取该邻居的所有属性</span>
+                <span class="k">for</span> <span class="n">prop_spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="p">:</span>
+                    <span class="n">fn</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span>
+                    <span class="n">norm</span> <span class="o">=</span> <span class="n">prop_spec</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span>
+                    
+                    <span class="c1"># 调用函数获取值</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellite</span><span class="p">)</span>
+                    
+                    <span class="c1"># 转换为 numpy 数组并归一化</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="p">])</span>
+                    
+                    <span class="n">value_normalized</span> <span class="o">=</span> <span class="n">value</span> <span class="o">/</span> <span class="n">norm</span>
+                    
+                    <span class="c1"># ✅ NaN/Inf 保护：防止异常值传播到神经网络</span>
+                    <span class="n">value_normalized</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span>
+                        <span class="n">value_normalized</span><span class="p">,</span> 
+                        <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> 
+                        <span class="n">posinf</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> 
+                        <span class="n">neginf</span><span class="o">=-</span><span class="mf">1.0</span>
+                    <span class="p">)</span>
+                    <span class="n">obs_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">value_normalized</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+                    
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># 填充零：如果邻居数量不足</span>
+                <span class="n">obs_list</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obs_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observation_description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;人类可读的观测空间描述。&quot;&quot;&quot;</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_neighbors</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">prop_spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_properties</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Neighbor</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">prop_spec</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">desc</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prop_spec</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (norm=</span><span class="si">{</span><span class="n">prop_spec</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="n">desc</span></div>
+
+    
+<span class="n">__doc_title__</span> <span class="o">=</span> <span class="s2">&quot;STIN Relative Observations&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;STINRelativeObservations&quot;</span><span class="p">,</span>
+    <span class="c1"># 辅助函数（可在外部使用）</span>
+    <span class="s2">&quot;get_battery_fraction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_storage_fraction&quot;</span><span class="p">,</span> 
+    <span class="s2">&quot;get_task_queue_size&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_queue_workload&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_cpu_freq&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_isl_distance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_current_task_priority&quot;</span><span class="p">,</span>
+    <span class="c1"># 🆕 观测空间增强</span>
+    <span class="s2">&quot;get_min_remaining_deadline&quot;</span><span class="p">,</span>   <span class="c1"># 最紧急任务剩余时延</span>
+    <span class="s2">&quot;get_avg_task_priority&quot;</span><span class="p">,</span>        <span class="c1"># 平均任务优先级</span>
+    <span class="s2">&quot;get_isl_channel_quality&quot;</span><span class="p">,</span>      <span class="c1"># ISL 信道质量评分</span>
+<span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

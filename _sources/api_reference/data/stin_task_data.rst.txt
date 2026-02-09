@@ -1,0 +1,13 @@
+.. _bsk_rl.data.stin_task_data:
+.. currentmodule:: bsk_rl.data.stin_task_data
+
+STIN Task Data
+==============
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: bsk_rl.data.stin_task_data
+   :members:
+   :show-inheritance:
+

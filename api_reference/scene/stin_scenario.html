@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIN Task Scenarios &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Target Scenarios" href="targets.html" />
+    <link rel="prev" title="RSO Scenarios" href="rso_points.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking"><code class="docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.SatelliteTasking"><code class="docutils literal notranslate"><span class="pre">SatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.ConstellationTasking"><code class="docutils literal notranslate"><span class="pre">ConstellationTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sats/index.html">Satellites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../obs/index.html">Observations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../act/index.html">Actions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Scenario</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.Scenario"><code class="docutils literal notranslate"><span class="pre">Scenario</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.UniformTargets"><code class="docutils literal notranslate"><span class="pre">UniformTargets</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.CityTargets"><code class="docutils literal notranslate"><span class="pre">CityTargets</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.UniformNadirScanning"><code class="docutils literal notranslate"><span class="pre">UniformNadirScanning</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.RSOPoints"><code class="docutils literal notranslate"><span class="pre">RSOPoints</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.SphericalRSO"><code class="docutils literal notranslate"><span class="pre">SphericalRSO</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.ComputationTask"><code class="docutils literal notranslate"><span class="pre">ComputationTask</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.STINTaskScenario"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.scene.CityTaskScenario"><code class="docutils literal notranslate"><span class="pre">CityTaskScenario</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rso_points.html">RSO Scenarios</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">STIN Task Scenarios</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask"><code class="docutils literal notranslate"><span class="pre">ComputationTask</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.name"><code class="docutils literal notranslate"><span class="pre">ComputationTask.name</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.r_LP_P"><code class="docutils literal notranslate"><span class="pre">ComputationTask.r_LP_P</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.data_size"><code class="docutils literal notranslate"><span class="pre">ComputationTask.data_size</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.workload"><code class="docutils literal notranslate"><span class="pre">ComputationTask.workload</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.max_delay"><code class="docutils literal notranslate"><span class="pre">ComputationTask.max_delay</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.priority"><code class="docutils literal notranslate"><span class="pre">ComputationTask.priority</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.uplink_rate"><code class="docutils literal notranslate"><span class="pre">ComputationTask.uplink_rate</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.fiber_distance"><code class="docutils literal notranslate"><span class="pre">ComputationTask.fiber_distance</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.cloud_cpu_freq"><code class="docutils literal notranslate"><span class="pre">ComputationTask.cloud_cpu_freq</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.ud_cpu_freq"><code class="docutils literal notranslate"><span class="pre">ComputationTask.ud_cpu_freq</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.origin_position"><code class="docutils literal notranslate"><span class="pre">ComputationTask.origin_position</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.id"><code class="docutils literal notranslate"><span class="pre">ComputationTask.id</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.task_id"><code class="docutils literal notranslate"><span class="pre">ComputationTask.task_id</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask.total_cycles"><code class="docutils literal notranslate"><span class="pre">ComputationTask.total_cycles</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.tasks"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.tasks</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.task_pool"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.task_pool</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.arrived_tasks"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.arrived_tasks</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.get_arrival_rate"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.get_arrival_rate()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.reset_overwrite_previous"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.reset_overwrite_previous()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.reset_pre_sim_init"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.reset_pre_sim_init()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.reset_during_sim_init"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.reset_during_sim_init()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.mark_task_completed"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.mark_task_completed()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.sample_task"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.sample_task()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.process_task_arrivals"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.process_task_arrivals()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.assign_tasks_to_satellites"><code class="docutils literal notranslate"><span class="pre">STINTaskScenario.assign_tasks_to_satellites()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.CityTaskScenario"><code class="docutils literal notranslate"><span class="pre">CityTaskScenario</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="targets.html">Target Scenarios</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">Data &amp; Reward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../comm/index.html">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sim/index.html">Simulation (BSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Scenario</a></li>
+      <li class="breadcrumb-item active">STIN Task Scenarios</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api_reference/scene/stin_scenario.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stin-task-scenarios">
+<span id="bsk-rl-scene-stin-scenario"></span><h1>STIN Task Scenarios<a class="headerlink" href="#stin-task-scenarios" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p id="module-bsk_rl.scene.stin_scenario">STINScenario: 定义 STIN 场景中的计算任务分布。</p>
+<dl>
+<dt>设计说明:</dt><dd><ul class="simple">
+<li><p>继承自 Scenario 基类（参考 UniformTargets 的设计）</p></li>
+<li><p>只负责生成计算任务（用户终端请求），不负责卫星轨道配置</p></li>
+<li><p>卫星轨道配置应通过 <cite>sat_arg_randomizer=walker_delta_args(…)</cite> 完成</p></li>
+<li><p>计算任务包含：数据量、计算复杂度、最大时延等属性</p></li>
+</ul>
+</dd>
+<dt>使用示例:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINTaskScenario</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">satellites</span><span class="o">=</span><span class="p">[</span><span class="n">ComputationSatellite</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)],</span>
+<span class="gp">... </span>    <span class="n">sat_arg_randomizer</span><span class="o">=</span><span class="n">walker_delta_args</span><span class="p">(</span>  <span class="c1"># 星座在这里配置！</span>
+<span class="gp">... </span>        <span class="n">n_planes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">altitude</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">inc</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">clusterspacing</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">),</span>
+<span class="gp">... </span>    <span class="n">scenario</span><span class="o">=</span><span class="n">STINTaskScenario</span><span class="p">(</span><span class="n">n_tasks</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>  <span class="c1"># 场景只负责任务</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ComputationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_LP_P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uplink_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fiber_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cloud_cpu_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ud_cpu_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#ComputationTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>STIN 场景中的计算任务。</p>
+<p>表示用户终端（UD）发起的计算请求。</p>
+<dl class="simple">
+<dt>时延模型所需属性:</dt><dd><ul class="simple">
+<li><p>origin_position: 任务来源位置 (= r_LP_P)</p></li>
+<li><p>uplink_distance: 上行链路距离（需要在任务分配时计算）</p></li>
+</ul>
+</dd>
+<dt>并行路径时延模型:</dt><dd><p>T_total = max(T_UD, T_SAT, T_CLOUD)</p>
+<ul class="simple">
+<li><p>T_UD: UD 本地处理时延 = (alpha_local × data × workload) / f_ud</p></li>
+<li><p>T_SAT: 卫星路径时延 = T_tx_up(α_sat) + T_prop_up + T_queue + T_compute + T_isl + T_prop_down</p></li>
+<li><p>T_CLOUD: 云端路径时延 = T_tx_up(α_cloud) + T_tx_sgl(α_cloud) + 2×(T_prop_up + T_prop_sgl + T_fiber) + T_compute_cloud</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>r_LP_P</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>data_size</strong> (<em>float</em>)</p></li>
+<li><p><strong>workload</strong> (<em>float</em>)</p></li>
+<li><p><strong>max_delay</strong> (<em>float</em>)</p></li>
+<li><p><strong>priority</strong> (<em>float</em>)</p></li>
+<li><p><strong>uplink_rate</strong> (<em>float</em>)</p></li>
+<li><p><strong>fiber_distance</strong> (<em>float</em>)</p></li>
+<li><p><strong>cloud_cpu_freq</strong> (<em>float</em>)</p></li>
+<li><p><strong>ud_cpu_freq</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.name">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.r_LP_P">
+<span class="sig-name descname"><span class="pre">r_LP_P</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.r_LP_P" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.data_size">
+<span class="sig-name descname"><span class="pre">data_size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.data_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.workload">
+<span class="sig-name descname"><span class="pre">workload</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.workload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.max_delay">
+<span class="sig-name descname"><span class="pre">max_delay</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.max_delay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.priority" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.uplink_rate">
+<span class="sig-name descname"><span class="pre">uplink_rate</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">50000000.0</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.uplink_rate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.fiber_distance">
+<span class="sig-name descname"><span class="pre">fiber_distance</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">500000.0</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.fiber_distance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.cloud_cpu_freq">
+<span class="sig-name descname"><span class="pre">cloud_cpu_freq</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10000000000.0</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.cloud_cpu_freq" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.ud_cpu_freq">
+<span class="sig-name descname"><span class="pre">ud_cpu_freq</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000000000.0</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.ud_cpu_freq" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.origin_position">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">origin_position</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.origin_position" title="Link to this definition"></a></dt>
+<dd><p>任务来源位置别名（用于 TaskSlice 兼容性）。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.id">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.id" title="Link to this definition"></a></dt>
+<dd><p>获取唯一标识符。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.task_id">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">task_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.task_id" title="Link to this definition"></a></dt>
+<dd><p>数值型任务 ID（从名称中提取）。</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.ComputationTask.total_cycles">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">total_cycles</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.ComputationTask.total_cycles" title="Link to this definition"></a></dt>
+<dd><p>计算任务所需的总 CPU 周期数。</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINTaskScenario</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_size_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1000000.0,</span> <span class="pre">10000000.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_size_mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_size_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workload_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(100,</span> <span class="pre">1000)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_delay_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">10.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_distribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_arrival_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">6378136.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_location_uncertainty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_uncertainty_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="index.html#bsk_rl.scene.Scenario" title="bsk_rl.scene.scenario.Scenario"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scenario</span></code></a></p>
+<p>初始化 STIN 计算任务场景。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_tasks</strong> (<em>int</em><em> | </em><em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – 每个 episode 的任务数量，可以是固定值或范围 (low, high)。</p></li>
+<li><p><strong>data_size_range</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – [bits] 任务数据量截断范围 (a, b)，对应论文公式 (3)。</p></li>
+<li><p><strong>data_size_mean</strong> (<em>float</em><em> | </em><em>None</em>) – [bits] 数据量均值 μ，默认为 (a+b)/2。</p></li>
+<li><p><strong>data_size_std</strong> (<em>float</em><em> | </em><em>None</em>) – [bits] 数据量标准差 σ，默认为 (b-a)/4。</p></li>
+<li><p><strong>workload_range</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – [cycles/bit] 计算复杂度范围。</p></li>
+<li><p><strong>max_delay_range</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – [s] 最大时延要求范围。</p></li>
+<li><p><strong>priority_distribution</strong> (<em>Callable</em><em> | </em><em>None</em>) – 优先级生成函数，默认为 uniform(0, 1)。</p></li>
+<li><p><strong>task_arrival_rate</strong> (<em>float</em>) – [tasks/s] 任务到达率（泊松过程）。</p></li>
+<li><p><strong>radius</strong> (<em>float</em>) – [m] 任务来源位置的地球半径。</p></li>
+<li><p><strong>enable_location_uncertainty</strong> (<em>bool</em>) – 是否启用位置模糊化模式。</p></li>
+<li><p><strong>location_uncertainty_radius</strong> (<em>float</em>) – [m] 位置不确定性半径（高斯 1σ）。</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.tasks">
+<span class="sig-name descname"><span class="pre">tasks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask" title="bsk_rl.scene.stin_scenario.ComputationTask"><span class="pre">ComputationTask</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.tasks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.task_pool">
+<span class="sig-name descname"><span class="pre">task_pool</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask" title="bsk_rl.scene.stin_scenario.ComputationTask"><span class="pre">ComputationTask</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.task_pool" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.arrived_tasks">
+<span class="sig-name descname"><span class="pre">arrived_tasks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask" title="bsk_rl.scene.stin_scenario.ComputationTask"><span class="pre">ComputationTask</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.arrived_tasks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.get_arrival_rate">
+<span class="sig-name descname"><span class="pre">get_arrival_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.get_arrival_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.get_arrival_rate" title="Link to this definition"></a></dt>
+<dd><p>根据仿真时间计算动态任务到达率。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sim_time</strong> (<em>float</em>) – 当前仿真时间 [s]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>当前时刻的任务到达率 [tasks/s]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.reset_overwrite_previous">
+<span class="sig-name descname"><span class="pre">reset_overwrite_previous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.reset_overwrite_previous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.reset_overwrite_previous" title="Link to this definition"></a></dt>
+<dd><p>清除上一个 episode 的任务列表。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.reset_pre_sim_init">
+<span class="sig-name descname"><span class="pre">reset_pre_sim_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.reset_pre_sim_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.reset_pre_sim_init" title="Link to this definition"></a></dt>
+<dd><p>在仿真初始化前生成任务集。</p>
+<p>注意：任务生成后放入task_pool，等待泊松过程动态到达</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.reset_during_sim_init">
+<span class="sig-name descname"><span class="pre">reset_during_sim_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.reset_during_sim_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.reset_during_sim_init" title="Link to this definition"></a></dt>
+<dd><p>在仿真初始化期间可视化任务。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.mark_task_completed">
+<span class="sig-name descname"><span class="pre">mark_task_completed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vizSupport</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vizInstance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.mark_task_completed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.mark_task_completed" title="Link to this definition"></a></dt>
+<dd><p>将任务标记为已完成（颜色变为蓝色）。</p>
+<p>任务完成后调用此方法，会在 Vizard 中将该任务的标记颜色更新为蓝色。</p>
+<p>注意：Vizard 的 addLocation 不支持直接更新颜色，
+但可以通过 liveSettings 或重新添加 location 来实现更新。
+这里我们使用 createTargetLine 从任务连接到地心来表示”已完成”状态。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task</strong> – 已完成的 ComputationTask 对象</p></li>
+<li><p><strong>vizSupport</strong> – Vizard 支持模块（由装饰器注入）</p></li>
+<li><p><strong>vizInstance</strong> – Vizard 实例（由装饰器注入）</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.sample_task">
+<span class="sig-name descname"><span class="pre">sample_task</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask" title="bsk_rl.scene.stin_scenario.ComputationTask"><span class="pre">ComputationTask</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.sample_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.sample_task" title="Link to this definition"></a></dt>
+<dd><p>根据优先级加权采样一个任务。</p>
+<p><strong>当前状态</strong>: 已实现但未被调用（保留接口）。</p>
+<dl>
+<dt><strong>设计用途</strong>:</dt><dd><p>实现优先级驱动的任务选择，高优先级任务被选中的概率更高。</p>
+</dd>
+<dt><strong>启用方法</strong>:</dt><dd><p>在 process_task_arrivals() 中使用此方法替代随机选择:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 当前代码（随机选择）:</span>
+<span class="n">arrived_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_pool</span><span class="p">),</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># 改为优先级驱动:</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">actual_arrivals</span><span class="p">):</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_task_from_pool</span><span class="p">()</span>  <span class="c1"># 需要实现此变体</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>采样的任务，如果没有任务则返回 None。</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#bsk_rl.scene.stin_scenario.ComputationTask" title="bsk_rl.scene.stin_scenario.ComputationTask"><em>ComputationTask</em></a> | None</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>采样概率 P(task_i) = priority_i / sum(priorities)</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.process_task_arrivals">
+<span class="sig-name descname"><span class="pre">process_task_arrivals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.process_task_arrivals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.process_task_arrivals" title="Link to this definition"></a></dt>
+<dd><p>改
+处理当前步的任务到达（泊松过程）。</p>
+<p>根据task_arrival_rate和step_duration，使用泊松分布采样本步到达的任务数，
+并将任务从task_pool移到arrived_tasks，同时注册到卫星的access checking。
+目前实现：
+1.任务到达优先级 高优先级任务更可能先从 task_pool 进入 arrived_tasks
+2.任务分配优先级 高优先级任务更可能先从 arrived_tasks 分配给卫星（已经设置了一个计算分数的函数）
+3.未实现：卫星处理任务的优先级队列，在任务上传的阶段设置了优先级
+:param step_duration: 当前步的时长(秒)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>本步到达的任务数</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>step_duration</strong> (<em>float</em>)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>如果lambda是静态的，稳态流量；如果是动态的，存在高峰低谷模式（增加了系统性的事变趋势）；</p>
+<p>纯泊松（static）:
+rate (恒定 1.4)</p>
+<p>正弦波动（sinusoidal）:
+rate (在 1.0-1.8 之间波动)</p>
+<p>分时段（time_of_day）:
+rate (早晚高峰)</p>
+<p>纯泊松：已经有随机性，适合稳态场景
+动态到达率：增加系统性的时变趋势（如早晚高峰）</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.STINTaskScenario.assign_tasks_to_satellites">
+<span class="sig-name descname"><span class="pre">assign_tasks_to_satellites</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#STINTaskScenario.assign_tasks_to_satellites"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.STINTaskScenario.assign_tasks_to_satellites" title="Link to this definition"></a></dt>
+<dd><p>改
+将任务分配给具有可见性的卫星（优先级驱动）。</p>
+<p>创新点：
+1. 按优先级排序处理任务（高优先级任务优先分配）
+2. 优先级感知的卫星选择（高优先级任务分配给资源更充足的卫星）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.scene.stin_scenario.CityTaskScenario">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">CityTaskScenario</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_select_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">city_task_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/scene/stin_scenario.html#CityTaskScenario"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.scene.stin_scenario.CityTaskScenario" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bsk_rl.scene.stin_scenario.STINTaskScenario" title="bsk_rl.scene.stin_scenario.STINTaskScenario"><code class="xref py py-class docutils literal notranslate"><span class="pre">STINTaskScenario</span></code></a></p>
+<p>初始化城市分布的计算任务场景。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_tasks</strong> (<em>int</em><em> | </em><em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – 任务数量。</p></li>
+<li><p><strong>n_select_from</strong> (<em>int</em><em> | </em><em>None</em>) – 从最大的 N 个城市中采样，None 表示全部。</p></li>
+<li><p><strong>location_offset</strong> (<em>float</em>) – [m] 任务位置相对城市中心的随机偏移。</p></li>
+<li><p><strong>city_task_ratio</strong> (<em>float</em>) – 城市任务占比（其余为均匀分布）。</p></li>
+<li><p><strong>**kwargs</strong> – 传递给 STINTaskScenario 的其他参数。</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rso_points.html" class="btn btn-neutral float-left" title="RSO Scenarios" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="targets.html" class="btn btn-neutral float-right" title="Target Scenarios" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

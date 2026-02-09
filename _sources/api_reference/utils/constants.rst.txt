@@ -1,0 +1,13 @@
+.. _bsk_rl.utils.constants:
+.. currentmodule:: bsk_rl.utils.constants
+
+constants
+=========
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: bsk_rl.utils.constants
+   :members:
+   :show-inheritance:
+

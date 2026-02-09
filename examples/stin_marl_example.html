@@ -1,0 +1,1200 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIN MARL Environment Test &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">STIN MARL Environment Test</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/stin_marl_example.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="STIN-MARL-Environment-Test">
+<h1>STIN MARL Environment Test<a class="headerlink" href="#STIN-MARL-Environment-Test" title="Link to this heading"></a></h1>
+<p>本 Notebook 测试 STIN（Satellite-Terrestrial Integrated Network）多智能体强化学习环境的完整功能。</p>
+<section id="关键修复说明">
+<h2>关键修复说明<a class="headerlink" href="#关键修复说明" title="Link to this heading"></a></h2>
+<p><strong>问题</strong>：<code class="docutils literal notranslate"><span class="pre">KeyError:</span> <span class="pre">'cpuMaxFrequency</span> <span class="pre">not</span> <span class="pre">a</span> <span class="pre">valid</span> <span class="pre">key</span> <span class="pre">for</span> <span class="pre">sat_args'</span></code></p>
+<p><strong>原因</strong>：<code class="docutils literal notranslate"><span class="pre">&#64;default_args</span></code> 装饰器被错误地放在了 <code class="docutils literal notranslate"><span class="pre">__init__</span></code> 方法上，而不是 <code class="docutils literal notranslate"><span class="pre">setup_xxx</span></code> 方法上。</p>
+<p><strong>正确用法</strong>：</p>
+<ul class="simple">
+<li><p>❌ 错误：<code class="docutils literal notranslate"><span class="pre">&#64;default_args(...)</span> <span class="pre">def</span> <span class="pre">__init__(self,</span> <span class="pre">...)</span></code></p></li>
+<li><p>✅ 正确：<code class="docutils literal notranslate"><span class="pre">&#64;default_args(...)</span> <span class="pre">def</span> <span class="pre">setup_cpu_power_sink(self,</span> <span class="pre">...)</span></code></p></li>
+</ul>
+<p>BSK-RL 框架通过 <code class="docutils literal notranslate"><span class="pre">collect_default_args()</span></code> 函数从所有 <code class="docutils literal notranslate"><span class="pre">setup_xxx</span></code> 方法的 <code class="docutils literal notranslate"><span class="pre">defaults</span></code> 属性中收集参数。</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINTaskReward</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">CityTaskScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.comm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOSMultiCommunication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_stin_environment</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;创建完整的 STIN MARL 环境。&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    constellation_args = walker_delta_args(</span>
+<span class="sd">        n_planes=6,           # 铱星有 6 个轨道面</span>
+<span class="sd">        n_sats_per_plane=11,  # 每个面 11 颗工作卫星 (总计 66 颗)</span>
+<span class="sd">        altitude=781,         # [km] 标准高度约为 781 km</span>
+<span class="sd">        inc=86.4,             # [deg] 轨道倾角 (近极地轨道)</span>
+<span class="sd">        clusterspacing=2,     # [F参数] 铱星的相位因子是 2 (Walker 66/6/2)</span>
+<span class="sd">    )</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Walker Delta 星座配置（6 颗卫星，800km 高度，60° 倾角）</span>
+    <span class="n">constellation_args</span> <span class="o">=</span> <span class="n">walker_delta_args</span><span class="p">(</span>
+        <span class="n">n_planes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>           <span class="c1"># 2 个轨道面</span>
+        <span class="n">altitude</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>         <span class="c1"># [km] 轨道高度</span>
+        <span class="n">inc</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>               <span class="c1"># [deg] 轨道倾角</span>
+        <span class="n">clusterspacing</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>     <span class="c1"># [deg] 卫星间相位差</span>
+    <span class="p">)</span>
+
+    <span class="c1"># 计算任务场景（基于城市分布）</span>
+    <span class="n">task_scenario</span> <span class="o">=</span> <span class="n">CityTaskScenario</span><span class="p">(</span>
+        <span class="n">n_tasks</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                          <span class="c1"># 20 个任务</span>
+        <span class="n">n_select_from</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>                   <span class="c1"># 从前 100 大城市中选择</span>
+        <span class="n">data_size_range</span><span class="o">=</span><span class="p">(</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">10e6</span><span class="p">),</span>         <span class="c1"># 1-10 Mb</span>
+        <span class="n">workload_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>          <span class="c1"># 100-1000 cycles/bit</span>
+        <span class="n">max_delay_range</span><span class="o">=</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>         <span class="c1"># 5-20 秒时延约束</span>
+        <span class="n">task_arrival_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>               <span class="c1"># 0.1 tasks/s 到达率</span>
+    <span class="p">)</span>
+
+    <span class="c1"># 奖励函数配置</span>
+    <span class="n">reward_system</span> <span class="o">=</span> <span class="n">STINTaskReward</span><span class="p">(</span>
+        <span class="n">base_reward</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>        <span class="c1"># 基础完成奖励</span>
+        <span class="n">timeout_penalty</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>    <span class="c1"># 超时惩罚</span>
+        <span class="n">delay_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>       <span class="c1"># 时延权重</span>
+        <span class="n">energy_weight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>      <span class="c1"># 能耗权重</span>
+        <span class="n">balance_weight</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>    <span class="c1"># 负载均衡权重</span>
+    <span class="p">)</span>
+
+    <span class="c1"># 创建环境</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+        <span class="n">satellites</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">ComputationSatellite</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;sat-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">sat_args</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;cpuMaxFrequency&quot;</span><span class="p">:</span> <span class="mf">2.0e9</span><span class="p">,</span>     <span class="c1"># 2 GHz</span>
+                    <span class="s2">&quot;cpuMinFrequency&quot;</span><span class="p">:</span> <span class="mf">0.5e9</span><span class="p">,</span>     <span class="c1"># 0.5 GHz</span>
+                    <span class="s2">&quot;cpuWorkload&quot;</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span>         <span class="c1"># 500 cycles/bit</span>
+                    <span class="s2">&quot;batteryStorageCapacity&quot;</span><span class="p">:</span> <span class="mf">80.0</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>  <span class="c1"># 80 Wh</span>
+                    <span class="s2">&quot;taskMinimumElevation&quot;</span><span class="p">:</span> <span class="mf">10.0</span> <span class="o">*</span> <span class="mf">3.14159</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>  <span class="c1"># 10°</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">scenario</span><span class="o">=</span><span class="n">task_scenario</span><span class="p">,</span>
+        <span class="n">rewarder</span><span class="o">=</span><span class="n">reward_system</span><span class="p">,</span>
+        <span class="n">communicator</span><span class="o">=</span><span class="n">LOSMultiCommunication</span><span class="p">(),</span>
+        <span class="n">sat_arg_randomizer</span><span class="o">=</span><span class="n">constellation_args</span><span class="p">,</span>
+        <span class="n">max_step_duration</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>  <span class="c1"># 60 秒 per step</span>
+        <span class="n">time_limit</span><span class="o">=</span><span class="mf">3600.0</span><span class="p">,</span>       <span class="c1"># 1 小时 episode</span>
+        <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">env</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ⚠️ 需要重新加载模块（修复了 action_spec 的定义）</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">modules_to_delete</span> <span class="o">=</span> <span class="p">[</span><span class="n">mod</span> <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">mod</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;bsk_rl&#39;</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">mod_name</span> <span class="ow">in</span> <span class="n">modules_to_delete</span><span class="p">:</span>
+    <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">mod_name</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;已清除 </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">modules_to_delete</span><span class="p">)</span><span class="si">}</span><span class="s2"> 个缓存模块&quot;</span><span class="p">)</span>
+
+<span class="c1"># 重新导入</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINTaskReward</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">CityTaskScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.comm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOSMultiCommunication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+
+<span class="c1"># 测试环境创建</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">开始创建环境...&quot;</span><span class="p">)</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">create_stin_environment</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ 环境创建成功！&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">重置环境...&quot;</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ 环境重置成功！&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">观测空间:&quot;</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">observation_spaces</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+d:\miniconda\envs\Basilisk\Lib\site-packages\gymnasium\envs\registration.py:636: UserWarning: <span class="ansi-yellow-fg">WARN: Overriding environment GeneralSatelliteTasking-v1 already in registry.</span>
+  logger.warn(f&#34;Overriding environment {new_spec.id} already in registry.&#34;)
+d:\miniconda\envs\Basilisk\Lib\site-packages\gymnasium\envs\registration.py:636: UserWarning: <span class="ansi-yellow-fg">WARN: Overriding environment SatelliteTasking-v1 already in registry.</span>
+  logger.warn(f&#34;Overriding environment {new_spec.id} already in registry.&#34;)
+d:\miniconda\envs\Basilisk\Lib\site-packages\gymnasium\envs\registration.py:636: UserWarning: <span class="ansi-yellow-fg">WARN: Overriding environment ConstellationTasking-v1 already in registry.</span>
+  logger.warn(f&#34;Overriding environment {new_spec.id} already in registry.&#34;)
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,469 </span>gym                            INFO       Resetting environment with seed=2399955104
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,471 </span>scene.stin_scenario            INFO       Generating 20 computation tasks
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+已清除 52 个缓存模块
+
+开始创建环境...
+✓ 环境创建成功！
+
+重置环境...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,909 </span><span class="ansi-cyan-fg">sats.satellite.sat-0           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-cyan-fg">sat-0: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,921 </span><span class="ansi-green-intense-fg">sats.satellite.sat-1           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-green-intense-fg">sat-1: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,935 </span><span class="ansi-blue-fg">sats.satellite.sat-2           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-blue-fg">sat-2: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,945 </span><span class="ansi-magenta-intense-fg">sats.satellite.sat-3           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-magenta-intense-fg">sat-3: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,956 </span><span class="ansi-cyan-intense-fg">sats.satellite.sat-4           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-cyan-intense-fg">sat-4: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:58:50,965 </span><span class="ansi-green-fg">sats.satellite.sat-5           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-green-fg">sat-5: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:58:51,154 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span>Environment reset
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+✓ 环境重置成功！
+
+观测空间:
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;sat-0&#39;: Box(-1e+16, 1e+16, (39,), float64),
+ &#39;sat-1&#39;: Box(-1e+16, 1e+16, (39,), float64),
+ &#39;sat-2&#39;: Box(-1e+16, 1e+16, (39,), float64),
+ &#39;sat-3&#39;: Box(-1e+16, 1e+16, (39,), float64),
+ &#39;sat-4&#39;: Box(-1e+16, 1e+16, (39,), float64),
+ &#39;sat-5&#39;: Box(-1e+16, 1e+16, (39,), float64)}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">env</span><span class="o">.</span><span class="n">action_spaces</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;sat-0&#39;: Box(0.0, 1.0, (10,), float64),
+ &#39;sat-1&#39;: Box(0.0, 1.0, (10,), float64),
+ &#39;sat-2&#39;: Box(0.0, 1.0, (10,), float64),
+ &#39;sat-3&#39;: Box(0.0, 1.0, (10,), float64),
+ &#39;sat-4&#39;: Box(0.0, 1.0, (10,), float64),
+ &#39;sat-5&#39;: Box(0.0, 1.0, (10,), float64)}
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">example_training_loop</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;示例训练循环（使用随机动作）- PettingZoo 多智能体版本。&quot;&quot;&quot;</span>
+
+    <span class="n">env</span> <span class="o">=</span> <span class="n">create_stin_environment</span><span class="p">()</span>
+
+    <span class="c1"># 重置环境</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">total_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">step_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;环境已重置，智能体列表: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">action_spaces</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span> <span class="ow">and</span> <span class="n">step_count</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>  <span class="c1"># 限制最大步数以防无限循环</span>
+        <span class="c1"># PettingZoo 环境使用 action_spaces (字典)，为每个智能体采样动作</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">agent</span><span class="p">:</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spaces</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">action_spaces</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="c1"># 执行动作</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+
+        <span class="c1"># 累计奖励</span>
+        <span class="n">step_reward</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">step_reward</span>
+        <span class="n">step_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># 打印步骤信息（每10步打印一次以避免刷屏）</span>
+        <span class="k">if</span> <span class="n">step_count</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">step_count</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step </span><span class="si">{</span><span class="n">step_count</span><span class="si">}</span><span class="s2">: Reward = </span><span class="si">{</span><span class="n">step_reward</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;Cumulative = </span><span class="si">{</span><span class="n">total_reward</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 检查是否结束</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">terminated</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">truncated</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Episode finished after </span><span class="si">{</span><span class="n">step_count</span><span class="si">}</span><span class="s2"> steps&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total reward: </span><span class="si">{</span><span class="n">total_reward</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average reward per step: </span><span class="si">{</span><span class="n">total_reward</span><span class="o">/</span><span class="n">step_count</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 重新加载模块以获取最新修复</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">modules_to_delete</span> <span class="o">=</span> <span class="p">[</span><span class="n">mod</span> <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">mod</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;bsk_rl&#39;</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">mod_name</span> <span class="ow">in</span> <span class="n">modules_to_delete</span><span class="p">:</span>
+    <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">mod_name</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;已清除 </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">modules_to_delete</span><span class="p">)</span><span class="si">}</span><span class="s2"> 个缓存模块&quot;</span><span class="p">)</span>
+
+<span class="c1"># 重新导入</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstellationTasking</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINTaskReward</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">CityTaskScenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.comm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOSMultiCommunication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.orbital</span><span class="w"> </span><span class="kn">import</span> <span class="n">walker_delta_args</span>
+
+<span class="c1"># 运行训练循环</span>
+<span class="n">example_training_loop</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+d:\miniconda\envs\Basilisk\Lib\site-packages\gymnasium\envs\registration.py:636: UserWarning: <span class="ansi-yellow-fg">WARN: Overriding environment GeneralSatelliteTasking-v1 already in registry.</span>
+  logger.warn(f&#34;Overriding environment {new_spec.id} already in registry.&#34;)
+d:\miniconda\envs\Basilisk\Lib\site-packages\gymnasium\envs\registration.py:636: UserWarning: <span class="ansi-yellow-fg">WARN: Overriding environment SatelliteTasking-v1 already in registry.</span>
+  logger.warn(f&#34;Overriding environment {new_spec.id} already in registry.&#34;)
+d:\miniconda\envs\Basilisk\Lib\site-packages\gymnasium\envs\registration.py:636: UserWarning: <span class="ansi-yellow-fg">WARN: Overriding environment ConstellationTasking-v1 already in registry.</span>
+  logger.warn(f&#34;Overriding environment {new_spec.id} already in registry.&#34;)
+<span class="ansi-black-intense-fg">2025-12-17 14:58:59,939 </span>                               <span class="ansi-yellow-intense-fg">WARNING    </span><span class="ansi-yellow-intense-fg">Creating logger for new env on PID=46296. Old environments in process may now log times incorrectly.</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:58:59,941 </span>gym                            INFO       Resetting environment with seed=3282114512
+<span class="ansi-black-intense-fg">2025-12-17 14:58:59,943 </span>scene.stin_scenario            INFO       Generating 20 computation tasks
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+已清除 52 个缓存模块
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,344 </span><span class="ansi-cyan-fg">sats.satellite.sat-0           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-cyan-fg">sat-0: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,354 </span><span class="ansi-green-intense-fg">sats.satellite.sat-1           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-green-intense-fg">sat-1: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,372 </span><span class="ansi-blue-fg">sats.satellite.sat-2           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-blue-fg">sat-2: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,386 </span><span class="ansi-magenta-intense-fg">sats.satellite.sat-3           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-magenta-intense-fg">sat-3: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,403 </span><span class="ansi-cyan-intense-fg">sats.satellite.sat-4           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-cyan-intense-fg">sat-4: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,415 </span><span class="ansi-green-fg">sats.satellite.sat-5           </span>INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-green-fg">sat-5: </span>Finding opportunity windows from 0.00 to 3600.00 seconds
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,447 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span>Environment reset
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,450 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;0.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,470 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;60.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,471 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;60.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001868232771570183), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,472 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;60.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,478 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;60.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001868232771570183), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,480 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;60.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,503 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;120.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,504 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;120.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018715798942272086), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,505 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;120.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,512 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;120.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018715798942272086), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,518 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;120.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,537 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;180.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,538 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;180.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018671043197010005), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,539 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;180.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,546 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;180.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018671043197010005), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,549 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;180.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,569 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;240.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,569 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;240.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018708564314715042), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,570 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;240.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,577 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;240.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018708564314715042), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,579 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;240.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,600 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;300.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,601 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;300.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018659840913656225), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,602 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;300.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,607 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;300.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018659840913656225), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,610 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;300.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,631 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;360.00&gt; </span>Max step duration reached
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+环境已重置，智能体列表: [&#39;sat-0&#39;, &#39;sat-1&#39;, &#39;sat-2&#39;, &#39;sat-3&#39;, &#39;sat-4&#39;, &#39;sat-5&#39;]
+Step 1: Reward = -0.001, Cumulative = -0.001
+Step 2: Reward = -0.001, Cumulative = -0.001
+Step 3: Reward = -0.001, Cumulative = -0.002
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,632 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;360.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001870103239559423), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,633 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;360.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,638 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;360.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001870103239559423), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,640 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;360.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,664 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;420.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,665 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;420.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001864872984286514), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,669 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;420.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001864872984286514), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,672 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;420.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,691 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;480.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,692 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;480.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001869317910091515), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,693 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;480.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,697 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;480.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001869317910091515), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,700 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;480.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,719 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;540.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,720 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;540.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001863771739367716), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,720 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;540.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,725 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;540.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001863771739367716), &#39;sat-5&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,728 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;540.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,747 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;600.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,748 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;600.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00021839319416946674)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,749 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;600.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,767 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;600.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00021839319416946674)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,769 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;600.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,788 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;660.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,788 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;660.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,789 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;660.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,795 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;660.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,797 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;660.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,816 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;720.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,817 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;720.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,818 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;720.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,823 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;720.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,825 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;720.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,844 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;780.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,845 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;780.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-6.133766023603385e-05), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,846 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;780.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,857 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;780.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-6.133766023603385e-05), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,860 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;780.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,878 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;840.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,879 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;840.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,880 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;840.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,885 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;840.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,887 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;840.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,905 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;900.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,906 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;900.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,907 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;900.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,911 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;900.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,914 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;900.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,933 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;960.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,934 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;960.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,935 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;960.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,939 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;960.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,942 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;960.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,961 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1020.00&gt; </span>Max step duration reached
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Step 10: Reward = -0.000, Cumulative = -0.007
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,962 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1020.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,963 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1020.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,967 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1020.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,970 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1020.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,992 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1080.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,993 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1080.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006697), &#39;sat-4&#39;: np.float64(-0.00027720000000006697)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:00,995 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1080.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,000 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1080.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006697), &#39;sat-4&#39;: np.float64(-0.00027720000000006697)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,002 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1080.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,023 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1140.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,024 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1140.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,025 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1140.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,031 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1140.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,033 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1140.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,052 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1200.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,053 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1200.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,054 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1200.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,059 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1200.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,061 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1200.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,080 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1260.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,081 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1260.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,082 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1260.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,087 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1260.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,089 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1260.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,106 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1320.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,107 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1320.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,109 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1320.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,113 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1320.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,116 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1320.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,135 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1380.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,136 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1380.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,137 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1380.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,142 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1380.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,144 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1380.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,164 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1440.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,165 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1440.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,170 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1440.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,172 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1440.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,191 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1500.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,192 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1500.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,193 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1500.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,198 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1500.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,201 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1500.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,219 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1560.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,220 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1560.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,220 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1560.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,225 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1560.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,228 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1560.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,247 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1620.00&gt; </span>Max step duration reached
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Step 20: Reward = -0.001, Cumulative = -0.015
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,248 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1620.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,249 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1620.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,254 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1620.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,256 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1620.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,274 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1680.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,275 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1680.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,276 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1680.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,281 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1680.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000006984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,283 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1680.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,303 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1740.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,304 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1740.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000002186)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,304 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1740.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,309 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1740.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027720000000002186)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,312 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1740.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,330 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1800.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,331 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1800.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,332 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1800.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,337 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1800.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,339 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1800.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,361 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1860.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,362 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1860.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.000277199999999984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,363 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1860.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,367 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1860.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.000277199999999984)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,370 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1860.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,387 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1920.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,388 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1920.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,389 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1920.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,394 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1920.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,396 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1920.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,415 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;1980.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,416 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;1980.00&gt; </span>Total reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,417 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;1980.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,421 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1980.00&gt; </span>Step reward: {&#39;sat-0&#39;: np.float64(-0.00027720000000006984), &#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,423 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;1980.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,441 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2040.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,442 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2040.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,443 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2040.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,452 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2040.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,456 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2040.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,474 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2100.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,475 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2100.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006697), &#39;sat-4&#39;: np.float64(-0.0002771999999999811)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,476 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2100.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,481 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2100.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006697), &#39;sat-4&#39;: np.float64(-0.0002771999999999811)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,484 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2100.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,503 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2160.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,504 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2160.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,505 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2160.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,510 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2160.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,512 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2160.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,531 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2220.00&gt; </span>Max step duration reached
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Step 30: Reward = -0.001, Cumulative = -0.023
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,532 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2220.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.0002772000000000291), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,533 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2220.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,537 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2220.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.0002772000000000291), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,540 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2220.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,558 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2280.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,559 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2280.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,560 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2280.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,565 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2280.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,567 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2280.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,585 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2340.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,586 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2340.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,587 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2340.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,592 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2340.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,594 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2340.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,613 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2400.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,614 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2400.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,615 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2400.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,619 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2400.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,621 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2400.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,639 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2460.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,640 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2460.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,645 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2460.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,648 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2460.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,666 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2520.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,667 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2520.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,668 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2520.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,672 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2520.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.00027719999999998256)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,674 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2520.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,693 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2580.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,694 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2580.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.0002770410176764999)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,695 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2580.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,704 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2580.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-4&#39;: np.float64(-0.0002770410176764999)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,706 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2580.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,725 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2640.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,726 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2640.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00016332822025853094), &#39;sat-4&#39;: np.float64(-0.00018987195788092214)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,728 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2640.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,740 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2640.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00016332822025853094), &#39;sat-4&#39;: np.float64(-0.00018987195788092214)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,744 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2640.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,765 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2700.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,766 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2700.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001845570446222657)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,767 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2700.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,772 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2700.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001845570446222657)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,775 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2700.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,794 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2760.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,795 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2760.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018470720545419174)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,796 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2760.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,810 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2760.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018470720545419174)}
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Step 40: Reward = -0.001, Cumulative = -0.029
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,813 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2760.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,865 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2820.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,866 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2820.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001844601777994234)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,867 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2820.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,877 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2820.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001844601777994234)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,881 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2820.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,904 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2880.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,906 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2880.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001845567329203492)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,907 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2880.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,914 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2880.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001845567329203492)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,918 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2880.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,942 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;2940.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,944 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;2940.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018436290341317801)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,944 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;2940.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,949 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2940.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018436290341317801)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,951 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;2940.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,974 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3000.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,975 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3000.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001844044795858834)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,977 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3000.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,981 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3000.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001844044795858834)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:01,984 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3000.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,002 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3060.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,003 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3060.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001842650593115541)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,004 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3060.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,009 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3060.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001842650593115541)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,011 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3060.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,030 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3120.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,031 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3120.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018425076919692074)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,032 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3120.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,037 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3120.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018425076919692074)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,039 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3120.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,058 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3180.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,059 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3180.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018416648082801985)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,060 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3180.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,065 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3180.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018416648082801985)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,067 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3180.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,088 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3240.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,089 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3240.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.000184095930640951)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,090 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3240.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,095 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3240.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.000184095930640951)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,097 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3240.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,117 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3300.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,118 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3300.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018406700171866254)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,118 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3300.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,123 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3300.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018406700171866254)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,126 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3300.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,145 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3360.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,146 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3360.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018394029448927032)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,146 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3360.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,151 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3360.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018394029448927032)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,153 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3360.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Step 50: Reward = -0.001, Cumulative = -0.036
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,172 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3420.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,173 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3420.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018396645511762691)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,174 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3420.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,179 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3420.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018396645511762691)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,181 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3420.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,199 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3480.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,200 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3480.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018378418953385336)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,205 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3480.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018378418953385336)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,208 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3480.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,227 </span>sim.simulator                  INFO       <span class="ansi-yellow-fg">&lt;3540.00&gt; </span>Max step duration reached
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,228 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3540.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018386467451391147)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,229 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3540.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,234 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3540.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.00018386467451391147)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,236 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3540.00&gt; </span><span class="ansi-yellow-intense-fg ansi-bold">=== STARTING STEP ===</span>
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,254 </span>data.base                      INFO       <span class="ansi-yellow-fg">&lt;3600.00&gt; </span>Total reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001836279393586774)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,255 </span>comm.communication             INFO       <span class="ansi-yellow-fg">&lt;3600.00&gt; </span>Communicating data in 4 directions.
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,260 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3600.00&gt; </span>Step reward: {&#39;sat-2&#39;: np.float64(-0.00027719999999998256), &#39;sat-3&#39;: np.float64(-0.00027720000000006984), &#39;sat-4&#39;: np.float64(-0.0001836279393586774)}
+<span class="ansi-black-intense-fg">2025-12-17 14:59:02,261 </span>gym                            INFO       <span class="ansi-yellow-fg">&lt;3600.00&gt; </span>Episode truncated: [&#39;sat-0&#39;, &#39;sat-1&#39;, &#39;sat-2&#39;, &#39;sat-3&#39;, &#39;sat-4&#39;, &#39;sat-5&#39;]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Step 60: Reward = -0.001, Cumulative = -0.044
+
+============================================================
+Episode finished after 60 steps
+Total reward: -0.044
+Average reward per step: -0.001
+============================================================
+</pre></div></div>
+</div>
+</section>
+<section id="参数说明">
+<h2>参数说明<a class="headerlink" href="#参数说明" title="Link to this heading"></a></h2>
+<section id="ComputationDynModel-支持的参数">
+<h3>ComputationDynModel 支持的参数<a class="headerlink" href="#ComputationDynModel-支持的参数" title="Link to this heading"></a></h3>
+<p>从 <code class="docutils literal notranslate"><span class="pre">&#64;default_args</span></code> 装饰的 <code class="docutils literal notranslate"><span class="pre">setup_cpu_power_sink</span></code> 方法中定义：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数名</p></th>
+<th class="head"><p>默认值</p></th>
+<th class="head"><p>单位</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cpuMinFrequency</span></code></p></td>
+<td><p>0.1e9</p></td>
+<td><p>Hz</p></td>
+<td><p>最小 CPU 频率</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cpuMaxFrequency</span></code></p></td>
+<td><p>1.0e9</p></td>
+<td><p>Hz</p></td>
+<td><p>最大 CPU 频率</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cpuWorkload</span></code></p></td>
+<td><p>1000.0</p></td>
+<td><p>cycles/bit</p></td>
+<td><p>计算复杂度</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cpuPowerDraw</span></code></p></td>
+<td><p>-20.0</p></td>
+<td><p>W</p></td>
+<td><p>CPU 满载功耗（负值表示消耗）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">taskMinimumElevation</span></code></p></td>
+<td><p>0.0</p></td>
+<td><p>rad</p></td>
+<td><p>任务可见性最小仰角</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="继承的参数（从父类）">
+<h3>继承的参数（从父类）<a class="headerlink" href="#继承的参数（从父类）" title="Link to this heading"></a></h3>
+<p>从 <code class="docutils literal notranslate"><span class="pre">GroundStationDynModel</span></code> → <code class="docutils literal notranslate"><span class="pre">ImagingDynModel</span></code> → <code class="docutils literal notranslate"><span class="pre">BasicDynamicsModel</span></code> 继承：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">batteryStorageCapacity</span></code>: 电池容量 [W·h]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">instrumentBaudRate</span></code>: 仪器数据率 [bits]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transmitterBaudRate</span></code>: 下行速率 [baud]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mass</span></code>: 卫星质量 [kg]</p></li>
+<li><p>等等…</p></li>
+</ul>
+<p><strong>使用示例</strong>：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ComputationSatellite</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;sat-1&quot;</span><span class="p">,</span>
+    <span class="n">sat_args</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;cpuMaxFrequency&quot;</span><span class="p">:</span> <span class="mf">2.0e9</span><span class="p">,</span>  <span class="c1"># 自定义参数</span>
+        <span class="s2">&quot;batteryStorageCapacity&quot;</span><span class="p">:</span> <span class="mi">80</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>  <span class="c1"># 继承参数</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="✅-参数传递流程验证">
+<h2>✅ 参数传递流程验证<a class="headerlink" href="#✅-参数传递流程验证" title="Link to this heading"></a></h2>
+<p>您的担心：”如果放到了函数上面，那这些新参数如何配置？我不能通过 sat_args 配置了会找不到。”</p>
+<p><strong>答案：完全可以配置！</strong> 这正是 BSK-RL 框架的设计精妙之处。</p>
+<section id="🔄-完整的参数传递链路">
+<h3>🔄 完整的参数传递链路<a class="headerlink" href="#🔄-完整的参数传递链路" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>用户代码                    框架内部处理
+   ↓                           ↓
+sat_args = {          →  1. collect_default_args(ComputationDynModel)
+  &quot;cpuMaxFrequency&quot;:         收集所有 @default_args 装饰的方法
+   2.0e9                     包括 setup_cpu_power_sink.defaults
+}
+   ↓                           ↓
+ComputationSatellite(    →  2. Satellite.default_sat_args(**sat_args)
+  sat_args=sat_args           合并默认值 + 用户覆盖值
+)
+   ↓                           ↓
+                          3. DynamicsModel.__init__(**kwargs)
+                             将所有参数作为 kwargs 传入
+   ↓                           ↓
+                          4. _setup_dynamics_objects(**kwargs)
+                             继续传递 kwargs
+   ↓                           ↓
+                          5. setup_cpu_power_sink(**kwargs)
+                             从 kwargs 中提取参数：
+                             - cpuMaxFrequency (用户值 2.0e9)
+                             - cpuMinFrequency (默认值或用户值)
+                             - ...
+</pre></div>
+</div>
+</section>
+<section id="🔍-关键点">
+<h3>🔍 关键点<a class="headerlink" href="#🔍-关键点" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>``&#64;default_args`` 在 setup 方法上</strong>：注册默认参数到 <code class="docutils literal notranslate"><span class="pre">setup_cpu_power_sink.defaults</span></code></p></li>
+<li><p><strong>``collect_default_args()``</strong>：扫描类的所有方法，提取带 <code class="docutils literal notranslate"><span class="pre">.defaults</span></code> 的参数</p></li>
+<li><p><strong>``**kwargs`` 传递</strong>：参数从 <code class="docutils literal notranslate"><span class="pre">__init__</span></code> → <code class="docutils literal notranslate"><span class="pre">_setup_dynamics_objects</span></code> → <code class="docutils literal notranslate"><span class="pre">setup_cpu_power_sink</span></code></p></li>
+<li><p><strong>函数签名提取</strong>：<code class="docutils literal notranslate"><span class="pre">setup_cpu_power_sink(cpuMaxFrequency:</span> <span class="pre">float,</span> <span class="pre">...)</span></code> 从 kwargs 中取出对应参数</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ⚠️ 重要：需要强制重新加载模块以获取最新代码</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="c1"># 清除所有 bsk_rl 相关模块的缓存</span>
+<span class="n">modules_to_delete</span> <span class="o">=</span> <span class="p">[</span><span class="n">mod</span> <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">mod</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;bsk_rl&#39;</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">mod_name</span> <span class="ow">in</span> <span class="n">modules_to_delete</span><span class="p">:</span>
+    <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">mod_name</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;已清除缓存的模块:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules_to_delete</span><span class="p">),</span> <span class="s2">&quot;个&quot;</span><span class="p">)</span>
+
+<span class="c1"># 重新导入</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.sats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComputationSatellite</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.utils.functional</span><span class="w"> </span><span class="kn">import</span> <span class="n">collect_default_args</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ 模块已重新加载&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="c1"># 调试：检查方法是否有 defaults 属性</span>
+<span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ComputationSatellite</span><span class="o">.</span><span class="n">dyn_type</span><span class="p">,</span> <span class="s1">&#39;setup_cpu_power_sink&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">setup_cpu_power_sink.defaults = </span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">defaults</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">hasattr</span><span class="p">(</span><span class="n">method</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;defaults&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;NOT FOUND&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># 测试 1: 检查默认参数</span>
+<span class="n">default_args</span> <span class="o">=</span> <span class="n">ComputationSatellite</span><span class="o">.</span><span class="n">default_sat_args</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">测试 1: 检查默认参数&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuMinFrequency (默认): </span><span class="si">{</span><span class="n">default_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cpuMinFrequency&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;NOT FOUND&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuMaxFrequency (默认): </span><span class="si">{</span><span class="n">default_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cpuMaxFrequency&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;NOT FOUND&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuWorkload (默认): </span><span class="si">{</span><span class="n">default_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cpuWorkload&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;NOT FOUND&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuPowerDraw (默认): </span><span class="si">{</span><span class="n">default_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cpuPowerDraw&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;NOT FOUND&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;taskMinimumElevation (默认): </span><span class="si">{</span><span class="n">default_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;taskMinimumElevation&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;NOT FOUND&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># 测试 2: 检查用户覆盖</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;测试 2: 用户自定义参数&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="n">custom_args</span> <span class="o">=</span> <span class="n">ComputationSatellite</span><span class="o">.</span><span class="n">default_sat_args</span><span class="p">(</span>
+    <span class="n">cpuMaxFrequency</span><span class="o">=</span><span class="mf">5.0e9</span><span class="p">,</span>  <span class="c1"># 自定义为 5 GHz</span>
+    <span class="n">cpuMinFrequency</span><span class="o">=</span><span class="mf">1.0e9</span><span class="p">,</span>  <span class="c1"># 自定义为 1 GHz</span>
+    <span class="n">batteryStorageCapacity</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>  <span class="c1"># 继承的参数也能覆盖</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuMaxFrequency (自定义): </span><span class="si">{</span><span class="n">custom_args</span><span class="p">[</span><span class="s1">&#39;cpuMaxFrequency&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1e9</span><span class="si">}</span><span class="s2"> GHz&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuMinFrequency (自定义): </span><span class="si">{</span><span class="n">custom_args</span><span class="p">[</span><span class="s1">&#39;cpuMinFrequency&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1e9</span><span class="si">}</span><span class="s2"> GHz&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cpuWorkload (保持默认): </span><span class="si">{</span><span class="n">custom_args</span><span class="p">[</span><span class="s1">&#39;cpuWorkload&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;batteryStorageCapacity (自定义): </span><span class="si">{</span><span class="n">custom_args</span><span class="p">[</span><span class="s1">&#39;batteryStorageCapacity&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">3600</span><span class="si">}</span><span class="s2"> Wh&quot;</span><span class="p">)</span>
+
+<span class="c1"># 测试 3: 验证在环境中生效</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;测试 3: 在实际卫星对象中验证参数&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># 这就是用户实际的使用方式！</span>
+    <span class="n">sat</span> <span class="o">=</span> <span class="n">ComputationSatellite</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test-sat&quot;</span><span class="p">,</span>
+        <span class="n">sat_args</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;cpuMaxFrequency&quot;</span><span class="p">:</span> <span class="mf">3.0e9</span><span class="p">,</span>  <span class="c1"># ← 用户通过这里配置</span>
+            <span class="s2">&quot;cpuMinFrequency&quot;</span><span class="p">:</span> <span class="mf">0.8e9</span><span class="p">,</span>
+            <span class="s2">&quot;cpuWorkload&quot;</span><span class="p">:</span> <span class="mf">300.0</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ 卫星创建成功！&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  sat_args_generator[&#39;cpuMaxFrequency&#39;] = </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">sat_args_generator</span><span class="p">[</span><span class="s1">&#39;cpuMaxFrequency&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1e9</span><span class="si">}</span><span class="s2"> GHz&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  sat_args_generator[&#39;cpuMinFrequency&#39;] = </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">sat_args_generator</span><span class="p">[</span><span class="s1">&#39;cpuMinFrequency&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1e9</span><span class="si">}</span><span class="s2"> GHz&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  sat_args_generator[&#39;cpuWorkload&#39;] = </span><span class="si">{</span><span class="n">sat</span><span class="o">.</span><span class="n">sat_args_generator</span><span class="p">[</span><span class="s1">&#39;cpuWorkload&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cycles/bit&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ 参数传递机制验证成功！&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   用户可以正常通过 sat_args 配置 @default_args 装饰的参数。&quot;</span><span class="p">)</span>
+
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ 创建失败: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+    <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## 🔍 终止条件与任务定义详解</span>
+
+<span class="c1">### 1️⃣ `terminated` 和 `truncated` 的定义位置</span>
+
+<span class="n">这两个标志在</span> <span class="o">**</span><span class="p">[</span><span class="n">gym</span><span class="o">.</span><span class="n">py</span><span class="p">](</span><span class="o">../</span><span class="n">src</span><span class="o">/</span><span class="n">bsk_rl</span><span class="o">/</span><span class="n">gym</span><span class="o">.</span><span class="n">py</span><span class="p">)</span><span class="o">**</span> <span class="n">的</span> <span class="err">`</span><span class="n">GeneralSatelliteTasking</span><span class="err">`</span> <span class="n">类中定义</span><span class="err">：</span>
+
+<span class="err">```</span><span class="n">python</span>
+<span class="c1"># gym.py 第 435-449 行</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_terminated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;任务完成或所有卫星失效 → 正常结束&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminate_on_time_limit</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_truncated</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">satellite</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">is_terminated</span><span class="p">(</span><span class="n">satellite</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">satellite</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span>
+        <span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_truncated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;超时或资源耗尽 → 提前截断&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">sim_time</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_limit</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rewarder</span><span class="o">.</span><span class="n">is_truncated</span><span class="p">(</span><span class="n">satellite</span><span class="p">)</span> <span class="k">for</span> <span class="n">satellite</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span>
+    <span class="p">)</span>
+<span class="err">```</span>
+
+<span class="o">**</span><span class="n">关键区别</span><span class="o">**</span><span class="err">：</span>
+<span class="o">-</span> <span class="o">**</span><span class="err">`</span><span class="n">terminated</span><span class="err">`</span><span class="o">**</span><span class="err">：</span><span class="n">任务目标完成</span><span class="err">，</span><span class="n">episode</span> <span class="o">**</span><span class="n">正常结束</span><span class="o">**</span><span class="err">（</span><span class="n">正反馈</span><span class="err">）</span>
+<span class="o">-</span> <span class="o">**</span><span class="err">`</span><span class="n">truncated</span><span class="err">`</span><span class="o">**</span><span class="err">：</span><span class="n">达到时间限制或资源耗尽</span><span class="err">，</span><span class="n">episode</span> <span class="o">**</span><span class="n">提前截断</span><span class="o">**</span><span class="err">（</span><span class="n">中性</span><span class="o">/</span><span class="n">负反馈</span><span class="err">）</span>
+
+<span class="o">---</span>
+
+<span class="c1">### 2️⃣ 回合最长时间设置</span>
+
+<span class="o">**</span><span class="n">已经设置好了</span><span class="err">！</span><span class="o">**</span> <span class="n">在</span> <span class="err">`</span><span class="n">create_stin_environment</span><span class="p">()</span><span class="err">`</span> <span class="n">中</span><span class="err">：</span>
+
+<span class="err">```</span><span class="n">python</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mf">3600.0</span><span class="p">,</span>  <span class="c1"># ← 1小时（3600秒）回合时长</span>
+    <span class="n">terminate_on_time_limit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># 时间到时用 truncated（不用 terminated）</span>
+    <span class="o">...</span>
+<span class="p">)</span>
+<span class="err">```</span>
+
+<span class="o">**</span><span class="n">参数说明</span><span class="o">**</span><span class="err">：</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">time_limit</span><span class="err">`：</span><span class="n">最大仿真时间</span><span class="err">（</span><span class="n">秒</span><span class="err">）</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">terminate_on_time_limit</span><span class="err">`：</span>
+  <span class="o">-</span> <span class="err">`</span><span class="kc">False</span><span class="err">`</span> <span class="err">→</span> <span class="n">时间到用</span> <span class="err">`</span><span class="n">truncated</span><span class="o">=</span><span class="kc">True</span><span class="err">`（</span><span class="n">推荐</span><span class="err">，</span><span class="n">表示</span><span class="s2">&quot;未完成&quot;</span><span class="err">）</span>
+  <span class="o">-</span> <span class="err">`</span><span class="kc">True</span><span class="err">`</span> <span class="err">→</span> <span class="n">时间到用</span> <span class="err">`</span><span class="n">terminated</span><span class="o">=</span><span class="kc">True</span><span class="err">`（</span><span class="n">表示</span><span class="s2">&quot;任务完成&quot;</span><span class="err">）</span>
+
+<span class="o">---</span>
+
+<span class="c1">### 3️⃣ 任务定义在哪里？</span>
+
+<span class="o">**</span><span class="n">在</span> <span class="err">`</span><span class="n">STINTaskReward</span><span class="err">`</span> <span class="n">类中实现</span><span class="o">**</span><span class="err">（</span><span class="p">[</span><span class="n">stin_task_data</span><span class="o">.</span><span class="n">py</span><span class="p">](</span><span class="o">../</span><span class="n">src</span><span class="o">/</span><span class="n">bsk_rl</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">stin_task_data</span><span class="o">.</span><span class="n">py</span><span class="p">)</span> <span class="n">第</span> <span class="mi">406</span><span class="o">-</span><span class="mi">450</span> <span class="n">行</span><span class="err">）：</span>
+
+<span class="c1">#### 📍 `is_truncated()` - 资源约束检查</span>
+<span class="err">```</span><span class="n">python</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_truncated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;检查是否应该截断 episode（资源耗尽）&quot;&quot;&quot;</span>
+    <span class="c1"># 检查电池 SOC &lt; 5% → 截断</span>
+    <span class="n">battery_soc</span> <span class="o">=</span> <span class="n">satellite</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">powerMonitor</span><span class="o">.</span><span class="n">storageLevel</span> <span class="o">/</span> <span class="n">capacity</span>
+    <span class="k">if</span> <span class="n">battery_soc</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">satellite</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> battery critically depleted&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+<span class="err">```</span>
+
+<span class="c1">#### 📍 `is_terminated()` - 任务完成检查</span>
+<span class="err">```</span><span class="n">python</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_terminated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;检查是否应该终止 episode（任务完成）&quot;&quot;&quot;</span>
+    <span class="c1"># 当所有任务都完成或超时时终止</span>
+    <span class="n">total_tasks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">tasks</span><span class="p">)</span>
+    <span class="n">completed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">completed_tasks_count</span> <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">satellites</span><span class="p">)</span>
+    <span class="n">expired</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sat</span><span class="o">.</span><span class="n">expired_tasks_count</span> <span class="k">for</span> <span class="n">sat</span> <span class="ow">in</span> <span class="n">satellites</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">completed</span> <span class="o">+</span> <span class="n">expired</span> <span class="o">&gt;=</span> <span class="n">total_tasks</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># 所有任务处理完毕</span>
+    <span class="k">return</span> <span class="kc">False</span>
+<span class="err">```</span>
+
+<span class="o">---</span>
+
+<span class="c1">### 4️⃣ 如何自定义终止条件？</span>
+
+<span class="o">**</span><span class="n">方法</span> <span class="mi">1</span><span class="err">：</span><span class="n">修改</span> <span class="err">`</span><span class="n">STINTaskReward</span><span class="err">`</span> <span class="n">类</span><span class="o">**</span>
+
+<span class="n">编辑</span> <span class="p">[</span><span class="n">stin_task_data</span><span class="o">.</span><span class="n">py</span><span class="p">](</span><span class="o">../</span><span class="n">src</span><span class="o">/</span><span class="n">bsk_rl</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">stin_task_data</span><span class="o">.</span><span class="n">py</span><span class="p">)</span> <span class="n">中的</span> <span class="err">`</span><span class="n">is_terminated</span><span class="p">()</span><span class="err">`</span> <span class="n">和</span> <span class="err">`</span><span class="n">is_truncated</span><span class="p">()</span><span class="err">`</span> <span class="n">方法</span><span class="err">。</span>
+
+<span class="o">**</span><span class="n">方法</span> <span class="mi">2</span><span class="err">：</span><span class="n">创建自定义</span> <span class="n">Rewarder</span> <span class="n">子类</span><span class="o">**</span>
+
+<span class="err">```</span><span class="n">python</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bsk_rl.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">STINTaskReward</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomSTINReward</span><span class="p">(</span><span class="n">STINTaskReward</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_terminated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># 自定义终止条件：例如完成率达到 80%</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">get_completion_rate</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mf">0.8</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">is_terminated</span><span class="p">(</span><span class="n">satellite</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_truncated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">satellite</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># 自定义截断条件：例如平均队列长度过大</span>
+        <span class="n">avg_queue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">task_queue</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">satellites</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">avg_queue</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Task queue overflow, truncating&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">is_truncated</span><span class="p">(</span><span class="n">satellite</span><span class="p">)</span>
+<span class="err">```</span>
+
+<span class="o">**</span><span class="n">方法</span> <span class="mi">3</span><span class="err">：</span><span class="n">在环境配置中指定</span><span class="o">**</span>
+
+<span class="err">```</span><span class="n">python</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">ConstellationTasking</span><span class="p">(</span>
+    <span class="n">rewarder</span><span class="o">=</span><span class="n">CustomSTINReward</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mf">3600.0</span><span class="p">,</span>  <span class="c1"># 1 小时强制截断</span>
+    <span class="n">terminate_on_time_limit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">)</span>
+<span class="err">```</span>
+
+<span class="o">---</span>
+
+<span class="c1">### 5️⃣ 任务场景定义</span>
+
+<span class="o">**</span><span class="n">在</span> <span class="err">`</span><span class="n">CityTaskScenario</span><span class="err">`</span> <span class="n">中定义</span><span class="o">**</span><span class="err">（</span><span class="p">[</span><span class="n">stin_scenario</span><span class="o">.</span><span class="n">py</span><span class="p">](</span><span class="o">../</span><span class="n">src</span><span class="o">/</span><span class="n">bsk_rl</span><span class="o">/</span><span class="n">scene</span><span class="o">/</span><span class="n">stin_scenario</span><span class="o">.</span><span class="n">py</span><span class="p">)</span><span class="err">）：</span>
+
+<span class="err">```</span><span class="n">python</span>
+<span class="n">task_scenario</span> <span class="o">=</span> <span class="n">CityTaskScenario</span><span class="p">(</span>
+    <span class="n">n_tasks</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                    <span class="c1"># 总任务数</span>
+    <span class="n">n_select_from</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>             <span class="c1"># 从前 100 大城市中选择</span>
+    <span class="n">data_size_range</span><span class="o">=</span><span class="p">(</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">10e6</span><span class="p">),</span>   <span class="c1"># 数据大小范围 [Mb]</span>
+    <span class="n">workload_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>    <span class="c1"># 计算复杂度范围 [cycles/bit]</span>
+    <span class="n">max_delay_range</span><span class="o">=</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>   <span class="c1"># 最大时延约束范围 [s]</span>
+    <span class="n">task_arrival_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>         <span class="c1"># 任务到达率 [tasks/s]</span>
+<span class="p">)</span>
+<span class="err">```</span>
+
+<span class="o">**</span><span class="n">关键属性</span><span class="o">**</span><span class="err">：</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">n_tasks</span><span class="err">`：</span><span class="n">回合内总任务数</span><span class="err">（</span><span class="n">完成后</span> <span class="err">`</span><span class="n">terminated</span><span class="o">=</span><span class="kc">True</span><span class="err">`）</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">max_delay_range</span><span class="err">`：</span><span class="n">每个任务的时延约束</span><span class="err">（</span><span class="n">超时算失败</span><span class="err">）</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">task_arrival_rate</span><span class="err">`：</span><span class="n">任务生成速率</span>
+
+<span class="o">---</span>
+
+<span class="c1">### 📊 总结</span>
+
+<span class="o">|</span> <span class="n">概念</span> <span class="o">|</span> <span class="n">定义位置</span> <span class="o">|</span> <span class="n">含义</span> <span class="o">|</span> <span class="n">当前配置</span> <span class="o">|</span>
+<span class="o">|------|---------|------|---------|</span>
+<span class="o">|</span> <span class="err">`</span><span class="n">terminated</span><span class="err">`</span> <span class="o">|</span> <span class="err">`</span><span class="n">gym</span><span class="o">.</span><span class="n">py</span><span class="err">`</span> <span class="o">+</span> <span class="err">`</span><span class="n">STINTaskReward</span><span class="o">.</span><span class="n">is_terminated</span><span class="p">()</span><span class="err">`</span> <span class="o">|</span> <span class="n">任务完成正常结束</span> <span class="o">|</span> <span class="n">所有任务完成</span><span class="o">/</span><span class="n">超时</span> <span class="o">|</span>
+<span class="o">|</span> <span class="err">`</span><span class="n">truncated</span><span class="err">`</span> <span class="o">|</span> <span class="err">`</span><span class="n">gym</span><span class="o">.</span><span class="n">py</span><span class="err">`</span> <span class="o">+</span> <span class="err">`</span><span class="n">STINTaskReward</span><span class="o">.</span><span class="n">is_truncated</span><span class="p">()</span><span class="err">`</span> <span class="o">|</span> <span class="n">资源耗尽提前截断</span> <span class="o">|</span> <span class="n">电池</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="o">%</span> <span class="n">或时间</span> <span class="o">&gt;</span> <span class="mi">3600</span><span class="n">s</span> <span class="o">|</span>
+<span class="o">|</span> <span class="err">`</span><span class="n">time_limit</span><span class="err">`</span> <span class="o">|</span> <span class="err">`</span><span class="n">ConstellationTasking</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="err">`</span> <span class="o">|</span> <span class="n">回合最大时长</span> <span class="o">|</span> <span class="o">**</span><span class="mi">3600</span> <span class="n">秒</span><span class="err">（</span><span class="mi">1</span><span class="n">小时</span><span class="err">）</span><span class="o">**</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">任务定义</span> <span class="o">|</span> <span class="err">`</span><span class="n">CityTaskScenario</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="err">`</span> <span class="o">|</span> <span class="n">任务属性和约束</span> <span class="o">|</span> <span class="mi">20</span> <span class="n">个任务</span><span class="err">，</span><span class="mi">5</span><span class="o">-</span><span class="mi">20</span><span class="n">s</span> <span class="n">时延</span> <span class="o">|</span>
+
+<span class="o">**</span><span class="n">推荐配置</span><span class="o">**</span><span class="err">：</span>
+<span class="o">-</span> <span class="err">✅</span> <span class="err">`</span><span class="n">time_limit</span><span class="o">=</span><span class="mf">3600.0</span><span class="err">`（</span><span class="n">已设置</span><span class="err">）</span>
+<span class="o">-</span> <span class="err">✅</span> <span class="err">`</span><span class="n">terminate_on_time_limit</span><span class="o">=</span><span class="kc">False</span><span class="err">`（</span><span class="n">时间到用</span> <span class="n">truncated</span><span class="err">）</span>
+<span class="o">-</span> <span class="err">✅</span> <span class="n">在</span> <span class="err">`</span><span class="n">STINTaskReward</span><span class="err">`</span> <span class="n">中实现自定义终止逻辑</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

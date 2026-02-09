@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bsk_rl.utils.constants &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bsk_rl.utils.constants</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bsk_rl.utils.constants</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">bsk_rl.utils.constants: 物理常量和系统默认值定义</span>
+
+<span class="sd">此模块集中管理 STIN 仿真中使用的物理常量和默认参数，</span>
+<span class="sd">避免在代码中硬编码，便于维护和配置。</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 物理常量</span>
+<span class="c1"># =============================================================================</span>
+
+<span class="c1"># 光速 [m/s]</span>
+<span class="n">SPEED_OF_LIGHT</span> <span class="o">=</span> <span class="mf">299792458.0</span>
+
+<span class="c1"># 有效开关电容系数 [J/cycle²] - 用于计算 CPU 能耗</span>
+<span class="c1"># E = KAPPA * f² * cycles</span>
+<span class="n">KAPPA</span> <span class="o">=</span> <span class="mf">1e-24</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 通信链路默认参数</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 注意: 在动态速率模式下，ISL 和 SGL 速率由 calculate_isl_rate() 和</span>
+<span class="c1">#       calculate_sgl_rate() 函数动态计算。以下固定值仅用于:</span>
+<span class="c1">#       1. Uplink (UD → 卫星): 固定速率，UD 发射功率不受 Agent 控制</span>
+<span class="c1">#       2. 向后兼容或备用模式</span>
+
+<span class="c1"># 上行链路默认速率 [bps] - 固定值（UD 功率不受 Agent 控制）</span>
+<span class="n">DEFAULT_UPLINK_RATE</span> <span class="o">=</span> <span class="mf">50e6</span>  <span class="c1"># 50 Mbps</span>
+
+<span class="c1"># ISL（星间链路）默认速率 [bps] - 已被动态模型替代</span>
+<span class="n">DEFAULT_ISL_RATE</span> <span class="o">=</span> <span class="mf">100e6</span>  <span class="c1"># 100 Mbps (备用)</span>
+
+<span class="c1"># SGL（卫星-地面链路）默认速率 [bps] - 已被动态模型替代</span>
+<span class="n">DEFAULT_SGL_RATE</span> <span class="o">=</span> <span class="mf">50e6</span>  <span class="c1"># 50 Mbps (备用)</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 云端路径默认参数</span>
+<span class="c1"># =============================================================================</span>
+
+<span class="c1"># 网关到云服务器的光纤距离 [m]</span>
+<span class="n">DEFAULT_FIBER_DISTANCE</span> <span class="o">=</span> <span class="mf">500e3</span>  <span class="c1"># 500 km</span>
+
+<span class="c1"># 云端 CPU 频率 [Hz]</span>
+<span class="n">DEFAULT_CLOUD_CPU_FREQ</span> <span class="o">=</span> <span class="mf">10e9</span>  <span class="c1"># 10 GHz</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 用户终端 (UD) 默认参数</span>
+<span class="c1"># =============================================================================</span>
+
+<span class="c1"># UD 本地 CPU 频率 [Hz]</span>
+<span class="n">DEFAULT_UD_CPU_FREQ</span> <span class="o">=</span> <span class="mf">1e9</span>  <span class="c1"># 1 GHz</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 任务处理默认参数</span>
+<span class="c1"># =============================================================================</span>
+
+<span class="c1"># 结果数据量与输入数据量的比例</span>
+<span class="n">DEFAULT_RESULT_RATIO</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># 结果数据 = 10% 输入数据</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 警告阈值</span>
+<span class="c1"># =============================================================================</span>
+
+<span class="c1"># 电池安全阈值 [SOC, 0-1]</span>
+<span class="n">BATTERY_SAFETY_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.2</span>  <span class="c1"># 20%</span>
+
+<span class="c1"># 电池严重警告阈值 [SOC, 0-1]</span>
+<span class="n">BATTERY_CRITICAL_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># 10%</span>
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 动态速率模型参数 (基于真实 LEO 卫星系统物理参数)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1"># 参考: Iridium NEXT, ITU Ka-band ISL 标准, 典型 LEO 通信系统</span>
+
+<span class="c1"># --- ISL 链路参数 (公式 5, 6) ---</span>
+<span class="c1"># 基于 Iridium NEXT Ka-band ISL 和 ITU 标准</span>
+<span class="n">ISL_BANDWIDTH</span> <span class="o">=</span> <span class="mf">100e6</span>           <span class="c1"># [Hz] B_I - ISL 带宽 (100 MHz, Ka-band 典型值)</span>
+<span class="n">ISL_CARRIER_FREQ</span> <span class="o">=</span> <span class="mf">23e9</span>         <span class="c1"># [Hz] f_c - Ka-band 载波频率 (Iridium: 22.55-23.55 GHz)</span>
+<span class="n">ISL_TX_ANTENNA_GAIN</span> <span class="o">=</span> <span class="mf">1000.0</span>    <span class="c1"># g_I^tr - 发射天线增益 (30 dBi, 中等定向天线)</span>
+<span class="n">ISL_RX_ANTENNA_GAIN</span> <span class="o">=</span> <span class="mf">1000.0</span>    <span class="c1"># g_I^rc - 接收天线增益 (30 dBi)</span>
+
+<span class="c1"># --- SGL 链路参数 (公式 10) ---</span>
+<span class="c1"># 基于典型 LEO 星地链路</span>
+<span class="n">SGL_BANDWIDTH</span> <span class="o">=</span> <span class="mf">50e6</span>            <span class="c1"># [Hz] B_S - SGL 带宽 (50 MHz)</span>
+<span class="n">SGL_CHANNEL_GAIN</span> <span class="o">=</span> <span class="mf">500.0</span>        <span class="c1"># h_S - 等效信道增益 (含下行路径损耗补偿)</span>
+
+<span class="c1"># --- 噪声参数 ---</span>
+<span class="n">NOISE_POWER_DENSITY</span> <span class="o">=</span> <span class="mf">4e-21</span>     <span class="c1"># [W/Hz] N₀ - 噪声功率谱密度 (典型 290K 系统温度)</span>
+
+<span class="c1"># --- ISL 最大通信距离 ---</span>
+<span class="n">ISL_MAX_DISTANCE</span> <span class="o">=</span> <span class="mf">5000e3</span>       <span class="c1"># [m] Dis_I^max - 6000 km (Iridium 跨面链路)</span>
+
+
+<div class="viewcode-block" id="calculate_isl_path_loss">
+<a class="viewcode-back" href="../../../api_reference/utils/constants.html#bsk_rl.utils.constants.calculate_isl_path_loss">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_isl_path_loss</span><span class="p">(</span><span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">carrier_freq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">ISL_CARRIER_FREQ</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;计算 ISL 路径损耗 - 论文公式 (5)</span>
+<span class="sd">    </span>
+<span class="sd">    L_I = (4π × Dis_I × f_c / c)²</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        distance: [m] 星间距离 Dis_I</span>
+<span class="sd">        carrier_freq: [Hz] 载波频率 f_c</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        路径损耗 L_I (无量纲)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">carrier_freq</span> <span class="o">/</span> <span class="n">SPEED_OF_LIGHT</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_isl_rate">
+<a class="viewcode-back" href="../../../api_reference/utils/constants.html#bsk_rl.utils.constants.calculate_isl_rate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_isl_rate</span><span class="p">(</span>
+    <span class="n">tx_power</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">max_distance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;计算 ISL 传输速率 - 论文公式 (6)</span>
+<span class="sd">    </span>
+<span class="sd">    R_I = B_I × log₂(1 + (p_I × g_I^tr × g_I^rc) / (L_I × N₀ × B_I))</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        tx_power: [W] 发射功率 p_I (Agent 可控)</span>
+<span class="sd">        distance: [m] 星间距离</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        传输速率 [bps]，限制在 [1 kbps, 1 Gbps]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tx_power</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">distance</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1e3</span>  <span class="c1"># 最低 1 kbps</span>
+    
+    <span class="c1"># 检查是否超过最大通信距离</span>
+    <span class="n">max_distance_m</span> <span class="o">=</span> <span class="n">ISL_MAX_DISTANCE</span>
+    <span class="k">if</span> <span class="n">max_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_distance</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">max_distance_m</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_distance</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="n">max_distance_m</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1e3</span>  <span class="c1"># 超出范围，返回最低速率</span>
+    
+    <span class="n">path_loss</span> <span class="o">=</span> <span class="n">calculate_isl_path_loss</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+    
+    <span class="c1"># SNR = (p_I × g_I^tr × g_I^rc) / (L_I × N₀ × B_I)</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">tx_power</span> <span class="o">*</span> <span class="n">ISL_TX_ANTENNA_GAIN</span> <span class="o">*</span> <span class="n">ISL_RX_ANTENNA_GAIN</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">path_loss</span> <span class="o">*</span> <span class="n">NOISE_POWER_DENSITY</span> <span class="o">*</span> <span class="n">ISL_BANDWIDTH</span>
+    
+    <span class="k">if</span> <span class="n">denominator</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1e3</span>
+    
+    <span class="n">snr</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+    
+    <span class="c1"># R_I = B_I × log₂(1 + SNR)</span>
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">ISL_BANDWIDTH</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">snr</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">))</span>  <span class="c1"># 限制在 1 kbps - 1 Gbps</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_sgl_rate">
+<a class="viewcode-back" href="../../../api_reference/utils/constants.html#bsk_rl.utils.constants.calculate_sgl_rate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_sgl_rate</span><span class="p">(</span><span class="n">tx_power</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;计算 SGL 传输速率 - 论文公式 (10)</span>
+<span class="sd">    </span>
+<span class="sd">    R_S = B_S × log₂(1 + (p_S × h_S) / (N₀ × B_S))</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        tx_power: [W] 发射功率 p_S (Agent 可控)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        传输速率 [bps]，限制在 [1 kbps, 1 Gbps]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tx_power</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1e3</span>  <span class="c1"># 最低 1 kbps</span>
+    
+    <span class="c1"># SNR = (p_S × h_S) / (N₀ × B_S)</span>
+    <span class="n">snr</span> <span class="o">=</span> <span class="p">(</span><span class="n">tx_power</span> <span class="o">*</span> <span class="n">SGL_CHANNEL_GAIN</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">NOISE_POWER_DENSITY</span> <span class="o">*</span> <span class="n">SGL_BANDWIDTH</span><span class="p">)</span>
+    
+    <span class="c1"># R_S = B_S × log₂(1 + SNR)</span>
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">SGL_BANDWIDTH</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">snr</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e9</span><span class="p">))</span>  <span class="c1"># 限制在 1 kbps - 1 Gbps</span></div>
+
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># 物理常量</span>
+    <span class="s2">&quot;SPEED_OF_LIGHT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KAPPA&quot;</span><span class="p">,</span>
+    <span class="c1"># 通信链路 (固定速率)</span>
+    <span class="s2">&quot;DEFAULT_UPLINK_RATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEFAULT_ISL_RATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEFAULT_SGL_RATE&quot;</span><span class="p">,</span>
+    <span class="c1"># 动态速率模型参数</span>
+    <span class="s2">&quot;ISL_BANDWIDTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISL_CARRIER_FREQ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISL_TX_ANTENNA_GAIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISL_RX_ANTENNA_GAIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISL_MAX_DISTANCE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SGL_BANDWIDTH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SGL_CHANNEL_GAIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NOISE_POWER_DENSITY&quot;</span><span class="p">,</span>
+    <span class="c1"># 动态速率计算函数</span>
+    <span class="s2">&quot;calculate_isl_path_loss&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;calculate_isl_rate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;calculate_sgl_rate&quot;</span><span class="p">,</span>
+    <span class="c1"># 云端路径</span>
+    <span class="s2">&quot;DEFAULT_FIBER_DISTANCE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEFAULT_CLOUD_CPU_FREQ&quot;</span><span class="p">,</span>
+    <span class="c1"># 用户终端</span>
+    <span class="s2">&quot;DEFAULT_UD_CPU_FREQ&quot;</span><span class="p">,</span>
+    <span class="c1"># 任务处理</span>
+    <span class="s2">&quot;DEFAULT_RESULT_RATIO&quot;</span><span class="p">,</span>
+    <span class="c1"># 警告阈值</span>
+    <span class="s2">&quot;BATTERY_SAFETY_THRESHOLD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BATTERY_CRITICAL_THRESHOLD&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

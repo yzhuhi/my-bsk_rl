@@ -1,0 +1,13 @@
+.. _bsk_rl.scene.stin_scenario:
+.. currentmodule:: bsk_rl.scene.stin_scenario
+
+STIN Task Scenarios
+===================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: bsk_rl.scene.stin_scenario
+   :members:
+   :show-inheritance:
+

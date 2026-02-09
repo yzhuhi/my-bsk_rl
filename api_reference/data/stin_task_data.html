@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIN Task Data &mdash; BSK-RL v1.2.13 1.2.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=c3d4a9a6" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=250a84ee"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Unique Images" href="unique_image_data.html" />
+    <link rel="prev" title="RSO Inspection" href="rso_inspection.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #CFB87C" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BSK-RL v1.2.13
+              <img src="../../_static/bsk_rl-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.GeneralSatelliteTasking"><code class="docutils literal notranslate"><span class="pre">GeneralSatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.SatelliteTasking"><code class="docutils literal notranslate"><span class="pre">SatelliteTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#bsk_rl.ConstellationTasking"><code class="docutils literal notranslate"><span class="pre">ConstellationTasking</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sats/index.html">Satellites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../obs/index.html">Observations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../act/index.html">Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scene/index.html">Scenario</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Data &amp; Reward</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#reward-system-components">Reward System Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#reward-system-types">Reward System Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.GlobalReward"><code class="docutils literal notranslate"><span class="pre">GlobalReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.NoReward"><code class="docutils literal notranslate"><span class="pre">NoReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.UniqueImageReward"><code class="docutils literal notranslate"><span class="pre">UniqueImageReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.ScanningTimeReward"><code class="docutils literal notranslate"><span class="pre">ScanningTimeReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.ResourceReward"><code class="docutils literal notranslate"><span class="pre">ResourceReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.RSOInspectionReward"><code class="docutils literal notranslate"><span class="pre">RSOInspectionReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#bsk_rl.data.STINTaskReward"><code class="docutils literal notranslate"><span class="pre">STINTaskReward</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="base.html">Base Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="composition.html">Data Composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nadir_data.html">Nadir Scanning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="no_data.html">No Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="resource_data.html">Resource Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rso_inspection.html">RSO Inspection</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">STIN Task Data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskReward"><code class="docutils literal notranslate"><span class="pre">STINTaskReward</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskReward.data_store_type"><code class="docutils literal notranslate"><span class="pre">STINTaskReward.data_store_type</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskReward.reset_overwrite_previous"><code class="docutils literal notranslate"><span class="pre">STINTaskReward.reset_overwrite_previous()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskReward.calculate_reward"><code class="docutils literal notranslate"><span class="pre">STINTaskReward.calculate_reward()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskReward.is_truncated"><code class="docutils literal notranslate"><span class="pre">STINTaskReward.is_truncated()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskReward.is_terminated"><code class="docutils literal notranslate"><span class="pre">STINTaskReward.is_terminated()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskStore"><code class="docutils literal notranslate"><span class="pre">STINTaskStore</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskStore.data_type"><code class="docutils literal notranslate"><span class="pre">STINTaskStore.data_type</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskStore.get_log_state"><code class="docutils literal notranslate"><span class="pre">STINTaskStore.get_log_state()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskStore.compare_log_states"><code class="docutils literal notranslate"><span class="pre">STINTaskStore.compare_log_states()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskData"><code class="docutils literal notranslate"><span class="pre">STINTaskData</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="unique_image_data.html">Unique Images</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../comm/index.html">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sim/index.html">Simulation (BSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/AVSLab/bsk_rl/">GitHub</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #CFB87C" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BSK-RL v1.2.13</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Data &amp; Reward</a></li>
+      <li class="breadcrumb-item active">STIN Task Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api_reference/data/stin_task_data.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stin-task-data">
+<span id="bsk-rl-data-stin-task-data"></span><h1>STIN Task Data<a class="headerlink" href="#stin-task-data" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p id="module-bsk_rl.data.stin_task_data">Data system for STIN task offloading and completion tracking.</p>
+<p>This module defines the reward calculation for satellite-terrestrial integrated network (STIN)
+multi-agent reinforcement learning environments.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskReward">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINTaskReward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_complete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">60.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_expired</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_queue_penalty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_slice_drain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_norm_gbits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_reward_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_utilization</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_pbrs_queue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbrs_gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.99</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskReward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskReward" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#bsk_rl.data.base.GlobalReward" title="bsk_rl.data.base.GlobalReward"><code class="xref py py-class docutils literal notranslate"><span class="pre">GlobalReward</span></code></a></p>
+<p>初始化 STIN 任务奖励计算器。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w_progress</strong> (<em>float</em>) – 面包屑奖励，每处理 1 Gbits 数据的奖励。</p></li>
+<li><p><strong>w_complete</strong> (<em>float</em>) – 任务完成基础奖励（会乘以时延折扣和优先级）。</p></li>
+<li><p><strong>w_expired</strong> (<em>float</em>) – 超时惩罚系数（惩罚 = w_expired × priority）。</p></li>
+<li><p><strong>w_energy</strong> (<em>float</em>) – 能耗成本（每焦耳扣分）。</p></li>
+<li><p><strong>w_delay</strong> (<em>float</em>) – 时延敏感度 [0, 1]。</p></li>
+<li><p><strong>w_queue_penalty</strong> (<em>float</em>) – 队列长度惩罚系数。</p></li>
+<li><p><strong>max_queue_size</strong> (<em>int</em>) – 队列长度归一化上限。</p></li>
+<li><p><strong>progress_norm_gbits</strong> (<em>float</em>) – 面包屑奖励归一化尺度。</p></li>
+<li><p><strong>global_reward_ratio</strong> (<em>float</em>) – 全局结果奖励混合比例 [0, 1]。</p></li>
+<li><p><strong>w_utilization</strong> (<em>float</em>) – 资源利用率奖励系数。</p></li>
+<li><p><strong>w_pbrs_queue</strong> (<em>float</em>) – PBRS 队列势函数系数。</p></li>
+<li><p><strong>pbrs_gamma</strong> (<em>float</em>) – PBRS 折扣因子。</p></li>
+<li><p><strong>w_slice_drain</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskReward.data_store_type">
+<span class="sig-name descname"><span class="pre">data_store_type</span></span><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskReward.data_store_type" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskStore" title="bsk_rl.data.stin_task_data.STINTaskStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">STINTaskStore</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskReward.reset_overwrite_previous">
+<span class="sig-name descname"><span class="pre">reset_overwrite_previous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskReward.reset_overwrite_previous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskReward.reset_overwrite_previous" title="Link to this definition"></a></dt>
+<dd><p>重置时清空卫星缓存和任务ID记录（防止跨 Episode 状态泄漏）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskReward.calculate_reward">
+<span class="sig-name descname"><span class="pre">calculate_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskData" title="bsk_rl.data.stin_task_data.STINTaskData"><span class="pre">STINTaskData</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskReward.calculate_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskReward.calculate_reward" title="Link to this definition"></a></dt>
+<dd><p>计算每个卫星的奖励。</p>
+<p>奖励由三类构成：
+1) 结果项：完成奖励 / 超时惩罚
+2) 成本项：能耗成本
+3) 轻量 shaping：队列惩罚、进度、利用率、PBRS（可配置开关）</p>
+<p>结果项可按 global_reward_ratio 进行全局混合，促进系统级协同。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_data_dict</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskData" title="bsk_rl.data.stin_task_data.STINTaskData"><em>STINTaskData</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskReward.is_truncated">
+<span class="sig-name descname"><span class="pre">is_truncated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satellite</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskReward.is_truncated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskReward.is_truncated" title="Link to this definition"></a></dt>
+<dd><p>检查是否应该截断 episode（资源耗尽或其他软约束违反）。</p>
+<p>✅ 多星协作逻辑：
+- 单颗卫星违反 DoD 约束：只标记警告，不截断（其他卫星继续运行）
+- 所有卫星都违反 DoD 约束：截断 episode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>satellite</strong> – 卫星对象。</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True 如果应该截断 episode。</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskReward.is_terminated">
+<span class="sig-name descname"><span class="pre">is_terminated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">satellite</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskReward.is_terminated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskReward.is_terminated" title="Link to this definition"></a></dt>
+<dd><p>检查是否应该终止 episode（任务完成）。</p>
+<p>✅ 修正逻辑(2026-01-05):
+只有当任务池空了 <strong>且</strong> 所有已到达任务都处理完时才终止。</p>
+<p>⚠️ 注意：使用任务ID集合统计，避免因slice分割导致重复计数。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskStore">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINTaskStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskStore" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#bsk_rl.data.base.DataStore" title="bsk_rl.data.base.DataStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataStore</span></code></a></p>
+<p>初始化 STIN 任务数据存储。</p>
+<p>跟踪每个卫星的任务完成状态、资源使用情况。</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskStore.data_type">
+<span class="sig-name descname"><span class="pre">data_type</span></span><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskStore.data_type" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskData" title="bsk_rl.data.stin_task_data.STINTaskData"><code class="xref py py-class docutils literal notranslate"><span class="pre">STINTaskData</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskStore.get_log_state">
+<span class="sig-name descname"><span class="pre">get_log_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskStore.get_log_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskStore.get_log_state" title="Link to this definition"></a></dt>
+<dd><p>记录当前步骤结束时的状态（用于计算增量）。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>包含任务统计和资源状态的字典。</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskStore.compare_log_states">
+<span class="sig-name descname"><span class="pre">compare_log_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskData" title="bsk_rl.data.stin_task_data.STINTaskData"><span class="pre">STINTaskData</span></a></span></span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskStore.compare_log_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskStore.compare_log_states" title="Link to this definition"></a></dt>
+<dd><p>对比两个状态，生成增量数据。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_state</strong> (<em>dict</em>) – 上一步的状态。</p></li>
+<li><p><strong>new_state</strong> (<em>dict</em>) – 当前步的状态。</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>本步骤产生的增量数据（不含瞬时状态）。</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#bsk_rl.data.stin_task_data.STINTaskData" title="bsk_rl.data.stin_task_data.STINTaskData"><em>STINTaskData</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bsk_rl.data.stin_task_data.STINTaskData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">STINTaskData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">completed_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">TaskSlice</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expired_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">TaskSlice</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processed_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offloaded_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_consumed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_latency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">battery_soc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_queue_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_queue_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_data_gbits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_data_delta_gbits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_queue_data_gbits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_queue_data_delta_gbits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_tx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_rx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/bsk_rl/data/stin_task_data.html#STINTaskData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bsk_rl.data.stin_task_data.STINTaskData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#bsk_rl.data.base.Data" title="bsk_rl.data.base.Data"><code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code></a></p>
+<p>构建 STIN 任务数据单元。</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>completed_tasks</strong> (<em>list</em><em>[</em><em>TaskSlice</em><em>] </em><em>| </em><em>None</em>) – 本步成功完成的任务切片列表。</p></li>
+<li><p><strong>expired_tasks</strong> (<em>list</em><em>[</em><em>TaskSlice</em><em>] </em><em>| </em><em>None</em>) – 本步超时失败的任务切片列表。</p></li>
+<li><p><strong>processed_data</strong> (<em>float</em>) – [Gbits] 本步处理的数据量（增量）。</p></li>
+<li><p><strong>offloaded_data</strong> (<em>float</em>) – [Gbits] 本步卸载的数据量（增量）。</p></li>
+<li><p><strong>energy_consumed</strong> (<em>float</em>) – [J] 本步消耗的能量（增量）。</p></li>
+<li><p><strong>avg_latency</strong> (<em>float</em>) – [s] 本步完成任务的平均时延。</p></li>
+<li><p><strong>battery_soc</strong> (<em>float</em>) – 电池 SOC [0, 1]，用于软约束惩罚。</p></li>
+<li><p><strong>energy_tx</strong> (<em>float</em>) – [J] 发送能耗（论文 E_tr）。</p></li>
+<li><p><strong>energy_rx</strong> (<em>float</em>) – [J] 接收能耗（论文 E_re）。</p></li>
+<li><p><strong>raw_queue_len</strong> (<em>int</em>)</p></li>
+<li><p><strong>queue_len</strong> (<em>int</em>)</p></li>
+<li><p><strong>slice_queue_len</strong> (<em>int</em>)</p></li>
+<li><p><strong>queue_data_gbits</strong> (<em>float</em>)</p></li>
+<li><p><strong>queue_data_delta_gbits</strong> (<em>float</em>)</p></li>
+<li><p><strong>slice_queue_data_gbits</strong> (<em>float</em>)</p></li>
+<li><p><strong>slice_queue_data_delta_gbits</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rso_inspection.html" class="btn btn-neutral float-left" title="RSO Inspection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="unique_image_data.html" class="btn btn-neutral float-right" title="Unique Images" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Autonomous Vehicle Systems (AVS) Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

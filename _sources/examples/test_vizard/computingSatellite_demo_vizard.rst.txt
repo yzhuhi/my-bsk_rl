@@ -1,0 +1,13 @@
+.. _examples.test_vizard.computingSatellite_demo_vizard:
+.. currentmodule:: examples.test_vizard.computingSatellite_demo_vizard
+
+computingSatellite_demo_vizard
+==============================
+
+.. toctree::
+   :maxdepth: 1
+
+.. automodule:: examples.test_vizard.computingSatellite_demo_vizard
+   :members:
+   :show-inheritance:
+
